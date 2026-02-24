@@ -10,6 +10,13 @@ import type {
   SchoolAddendum,
   ImportRow,
 } from './types';
+import {
+  fetchAllData,
+  dbInsertExperience,
+  dbInsertStudents,
+  dbUpdateSlipStatus,
+  dbUpdateSlipsBatch,
+} from './db';
 
 // ── Legal Documents ──────────────────────────────────────────
 const DEFAULT_INDEMNIFICATION = `PERMISSION, WAIVER, AND RELEASE OF LIABILITY
@@ -208,6 +215,7 @@ function uid() {
 }
 
 interface AppState {
+  // Data
   experiences: Experience[];
   invitations: Invitation[];
   students: Student[];
@@ -215,6 +223,12 @@ interface AppState {
   slips: PermissionSlip[];
   payments: Payment[];
 
+  // Loading state
+  loading: boolean;
+  dataSource: 'demo' | 'supabase';
+
+  // Actions
+  init: () => Promise<void>;
   addExperience: (exp: Omit<Experience, 'id'>) => void;
   importStudents: (invId: string, rows: ImportRow[]) => void;
   sendSlip: (slipId: string) => void;
@@ -222,7 +236,7 @@ interface AppState {
   remindSlip: (slipId: string) => void;
 }
 
-export const useStore = create<AppState>((set) => ({
+export const useStore = create<AppState>((set, get) => ({
   experiences: INIT_EXPERIENCES,
   invitations: INIT_INVITATIONS,
   students: INIT_STUDENTS,
@@ -230,51 +244,75 @@ export const useStore = create<AppState>((set) => ({
   slips: INIT_SLIPS,
   payments: INIT_PAYMENTS,
 
-  addExperience: (exp) =>
+  loading: true,
+  dataSource: 'demo',
+
+  init: async () => {
+    set({ loading: true });
+    const data = await fetchAllData();
+    if (data && data.experiences.length > 0) {
+      set({ ...data, loading: false, dataSource: 'supabase' });
+    } else {
+      // Fall back to demo data (already set as initial state)
+      set({ loading: false, dataSource: 'demo' });
+    }
+  },
+
+  addExperience: (exp) => {
+    const newExp = { ...exp, id: uid() };
+    set((s) => ({ experiences: [...s.experiences, newExp] }));
+    dbInsertExperience(newExp);
+  },
+
+  importStudents: (invId, rows) => {
+    const newStudents: Student[] = [];
+    const newGuardians: Guardian[] = [];
+    const newSlips: PermissionSlip[] = [];
+
+    rows.forEach((row, i) => {
+      const sid = `imp-${invId}-${Date.now()}-${i}`;
+      newStudents.push({ id: sid, inv: invId, f: row.firstName, l: row.lastName, gr: row.grade });
+      newGuardians.push({ sid, name: row.guardianName, phone: row.guardianPhone, email: row.guardianEmail, lang: row.guardianLang });
+      newSlips.push({ id: `sl-${sid}`, inv: invId, sid, tok: `tok-${sid}`, status: 'PENDING' });
+    });
+
     set((s) => ({
-      experiences: [...s.experiences, { ...exp, id: uid() }],
-    })),
+      students: [...s.students, ...newStudents],
+      guardians: [...s.guardians, ...newGuardians],
+      slips: [...s.slips, ...newSlips],
+    }));
+    dbInsertStudents(newStudents, newGuardians, newSlips);
+  },
 
-  importStudents: (invId, rows) =>
-    set((s) => {
-      const newStudents: Student[] = [];
-      const newGuardians: Guardian[] = [];
-      const newSlips: PermissionSlip[] = [];
-
-      rows.forEach((row, i) => {
-        const sid = `imp-${invId}-${Date.now()}-${i}`;
-        newStudents.push({ id: sid, inv: invId, f: row.firstName, l: row.lastName, gr: row.grade });
-        newGuardians.push({ sid, name: row.guardianName, phone: row.guardianPhone, email: row.guardianEmail, lang: row.guardianLang });
-        newSlips.push({ id: `sl-${sid}`, inv: invId, sid, tok: `tok-${sid}`, status: 'PENDING' });
-      });
-
-      return {
-        students: [...s.students, ...newStudents],
-        guardians: [...s.guardians, ...newGuardians],
-        slips: [...s.slips, ...newSlips],
-      };
-    }),
-
-  sendSlip: (slipId) =>
+  sendSlip: (slipId) => {
     set((s) => ({
       slips: s.slips.map((sl) =>
         sl.id === slipId && sl.status === 'PENDING' ? { ...sl, status: 'SENT' } : sl,
       ),
-    })),
+    }));
+    dbUpdateSlipStatus(slipId, 'SENT');
+  },
 
-  sendAllPending: (invId) =>
+  sendAllPending: (invId) => {
+    const pending = get().slips.filter((sl) => sl.inv === invId && sl.status === 'PENDING');
     set((s) => ({
       slips: s.slips.map((sl) =>
         sl.inv === invId && sl.status === 'PENDING' ? { ...sl, status: 'SENT' } : sl,
       ),
-    })),
+    }));
+    if (pending.length > 0) {
+      dbUpdateSlipsBatch(pending.map((s) => s.id), 'SENT');
+    }
+  },
 
-  remindSlip: (slipId) =>
+  remindSlip: (slipId) => {
     set((s) => ({
       slips: s.slips.map((sl) =>
         sl.id === slipId && sl.status === 'SENT' ? { ...sl, status: 'OPENED' } : sl,
       ),
-    })),
+    }));
+    dbUpdateSlipStatus(slipId, 'OPENED');
+  },
 }));
 
 // ── Selectors ────────────────────────────────────────────────
