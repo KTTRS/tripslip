@@ -1,21 +1,21 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 const VARIANTS: Record<string, string> = {
-  dark: 'bg-charcoal text-white hover:bg-charcoal/90 shadow-sm',
-  accent: 'bg-bus text-charcoal hover:bg-bus-dark shadow-sm',
-  light: 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50',
-  green: 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm',
-  blue: 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm',
-  ghost: 'text-gray-600 hover:bg-gray-100',
-  red: 'bg-red-50 text-red-700 border border-red-200 hover:bg-red-100',
+  primary: 'bg-bus text-black font-bold hover:bg-bus-dark shadow-md hover:shadow-lg',
+  dark: 'bg-black text-white font-bold hover:bg-black/85 shadow-md',
+  outline: 'bg-white text-black font-bold border-2 border-black hover:bg-black hover:text-white',
+  ghost: 'text-black/60 font-semibold hover:bg-bus/10 hover:text-black',
+  green: 'bg-ts-green text-white font-bold hover:bg-ts-green/90 shadow-md',
+  red: 'bg-ts-red/10 text-ts-red font-bold border border-ts-red/20 hover:bg-ts-red/20',
+  yellow: 'bg-bus/15 text-black font-bold border border-bus hover:bg-bus/30',
 };
 
 const SIZES: Record<string, string> = {
-  xs: 'px-2.5 py-1 text-xs gap-1',
-  sm: 'px-3.5 py-2 text-sm gap-1.5',
-  md: 'px-5 py-2.5 text-sm gap-2',
-  lg: 'px-6 py-3.5 text-base gap-2',
-  xl: 'px-8 py-4 text-lg gap-2.5',
+  xs: 'px-3 py-1.5 text-xs gap-1',
+  sm: 'px-4 py-2 text-sm gap-1.5',
+  md: 'px-6 py-3 text-sm gap-2',
+  lg: 'px-8 py-4 text-base gap-2',
+  xl: 'px-10 py-5 text-lg gap-2.5',
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -27,7 +27,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Button({
   children,
-  v = 'dark',
+  v = 'primary',
   sz = 'md',
   full,
   className = '',
@@ -35,8 +35,8 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
-      className={`inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] ${
-        VARIANTS[v] || VARIANTS.dark
+      className={`inline-flex items-center justify-center rounded-xl transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-bus focus:ring-offset-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] ${
+        VARIANTS[v] || VARIANTS.primary
       } ${SIZES[sz] || SIZES.md} ${full ? 'w-full' : ''} ${className}`}
       {...props}
     >

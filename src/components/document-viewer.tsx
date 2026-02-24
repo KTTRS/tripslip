@@ -21,18 +21,18 @@ export function DocumentViewer({
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 overflow-hidden">
+    <div className="rounded-2xl border-2 border-black/10 overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+        className="w-full flex items-center justify-between px-5 py-4 bg-black/5 hover:bg-bus/10 transition-colors text-left"
       >
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gray-900 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-black flex items-center justify-center shrink-0">
             <span className="text-white text-sm">📄</span>
           </div>
           <div>
-            <p className="text-sm font-semibold text-gray-900">{title}</p>
-            <p className="text-xs text-gray-500">
+            <p className="text-sm font-bold text-black">{title}</p>
+            <p className="text-xs text-black/40">
               {open ? 'Scroll to read full document' : 'Tap to read full document'}
               {required && ' · Required'}
             </p>
@@ -41,7 +41,7 @@ export function DocumentViewer({
         <div className="flex items-center gap-2">
           {read && <Badge status="COMPLETED" sm />}
           <span
-            className={`text-gray-400 transition-transform inline-block text-lg ${
+            className={`text-black/30 transition-transform inline-block text-lg font-bold ${
               open ? 'rotate-90' : ''
             }`}
           >
@@ -51,7 +51,7 @@ export function DocumentViewer({
       </button>
 
       {open && (
-        <div className="border-t border-gray-200">
+        <div className="border-t-2 border-black/10">
           <div
             ref={scrollRef}
             onScroll={onScroll}
@@ -61,7 +61,7 @@ export function DocumentViewer({
               <p
                 key={i}
                 className={`text-sm leading-relaxed ${
-                  i === 0 ? 'font-bold text-gray-900 text-base' : 'text-gray-700'
+                  i === 0 ? 'font-bold text-black text-base' : 'text-black/70'
                 } mb-3`}
               >
                 {paragraph}
@@ -69,11 +69,11 @@ export function DocumentViewer({
             ))}
           </div>
           <div
-            className={`px-5 py-3 border-t flex items-center gap-2 ${
-              read ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100'
+            className={`px-5 py-3 border-t-2 flex items-center gap-2 ${
+              read ? 'bg-ts-green/10 border-ts-green/20' : 'bg-bus/10 border-bus/20'
             }`}
           >
-            <span className={`text-xs font-medium ${read ? 'text-emerald-700' : 'text-amber-700'}`}>
+            <span className={`text-xs font-bold ${read ? 'text-ts-green' : 'text-black/60'}`}>
               {read
                 ? '✓ Document reviewed'
                 : '↓ Scroll to bottom to confirm you\'ve read the full document'}

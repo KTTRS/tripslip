@@ -10,21 +10,21 @@ export function Input({ label, err, children, required: rq, className = '', ...p
   return (
     <div className="space-y-1.5">
       {label && (
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-bold text-black">
           {label}
-          {rq && <span className="text-red-500 ml-0.5">*</span>}
+          {rq && <span className="text-bus ml-1">*</span>}
         </label>
       )}
       {children || (
         <input
           required={rq}
-          className={`w-full px-4 py-3 rounded-xl border ${
-            err ? 'border-red-300 ring-1 ring-red-300' : 'border-gray-200'
-          } focus:outline-none focus:ring-2 focus:ring-bus focus:border-transparent text-gray-900 placeholder-gray-400 transition-all ${className}`}
+          className={`w-full px-4 py-3 rounded-xl border-2 ${
+            err ? 'border-ts-red ring-1 ring-ts-red' : 'border-black/10'
+          } bg-white focus:outline-none focus:border-bus focus:ring-2 focus:ring-bus/30 text-black placeholder-black/30 transition-all font-medium ${className}`}
           {...props}
         />
       )}
-      {err && <p className="text-xs text-red-600">{err}</p>}
+      {err && <p className="text-xs text-ts-red font-semibold">{err}</p>}
     </div>
   );
 }

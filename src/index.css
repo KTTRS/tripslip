@@ -2,7 +2,8 @@
 
 @theme {
   --color-bus: #FBC251;
-  --color-bus-dark: #FBBF29;
+  --color-bus-dark: #F5B740;
+  --color-bus-light: #FEF3D9;
   --color-brand-orange: #F45B0B;
   --color-charcoal: #313735;
   --color-mint: #F1FBFC;
@@ -19,3 +20,18 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Bold selection color */
+::selection {
+  background: #FBC251;
+  color: #000;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #FBC251; border-radius: 999px; }

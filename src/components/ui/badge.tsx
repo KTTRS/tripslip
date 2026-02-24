@@ -1,23 +1,24 @@
 const COLORS: Record<string, string> = {
-  COMPLETED: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  PAID: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  OPENED: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-  SENT: 'bg-sky-50 text-sky-700 ring-sky-600/20',
-  ACTIVE: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-  PENDING: 'bg-gray-50 text-gray-500 ring-gray-500/10',
-  UNPAID: 'bg-amber-50 text-amber-700 ring-amber-600/20',
-  PARTIAL: 'bg-violet-50 text-violet-700 ring-violet-600/20',
-  WAIVED: 'bg-sky-50 text-sky-700 ring-sky-600/20',
-  REQUIRED: 'bg-red-50 text-red-600 ring-red-600/20',
-  OPTIONAL: 'bg-gray-50 text-gray-400 ring-gray-400/10',
+  COMPLETED: 'bg-ts-green text-white',
+  PAID: 'bg-ts-green text-white',
+  OPENED: 'bg-bus text-black',
+  SENT: 'bg-black text-white',
+  ACTIVE: 'bg-bus text-black',
+  PENDING: 'bg-black/10 text-black/60',
+  DRAFT: 'bg-black/10 text-black/60',
+  UNPAID: 'bg-bus text-black',
+  PARTIAL: 'bg-ts-lavender text-white',
+  WAIVED: 'bg-ts-blue text-white',
+  REQUIRED: 'bg-ts-red text-white',
+  OPTIONAL: 'bg-black/10 text-black/50',
 };
 
 export function Badge({ status, sm }: { status: string; sm?: boolean }) {
   const c = COLORS[status] || COLORS.PENDING;
   return (
     <span
-      className={`inline-flex items-center font-semibold tracking-wide rounded-full ring-1 ring-inset ${
-        sm ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs'
+      className={`inline-flex items-center font-bold tracking-wide rounded-full ${
+        sm ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-1 text-xs'
       } ${c}`}
     >
       {status}

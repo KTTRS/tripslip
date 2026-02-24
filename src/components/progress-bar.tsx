@@ -1,24 +1,20 @@
 export function ProgressBar({ value, total }: { value: number; total: number }) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
-  const col =
-    pct === 100
-      ? 'bg-ts-green'
-      : pct > 0
-        ? 'bg-bus'
-        : 'bg-gray-200';
 
   return (
     <div>
-      <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-gray-500">
+      <div className="flex justify-between text-xs mb-2">
+        <span className="text-black/50 font-medium">
           {value} of {total}
         </span>
-        <span className="font-bold text-gray-800">{pct}%</span>
+        <span className="font-black text-black">{pct}%</span>
       </div>
-      <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+      <div className="w-full bg-black/10 rounded-full h-3 overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-1000 ${col}`}
-          style={{ width: `${Math.max(pct, 1)}%` }}
+          className={`h-full rounded-full transition-all duration-1000 ${
+            pct === 100 ? 'bg-ts-green' : 'bg-bus'
+          }`}
+          style={{ width: `${Math.max(pct, 2)}%` }}
         />
       </div>
     </div>

@@ -1,5 +1,3 @@
-import { Card } from './ui/card';
-
 export function MetricCard({
   label,
   value,
@@ -12,11 +10,25 @@ export function MetricCard({
   accent?: string;
 }) {
   return (
-    <Card className="p-5 relative overflow-hidden">
-      {accent && <div className={`absolute top-0 left-0 right-0 h-1 ${accent}`} />}
-      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">{label}</p>
-      <p className="text-3xl font-black text-gray-900 mt-1 tracking-tight">{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
-    </Card>
+    <div className={`rounded-2xl p-5 relative overflow-hidden ${
+      accent === 'bg-bus'
+        ? 'bg-bus text-black'
+        : accent === 'bg-black'
+          ? 'bg-black text-white'
+          : 'bg-white border border-black/8'
+    }`}>
+      {accent && accent !== 'bg-bus' && accent !== 'bg-black' && (
+        <div className={`absolute top-0 left-0 w-1.5 h-full ${accent}`} />
+      )}
+      <p className={`text-[11px] font-bold uppercase tracking-widest ${
+        accent === 'bg-bus' ? 'text-black/50' : accent === 'bg-black' ? 'text-white/50' : 'text-black/40'
+      }`}>{label}</p>
+      <p className={`text-3xl font-black mt-1 tracking-tight ${
+        accent === 'bg-bus' ? 'text-black' : accent === 'bg-black' ? 'text-bus' : 'text-black'
+      }`}>{value}</p>
+      {sub && <p className={`text-xs mt-1 ${
+        accent === 'bg-bus' ? 'text-black/50' : accent === 'bg-black' ? 'text-white/40' : 'text-black/40'
+      }`}>{sub}</p>}
+    </div>
   );
 }
