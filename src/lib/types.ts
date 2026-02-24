@@ -45,6 +45,7 @@ export interface PermissionSlip {
 }
 
 export interface Payment {
+  id: string;
   slid: string;
   type: 'REQ' | 'DON';
   cents: number;

@@ -16,7 +16,11 @@ import {
   dbInsertStudents,
   dbUpdateSlipStatus,
   dbUpdateSlipsBatch,
+  dbCompleteSlip,
+  dbInsertPayment,
+  subscribeRealtime,
 } from './db';
+import type { RealtimeEvent } from './db';
 
 // ── Legal Documents ──────────────────────────────────────────
 const DEFAULT_INDEMNIFICATION = `PERMISSION, WAIVER, AND RELEASE OF LIABILITY
@@ -163,13 +167,13 @@ const INIT_SLIPS: PermissionSlip[] = INIT_STUDENTS.map((s, i) => {
 });
 
 const INIT_PAYMENTS: Payment[] = [
-  { slid: 'sl-s0', type: 'REQ', cents: 1500, ok: true },
-  { slid: 'sl-s0', type: 'DON', cents: 2500, ok: true },
-  { slid: 'sl-s1', type: 'REQ', cents: 1500, ok: true },
-  { slid: 'sl-s2', type: 'REQ', cents: 1500, ok: true },
-  { slid: 'sl-s3', type: 'REQ', cents: 1500, ok: false },
-  { slid: 'sl-x0', type: 'REQ', cents: 1500, ok: true },
-  { slid: 'sl-x1', type: 'REQ', cents: 1500, ok: true },
+  { id: 'pay-1', slid: 'sl-s0', type: 'REQ', cents: 1500, ok: true },
+  { id: 'pay-2', slid: 'sl-s0', type: 'DON', cents: 2500, ok: true },
+  { id: 'pay-3', slid: 'sl-s1', type: 'REQ', cents: 1500, ok: true },
+  { id: 'pay-4', slid: 'sl-s2', type: 'REQ', cents: 1500, ok: true },
+  { id: 'pay-5', slid: 'sl-s3', type: 'REQ', cents: 1500, ok: false },
+  { id: 'pay-6', slid: 'sl-x0', type: 'REQ', cents: 1500, ok: true },
+  { id: 'pay-7', slid: 'sl-x1', type: 'REQ', cents: 1500, ok: true },
 ];
 
 // ── Form Fields (global template) ────────────────────────────
@@ -208,6 +212,24 @@ export const FORM_FIELDS: FormField[] = [
   },
 ];
 
+// ── Realtime merge helper ────────────────────────────────────
+function mergeList<T>(
+  list: T[],
+  item: T,
+  key: keyof T,
+  evt: RealtimeEvent,
+  appendOnly = false,
+): T[] {
+  if (evt === 'DELETE') return list.filter((r) => r[key] !== item[key]);
+  if (evt === 'INSERT' || appendOnly) {
+    // Avoid duplicates
+    const exists = list.some((r) => r[key] === item[key]);
+    return exists ? list.map((r) => (r[key] === item[key] ? item : r)) : [...list, item];
+  }
+  // UPDATE
+  return list.map((r) => (r[key] === item[key] ? item : r));
+}
+
 // ── Zustand Store ────────────────────────────────────────────
 let _counter = 100;
 function uid() {
@@ -234,6 +256,7 @@ interface AppState {
   sendSlip: (slipId: string) => void;
   sendAllPending: (invId: string) => void;
   remindSlip: (slipId: string) => void;
+  completeSlip: (slipId: string, formData: Record<string, unknown>, signatureData: string, payments?: { type: 'REQ' | 'DON'; method: string; cents: number }[]) => void;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -252,6 +275,22 @@ export const useStore = create<AppState>((set, get) => ({
     const data = await fetchAllData();
     if (data && data.experiences.length > 0) {
       set({ ...data, loading: false, dataSource: 'supabase' });
+
+      // Subscribe to realtime changes
+      subscribeRealtime({
+        onSlip: (evt, slip) => {
+          set((s) => ({ slips: mergeList(s.slips, slip, 'id', evt) }));
+        },
+        onPayment: (evt, payment) => {
+          set((s) => ({ payments: mergeList(s.payments, payment, 'id', evt) }));
+        },
+        onStudent: (evt, student) => {
+          set((s) => ({ students: mergeList(s.students, student, 'id', evt) }));
+        },
+        onGuardian: (evt, guardian) => {
+          set((s) => ({ guardians: mergeList(s.guardians, guardian, 'sid', evt) }));
+        },
+      });
     } else {
       // Fall back to demo data (already set as initial state)
       set({ loading: false, dataSource: 'demo' });
@@ -312,6 +351,36 @@ export const useStore = create<AppState>((set, get) => ({
       ),
     }));
     dbUpdateSlipStatus(slipId, 'OPENED');
+  },
+
+  completeSlip: (slipId, formData, signatureData, payments) => {
+    // Optimistically update local state
+    const newPayments = (payments ?? []).map((p) => ({
+      id: uid(),
+      slid: slipId,
+      type: p.type,
+      cents: p.cents,
+      ok: true,
+    }));
+
+    set((s) => ({
+      slips: s.slips.map((sl) =>
+        sl.id === slipId ? { ...sl, status: 'COMPLETED' as const } : sl,
+      ),
+      payments: [...s.payments, ...newPayments],
+    }));
+
+    // Persist to Supabase (triggers realtime for other clients)
+    dbCompleteSlip(slipId, formData, signatureData);
+    for (const p of payments ?? []) {
+      dbInsertPayment({
+        slipId,
+        type: p.type,
+        method: p.method,
+        cents: p.cents,
+        success: true,
+      });
+    }
   },
 }));
 
