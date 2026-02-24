@@ -126,7 +126,7 @@ export default function ParentPage() {
                 <span className="text-xs font-bold text-white/60">{steps[step]}</span>
               </div>
               <div className="flex gap-1">
-                {['en', 'es'].map((lng) => (
+                {['en', 'es', 'ar'].map((lng) => (
                   <button
                     key={lng}
                     onClick={() => i18n.changeLanguage(lng)}
@@ -427,7 +427,7 @@ export default function ParentPage() {
                     <button
                       key={m.id}
                       onClick={() => setPayMethod(m.id)}
-                      className={`flex items-center gap-2.5 p-3.5 rounded-xl border-2 text-left transition-all ${
+                      className={`flex items-center gap-2.5 p-3.5 rounded-xl border-2 text-start transition-all ${
                         payMethod === m.id
                           ? 'border-bus bg-bus/10'
                           : 'border-black/8 hover:border-bus/50'
@@ -547,7 +547,7 @@ export default function ParentPage() {
               {t('youreAllSet')}
             </h2>
 
-            <Card className="p-6 text-left space-y-4 mx-auto max-w-sm">
+            <Card className="p-6 text-start space-y-4 mx-auto max-w-sm">
               <div className="flex items-center gap-3">
                 <span className="w-8 h-8 rounded-full bg-ts-green flex items-center justify-center text-white text-sm font-bold shrink-0">
                   ✓
@@ -610,7 +610,7 @@ export default function ParentPage() {
               {t('confirmationSentTo')} {guardian.email}
             </p>
 
-            <Card dark className="p-5 mx-auto max-w-sm text-left">
+            <Card dark className="p-5 mx-auto max-w-sm text-start">
               <p className="text-sm font-black text-bus mb-1">{t('saveYourInfo')}</p>
               <p className="text-xs text-white/40 mb-3 font-medium">{t('freeAccountNoReEntry')}</p>
               <Button full sz="sm">{t('save')}</Button>
