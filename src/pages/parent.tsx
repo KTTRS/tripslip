@@ -50,7 +50,7 @@ export default function ParentPage() {
   // ── Form state ──
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [checks, setChecks] = useState<Record<string, boolean>>({});
-  const [sigOk, setSigOk] = useState(false);
+  const [sigData, setSigData] = useState<string | null>(null);
   const [payOpt, setPayOpt] = useState<PaymentOption>('full');
   const [payMethod, setPayMethod] = useState<PayMethod>('card');
   const [partialAmt, setPartialAmt] = useState('');
@@ -108,7 +108,7 @@ export default function ParentPage() {
     .every((f) => (f.type === 'chk' ? checks[f.id] : formData[f.id]?.trim()));
   const schoolValid = addendum ? addSchoolChk : true;
   const sigConfirms = ['c1', 'c2', 'c3', 'c4'];
-  const sigValid = sigConfirms.every((c) => checks[c]) && sigOk;
+  const sigValid = sigConfirms.every((c) => checks[c]) && !!sigData;
 
   const steps = [t('permissionSlipFor'), t('signPermissionSlip'), t('payment')];
 
@@ -342,7 +342,7 @@ export default function ParentPage() {
 
             <div>
               <p className="text-sm font-black text-black mb-2">{t('yourSignature')}</p>
-              <SignaturePad onSave={() => setSigOk(true)} saved={sigOk} />
+              <SignaturePad onSave={(dataUrl) => setSigData(dataUrl)} saved={!!sigData} />
               <p className="text-xs text-black/30 mt-2 font-medium">🔒 {t('encrypted')}</p>
             </div>
 
@@ -541,7 +541,7 @@ export default function ParentPage() {
                 }
 
                 // Persist to Supabase → triggers realtime for teacher dashboard
-                completeSlip(slip.id, formData, 'sig-placeholder', payments.length > 0 ? payments : undefined);
+                completeSlip(slip.id, formData, sigData ?? '', payments.length > 0 ? payments : undefined);
                 setStep(3);
               }}>
                 {payOpt === 'cant'

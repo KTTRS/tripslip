@@ -5,7 +5,7 @@ export function SignaturePad({
   onSave,
   saved,
 }: {
-  onSave: () => void;
+  onSave: (dataUrl: string) => void;
   saved: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -90,7 +90,10 @@ export function SignaturePad({
         <Button v="ghost" sz="xs" onClick={clear} disabled={saved}>
           Clear
         </Button>
-        <Button v={saved ? 'green' : 'primary'} sz="xs" onClick={onSave} disabled={!hasContent || saved}>
+        <Button v={saved ? 'green' : 'primary'} sz="xs" onClick={() => {
+          const dataUrl = canvasRef.current?.toDataURL('image/png') ?? '';
+          onSave(dataUrl);
+        }} disabled={!hasContent || saved}>
           {saved ? '✓ Confirmed' : 'Confirm Signature'}
         </Button>
       </div>
