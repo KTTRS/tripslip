@@ -121,10 +121,53 @@ function toSlip(r: SlipRow): PermissionSlip {
 
 function toPayment(r: PaymentRow): Payment {
   return {
+    id: r.id,
     slid: r.slip_id,
     type: r.payment_type as Payment['type'],
     cents: r.amount_cents,
     ok: r.success,
+  };
+}
+
+// ── Realtime subscriptions ───────────────────────────────────
+export type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE';
+
+export interface RealtimeCallbacks {
+  onSlip: (evt: RealtimeEvent, slip: PermissionSlip) => void;
+  onPayment: (evt: RealtimeEvent, payment: Payment) => void;
+  onStudent: (evt: RealtimeEvent, student: Student) => void;
+  onGuardian: (evt: RealtimeEvent, guardian: Guardian) => void;
+}
+
+export function subscribeRealtime(cb: RealtimeCallbacks): () => void {
+  if (!supabase) return () => {};
+
+  const channel = supabase
+    .channel('tripslip-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'permission_slips' }, (payload) => {
+      const evt = payload.eventType as RealtimeEvent;
+      const row = (evt === 'DELETE' ? payload.old : payload.new) as SlipRow;
+      cb.onSlip(evt, toSlip(row));
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, (payload) => {
+      const evt = payload.eventType as RealtimeEvent;
+      const row = (evt === 'DELETE' ? payload.old : payload.new) as PaymentRow;
+      cb.onPayment(evt, toPayment(row));
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, (payload) => {
+      const evt = payload.eventType as RealtimeEvent;
+      const row = (evt === 'DELETE' ? payload.old : payload.new) as StudentRow;
+      cb.onStudent(evt, toStudent(row));
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'guardians' }, (payload) => {
+      const evt = payload.eventType as RealtimeEvent;
+      const row = (evt === 'DELETE' ? payload.old : payload.new) as GuardianRow;
+      cb.onGuardian(evt, toGuardian(row));
+    })
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
   };
 }
 
