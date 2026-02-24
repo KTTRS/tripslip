@@ -37,7 +37,7 @@ export default function ParentPage() {
   const { t, i18n } = useTranslation();
   const [step, setStep] = useState(0);
 
-  const { experiences, invitations, students: allStudents, guardians: allGuardians, slips: allSlips } = useStore();
+  const { experiences, invitations, students: allStudents, guardians: allGuardians, slips: allSlips, completeSlip } = useStore();
 
   // ── Data lookup ──
   const slip = getSlipByToken(token ?? '', allSlips);
@@ -525,7 +525,25 @@ export default function ParentPage() {
 
             <div className="flex gap-3">
               <Button v="outline" sz="lg" onClick={() => setStep(1)}>{t('back')}</Button>
-              <Button full sz="lg" onClick={() => setStep(3)}>
+              <Button full sz="lg" onClick={() => {
+                // Build payment list
+                const payments: { type: 'REQ' | 'DON'; method: string; cents: number }[] = [];
+                const payCents = payOpt === 'full'
+                  ? exp.cents
+                  : payOpt === 'partial'
+                    ? Math.round(parseFloat(partialAmt || '0') * 100)
+                    : 0;
+                if (payCents > 0) {
+                  payments.push({ type: 'REQ', method: payMethod, cents: payCents });
+                }
+                if (donAmt && payOpt === 'full') {
+                  payments.push({ type: 'DON', method: payMethod, cents: Math.round(parseFloat(donAmt) * 100) });
+                }
+
+                // Persist to Supabase → triggers realtime for teacher dashboard
+                completeSlip(slip.id, formData, 'sig-placeholder', payments.length > 0 ? payments : undefined);
+                setStep(3);
+              }}>
                 {payOpt === 'cant'
                   ? t('submitPermissionSlip')
                   : `${t('pay')} $${payOpt === 'partial' ? partialAmt || '0' : costDollars}${

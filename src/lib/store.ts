@@ -16,6 +16,8 @@ import {
   dbInsertStudents,
   dbUpdateSlipStatus,
   dbUpdateSlipsBatch,
+  dbCompleteSlip,
+  dbInsertPayment,
   subscribeRealtime,
 } from './db';
 import type { RealtimeEvent } from './db';
@@ -254,6 +256,7 @@ interface AppState {
   sendSlip: (slipId: string) => void;
   sendAllPending: (invId: string) => void;
   remindSlip: (slipId: string) => void;
+  completeSlip: (slipId: string, formData: Record<string, unknown>, signatureData: string, payments?: { type: 'REQ' | 'DON'; method: string; cents: number }[]) => void;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -348,6 +351,36 @@ export const useStore = create<AppState>((set, get) => ({
       ),
     }));
     dbUpdateSlipStatus(slipId, 'OPENED');
+  },
+
+  completeSlip: (slipId, formData, signatureData, payments) => {
+    // Optimistically update local state
+    const newPayments = (payments ?? []).map((p) => ({
+      id: uid(),
+      slid: slipId,
+      type: p.type,
+      cents: p.cents,
+      ok: true,
+    }));
+
+    set((s) => ({
+      slips: s.slips.map((sl) =>
+        sl.id === slipId ? { ...sl, status: 'COMPLETED' as const } : sl,
+      ),
+      payments: [...s.payments, ...newPayments],
+    }));
+
+    // Persist to Supabase (triggers realtime for other clients)
+    dbCompleteSlip(slipId, formData, signatureData);
+    for (const p of payments ?? []) {
+      dbInsertPayment({
+        slipId,
+        type: p.type,
+        method: p.method,
+        cents: p.cents,
+        success: true,
+      });
+    }
   },
 }));
 
