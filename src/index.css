@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bus: #FBC251;
+  --color-bus-dark: #FBBF29;
+  --color-brand-orange: #F45B0B;
+  --color-charcoal: #313735;
+  --color-mint: #F1FBFC;
+  --color-ts-blue: #4A7BF7;
+  --color-ts-lavender: #C4A1E0;
+  --color-ts-green: #4A8C6F;
+  --color-ts-pink: #F4B4C8;
+  --color-ts-star: #F9C74F;
+  --color-ts-red: #E84545;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
