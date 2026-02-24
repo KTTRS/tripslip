@@ -8,10 +8,11 @@ import type {
   Payment,
   FormField,
   SchoolAddendum,
+  ImportRow,
 } from './types';
 
 // ── Legal Documents ──────────────────────────────────────────
-export const INDEMNIFICATION = `PERMISSION, WAIVER, AND RELEASE OF LIABILITY
+const DEFAULT_INDEMNIFICATION = `PERMISSION, WAIVER, AND RELEASE OF LIABILITY
 
 I, the undersigned parent or legal guardian of the student named below ("Student"), hereby grant permission for my Student to participate in the Junior Achievement Stock Market Challenge 2026 ("Activity"), including all related events, instruction, and transportation arranged by Junior Achievement of Southeastern Michigan ("JA") and the Student's school.
 
@@ -48,28 +49,58 @@ I understand that DPSCD policies regarding student conduct and discipline apply 
   },
 };
 
-// ── Demo Data ────────────────────────────────────────────────
-export const EXPERIENCE: Experience = {
-  title: 'Stock Market Challenge 2026',
-  desc: '6-week experiential program — student teams manage virtual portfolios competing across Detroit schools.',
-  date: 'March 15, 2026',
-  time: '9:00 AM – 2:30 PM',
-  loc: 'JA Finance Park, Detroit',
-  cents: 1500,
-  payDesc: 'Bus transportation fee',
-  donMsg: 'Every dollar goes directly to the TripSlip Field Trip Fund — ensuring no student misses out because of cost.',
-};
-
-export const INVITATIONS: Invitation[] = [
-  { id: 'i0', school: 'Cass Tech', teacher: 'Ms. Rodriguez', email: 'rodriguez@cass.dpscd.org', status: 'ACTIVE' },
-  { id: 'i1', school: 'DPSCD Virtual', teacher: 'Mr. Thompson', email: 'thompson@virtual.dpscd.org', status: 'ACTIVE' },
-  { id: 'i2', school: 'Southeastern', teacher: 'Mrs. Williams', email: 'williams@se.dpscd.org', status: 'ACTIVE' },
-  { id: 'i3', school: 'Renaissance', teacher: 'Mr. Davis', email: 'davis@ren.dpscd.org', status: 'SENT' },
-  { id: 'i4', school: 'Henry Ford Academy', teacher: 'Ms. Chen', email: 'chen@hfa.edu', status: 'SENT' },
-  { id: 'i5', school: 'Marygrove / CMA', teacher: 'Mrs. Johnson', email: 'johnson@marygrove.edu', status: 'PENDING' },
+// ── Initial Demo Data ────────────────────────────────────────
+const INIT_EXPERIENCES: Experience[] = [
+  {
+    id: 'exp1',
+    title: 'Stock Market Challenge 2026',
+    desc: '6-week experiential program — student teams manage virtual portfolios competing across Detroit schools.',
+    date: 'March 15, 2026',
+    time: '9:00 AM – 2:30 PM',
+    loc: 'JA Finance Park, Detroit',
+    cents: 1500,
+    payDesc: 'Bus transportation fee',
+    donMsg: 'Every dollar goes directly to the TripSlip Field Trip Fund — ensuring no student misses out because of cost.',
+    indemnification: DEFAULT_INDEMNIFICATION,
+  },
+  {
+    id: 'exp2',
+    title: 'JA BizTown 2026',
+    desc: 'Students run an entire simulated city — serving as mayor, bank teller, news anchor, and more.',
+    date: 'April 10, 2026',
+    time: '8:30 AM – 1:00 PM',
+    loc: 'JA BizTown, Dearborn',
+    cents: 1200,
+    payDesc: 'Bus transportation fee',
+    donMsg: 'Fund a student\'s BizTown experience — every dollar counts.',
+    indemnification: DEFAULT_INDEMNIFICATION,
+  },
+  {
+    id: 'exp3',
+    title: 'Finance Park Day',
+    desc: 'Hands-on personal finance simulation — budgeting, saving, investing in a realistic adult scenario.',
+    date: 'May 5, 2026',
+    time: '9:00 AM – 2:00 PM',
+    loc: 'JA Finance Park, Detroit',
+    cents: 1000,
+    payDesc: 'Activity fee',
+    donMsg: 'Help every student experience financial literacy firsthand.',
+    indemnification: DEFAULT_INDEMNIFICATION,
+  },
 ];
 
-export const STUDENTS: Student[] = [
+const INIT_INVITATIONS: Invitation[] = [
+  { id: 'i0', expId: 'exp1', school: 'Cass Tech', teacher: 'Ms. Rodriguez', email: 'rodriguez@cass.dpscd.org', status: 'ACTIVE' },
+  { id: 'i1', expId: 'exp1', school: 'DPSCD Virtual', teacher: 'Mr. Thompson', email: 'thompson@virtual.dpscd.org', status: 'ACTIVE' },
+  { id: 'i2', expId: 'exp1', school: 'Southeastern', teacher: 'Mrs. Williams', email: 'williams@se.dpscd.org', status: 'ACTIVE' },
+  { id: 'i3', expId: 'exp1', school: 'Renaissance', teacher: 'Mr. Davis', email: 'davis@ren.dpscd.org', status: 'SENT' },
+  { id: 'i4', expId: 'exp1', school: 'Henry Ford Academy', teacher: 'Ms. Chen', email: 'chen@hfa.edu', status: 'SENT' },
+  { id: 'i5', expId: 'exp1', school: 'Marygrove / CMA', teacher: 'Mrs. Johnson', email: 'johnson@marygrove.edu', status: 'PENDING' },
+  { id: 'i6', expId: 'exp2', school: 'Cass Tech', teacher: 'Ms. Rodriguez', email: 'rodriguez@cass.dpscd.org', status: 'SENT' },
+  { id: 'i7', expId: 'exp2', school: 'DPSCD Virtual', teacher: 'Mr. Thompson', email: 'thompson@virtual.dpscd.org', status: 'PENDING' },
+];
+
+const INIT_STUDENTS: Student[] = [
   { id: 's0', inv: 'i0', f: 'Jaylen', l: 'Carter', gr: '11' },
   { id: 's1', inv: 'i0', f: 'Nia', l: 'Washington', gr: '11' },
   { id: 's2', inv: 'i0', f: 'Marcus', l: 'Thompson', gr: '11' },
@@ -87,7 +118,7 @@ export const STUDENTS: Student[] = [
   { id: 'x4', inv: 'i2', f: 'Elijah', l: 'Grant', gr: '10' },
 ];
 
-export const GUARDIANS: Guardian[] = [
+const INIT_GUARDIANS: Guardian[] = [
   { sid: 's0', name: 'Michelle Carter', phone: '+13135551001', email: 'm.carter@gmail.com' },
   { sid: 's1', name: 'Derek Washington', phone: '+13135551002', email: 'd.wash@yahoo.com' },
   { sid: 's2', name: 'Lisa Thompson', phone: '+13135551003', email: 'lisa.t@gmail.com' },
@@ -112,7 +143,7 @@ const STATUS_SEQ: PermissionSlip['status'][] = [
   'PENDING', 'PENDING',
 ];
 
-export const SLIPS: PermissionSlip[] = STUDENTS.map((s, i) => {
+const INIT_SLIPS: PermissionSlip[] = INIT_STUDENTS.map((s, i) => {
   const st: PermissionSlip['status'] =
     s.inv === 'i0'
       ? STATUS_SEQ[i] || 'PENDING'
@@ -124,7 +155,7 @@ export const SLIPS: PermissionSlip[] = STUDENTS.map((s, i) => {
   return { id: `sl-${s.id}`, inv: s.inv, sid: s.id, tok: `tok-${s.id}`, status: st };
 });
 
-export const PAYMENTS: Payment[] = [
+const INIT_PAYMENTS: Payment[] = [
   { slid: 'sl-s0', type: 'REQ', cents: 1500, ok: true },
   { slid: 'sl-s0', type: 'DON', cents: 2500, ok: true },
   { slid: 'sl-s1', type: 'REQ', cents: 1500, ok: true },
@@ -134,6 +165,7 @@ export const PAYMENTS: Payment[] = [
   { slid: 'sl-x1', type: 'REQ', cents: 1500, ok: true },
 ];
 
+// ── Form Fields (global template) ────────────────────────────
 export const FORM_FIELDS: FormField[] = [
   { id: 'h1', type: 'heading', label: 'Student Information' },
   { id: 'f2', type: 'text', label: 'Student Full Legal Name', req: true, pre: 'stu' },
@@ -159,8 +191,7 @@ export const FORM_FIELDS: FormField[] = [
   {
     id: 'f16',
     type: 'chk',
-    label:
-      'I have read and agree to the Permission, Waiver, and Release of Liability above. I give permission for my student to participate in the JA Stock Market Challenge, including transportation.',
+    label: 'I have read and agree to the Permission, Waiver, and Release of Liability above. I give permission for my student to participate, including transportation.',
     req: true,
   },
   {
@@ -171,67 +202,134 @@ export const FORM_FIELDS: FormField[] = [
 ];
 
 // ── Zustand Store ────────────────────────────────────────────
-interface AppState {
-  view: 'home' | 'ja' | 'teach' | 'parent';
-  selectedInv: Invitation | null;
-  selectedToken: string | null;
+let _counter = 100;
+function uid() {
+  return `gen-${Date.now()}-${_counter++}`;
+}
 
-  setView: (v: AppState['view']) => void;
-  openTeacher: (inv: Invitation) => void;
-  openParent: (token: string) => void;
-  goHome: () => void;
-  goJa: () => void;
+interface AppState {
+  experiences: Experience[];
+  invitations: Invitation[];
+  students: Student[];
+  guardians: Guardian[];
+  slips: PermissionSlip[];
+  payments: Payment[];
+
+  addExperience: (exp: Omit<Experience, 'id'>) => void;
+  importStudents: (invId: string, rows: ImportRow[]) => void;
+  sendSlip: (slipId: string) => void;
+  sendAllPending: (invId: string) => void;
+  remindSlip: (slipId: string) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
-  view: 'home',
-  selectedInv: null,
-  selectedToken: null,
+  experiences: INIT_EXPERIENCES,
+  invitations: INIT_INVITATIONS,
+  students: INIT_STUDENTS,
+  guardians: INIT_GUARDIANS,
+  slips: INIT_SLIPS,
+  payments: INIT_PAYMENTS,
 
-  setView: (v) => set({ view: v }),
-  openTeacher: (inv) => set({ view: 'teach', selectedInv: inv }),
-  openParent: (token) => set({ view: 'parent', selectedToken: token }),
-  goHome: () => set({ view: 'home', selectedInv: null, selectedToken: null }),
-  goJa: () => set({ view: 'ja', selectedInv: null, selectedToken: null }),
+  addExperience: (exp) =>
+    set((s) => ({
+      experiences: [...s.experiences, { ...exp, id: uid() }],
+    })),
+
+  importStudents: (invId, rows) =>
+    set((s) => {
+      const newStudents: Student[] = [];
+      const newGuardians: Guardian[] = [];
+      const newSlips: PermissionSlip[] = [];
+
+      rows.forEach((row, i) => {
+        const sid = `imp-${invId}-${Date.now()}-${i}`;
+        newStudents.push({ id: sid, inv: invId, f: row.firstName, l: row.lastName, gr: row.grade });
+        newGuardians.push({ sid, name: row.guardianName, phone: row.guardianPhone, email: row.guardianEmail, lang: row.guardianLang });
+        newSlips.push({ id: `sl-${sid}`, inv: invId, sid, tok: `tok-${sid}`, status: 'PENDING' });
+      });
+
+      return {
+        students: [...s.students, ...newStudents],
+        guardians: [...s.guardians, ...newGuardians],
+        slips: [...s.slips, ...newSlips],
+      };
+    }),
+
+  sendSlip: (slipId) =>
+    set((s) => ({
+      slips: s.slips.map((sl) =>
+        sl.id === slipId && sl.status === 'PENDING' ? { ...sl, status: 'SENT' } : sl,
+      ),
+    })),
+
+  sendAllPending: (invId) =>
+    set((s) => ({
+      slips: s.slips.map((sl) =>
+        sl.inv === invId && sl.status === 'PENDING' ? { ...sl, status: 'SENT' } : sl,
+      ),
+    })),
+
+  remindSlip: (slipId) =>
+    set((s) => ({
+      slips: s.slips.map((sl) =>
+        sl.id === slipId && sl.status === 'SENT' ? { ...sl, status: 'OPENED' } : sl,
+      ),
+    })),
 }));
 
-// ── Helpers ──────────────────────────────────────────────────
-export function getStudentsForInv(invId: string) {
-  return STUDENTS.filter((s) => s.inv === invId);
+// ── Selectors ────────────────────────────────────────────────
+export function getExperienceById(id: string, exps: Experience[]) {
+  return exps.find((e) => e.id === id);
 }
 
-export function getSlipsForInv(invId: string) {
-  return SLIPS.filter((s) => s.inv === invId);
+export function getInvsForExperience(expId: string, invs: Invitation[]) {
+  return invs.filter((i) => i.expId === expId);
 }
 
-export function getGuardian(studentId: string) {
-  return GUARDIANS.find((g) => g.sid === studentId);
+export function getStudentsForInv(invId: string, students: Student[]) {
+  return students.filter((s) => s.inv === invId);
 }
 
-export function getSlipByToken(token: string) {
-  return SLIPS.find((s) => s.tok === token);
+export function getSlipsForInv(invId: string, slips: PermissionSlip[]) {
+  return slips.filter((s) => s.inv === invId);
 }
 
-export function getStudentById(id: string) {
-  return STUDENTS.find((s) => s.id === id);
+export function getGuardian(studentId: string, guardians: Guardian[]) {
+  return guardians.find((g) => g.sid === studentId);
 }
 
-export function getInvById(id: string) {
-  return INVITATIONS.find((i) => i.id === id);
+export function getSlipByToken(token: string, slips: PermissionSlip[]) {
+  return slips.find((s) => s.tok === token);
 }
 
-export function getPaymentsForSlip(slipId: string) {
-  return PAYMENTS.filter((p) => p.slid === slipId);
+export function getStudentById(id: string, students: Student[]) {
+  return students.find((s) => s.id === id);
 }
 
-export function getCompletedCount() {
-  return SLIPS.filter((s) => s.status === 'COMPLETED').length;
+export function getInvById(id: string, invs: Invitation[]) {
+  return invs.find((i) => i.id === id);
 }
 
-export function getRevenueCents() {
-  return PAYMENTS.filter((p) => p.ok && p.type === 'REQ').reduce((a, p) => a + p.cents, 0);
+export function getPaymentsForSlip(slipId: string, payments: Payment[]) {
+  return payments.filter((p) => p.slid === slipId);
 }
 
-export function getDonationCents() {
-  return PAYMENTS.filter((p) => p.ok && p.type === 'DON').reduce((a, p) => a + p.cents, 0);
+// ── CSV Parser ───────────────────────────────────────────────
+export function parseCSV(text: string): ImportRow[] {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+
+  // skip header row
+  return lines.slice(1).map((line) => {
+    const cols = line.split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
+    return {
+      firstName: cols[0] || '',
+      lastName: cols[1] || '',
+      grade: cols[2] || '',
+      guardianName: cols[3] || '',
+      guardianPhone: cols[4] || '',
+      guardianEmail: cols[5] || '',
+      guardianLang: cols[6] || undefined,
+    };
+  }).filter((r) => r.firstName && r.lastName);
 }

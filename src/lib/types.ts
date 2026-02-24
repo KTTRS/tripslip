@@ -1,4 +1,5 @@
 export interface Experience {
+  id: string;
   title: string;
   desc: string;
   date: string;
@@ -7,10 +8,12 @@ export interface Experience {
   cents: number;
   payDesc: string;
   donMsg: string;
+  indemnification: string;
 }
 
 export interface Invitation {
   id: string;
+  expId: string;
   school: string;
   teacher: string;
   email: string;
@@ -61,6 +64,16 @@ export interface FormField {
 export interface SchoolAddendum {
   name: string;
   text: string;
+}
+
+export interface ImportRow {
+  firstName: string;
+  lastName: string;
+  grade: string;
+  guardianName: string;
+  guardianPhone: string;
+  guardianEmail: string;
+  guardianLang?: string;
 }
 
 export type SlipStatus = 'PENDING' | 'SENT' | 'OPENED' | 'COMPLETED';

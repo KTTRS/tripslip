@@ -7,14 +7,14 @@ import { Input } from '../components/ui/input';
 import { DocumentViewer } from '../components/document-viewer';
 import { SignaturePad } from '../components/signature-pad';
 import {
-  EXPERIENCE as EXP,
-  INDEMNIFICATION,
+  useStore,
   SCHOOL_ADDENDUMS,
   FORM_FIELDS,
   getSlipByToken,
   getStudentById,
   getGuardian,
   getInvById,
+  getExperienceById,
 } from '../lib/store';
 import type { PaymentOption } from '../lib/types';
 
@@ -37,11 +37,14 @@ export default function ParentPage() {
   const { t, i18n } = useTranslation();
   const [step, setStep] = useState(0);
 
+  const { experiences, invitations, students: allStudents, guardians: allGuardians, slips: allSlips } = useStore();
+
   // ── Data lookup ──
-  const slip = getSlipByToken(token ?? '');
-  const student = slip ? getStudentById(slip.sid) : undefined;
-  const guardian = student ? getGuardian(student.id) : undefined;
-  const inv = slip ? getInvById(slip.inv) : undefined;
+  const slip = getSlipByToken(token ?? '', allSlips);
+  const student = slip ? getStudentById(slip.sid, allStudents) : undefined;
+  const guardian = student ? getGuardian(student.id, allGuardians) : undefined;
+  const inv = slip ? getInvById(slip.inv, invitations) : undefined;
+  const exp = inv ? getExperienceById(inv.expId, experiences) : undefined;
   const addendum = inv ? SCHOOL_ADDENDUMS[inv.id] : undefined;
 
   // ── Form state ──
@@ -76,7 +79,7 @@ export default function ParentPage() {
   }, [student, guardian]);
 
   // ── Not found ──
-  if (!slip || !student || !guardian || !inv) {
+  if (!slip || !student || !guardian || !inv || !exp) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white p-6">
         <div className="text-center">
@@ -88,7 +91,7 @@ export default function ParentPage() {
     );
   }
 
-  const costDollars = (EXP.cents / 100).toFixed(2);
+  const costDollars = (exp.cents / 100).toFixed(2);
   const stuName = `${student.f} ${student.l}`;
 
   const setField = (id: string, val: string) =>
@@ -156,13 +159,13 @@ export default function ParentPage() {
 
             {/* Experience card */}
             <Card className="p-5">
-              <h3 className="font-bold text-gray-900 mb-2">{EXP.title}</h3>
+              <h3 className="font-bold text-gray-900 mb-2">{exp.title}</h3>
               <div className="space-y-1 text-sm text-gray-600">
-                <p>📅 {EXP.date}</p>
-                <p>🕘 {EXP.time}</p>
-                <p>📍 {EXP.loc}</p>
+                <p>📅 {exp.date}</p>
+                <p>🕘 {exp.time}</p>
+                <p>📍 {exp.loc}</p>
               </div>
-              <p className="text-sm text-gray-500 mt-3 leading-relaxed">{EXP.desc}</p>
+              <p className="text-sm text-gray-500 mt-3 leading-relaxed">{exp.desc}</p>
             </Card>
 
             {/* Form fields */}
@@ -184,7 +187,7 @@ export default function ParentPage() {
                     <DocumentViewer
                       key={field.id}
                       title={field.label}
-                      content={INDEMNIFICATION}
+                      content={exp.indemnification}
                       required
                     />
                   );
