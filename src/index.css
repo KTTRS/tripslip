@@ -1,18 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bus: #FBC251;
-  --color-bus-dark: #F5B740;
-  --color-bus-light: #FEF3D9;
-  --color-brand-orange: #F45B0B;
-  --color-charcoal: #313735;
-  --color-mint: #F1FBFC;
-  --color-ts-blue: #4A7BF7;
+  /* ── Brand Yellow Scale ── */
+  --color-bus: #FFD100;
+  --color-bus-dark: #FFBB00;
+  --color-bus-light: #FFF8CC;
+  --color-bus-bright: #FFE040;
+  --color-bus-deep: #CC9A00;
+
+  /* ── Neutrals ── */
+  --color-charcoal: #0A0A0A;
+  --color-charcoal-soft: #1A1A1A;
+  --color-charcoal-mid: #2E2E2E;
+
+  /* ── Accent Colors ── */
+  --color-ts-green: #00B050;
+  --color-ts-red: #E63830;
+  --color-ts-blue: #0055CC;
   --color-ts-lavender: #C4A1E0;
-  --color-ts-green: #4A8C6F;
   --color-ts-pink: #F4B4C8;
   --color-ts-star: #F9C74F;
-  --color-ts-red: #E84545;
+
+  /* ── Legacy aliases ── */
+  --color-brand-orange: #F45B0B;
+  --color-mint: #F1FBFC;
+
+  /* ── Font Families ── */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'Space Mono', monospace;
 }
 
 html {
@@ -22,16 +38,40 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
+  color: #0A0A0A;
 }
 
 /* Bold selection color */
 ::selection {
-  background: #FBC251;
+  background: #FFD100;
   color: #000;
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #FBC251; border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: #FFD100; border-radius: 999px; }
+
+/* Signature offset shadow */
+.shadow-offset {
+  box-shadow: 5px 5px 0px #0A0A0A;
+}
+
+.shadow-offset-yellow {
+  box-shadow: 5px 5px 0px #FFD100;
+}
+
+/* Bold brand border */
+.border-brand {
+  border: 2.5px solid #0A0A0A;
+}
+
+/* Bounce hover animation (card/button signature) */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+.hover-lift:hover {
+  transform: translate(-4px, -4px);
+  box-shadow: 8px 8px 0px #0A0A0A;
+}

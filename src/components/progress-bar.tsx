@@ -7,9 +7,9 @@ export function ProgressBar({ value, total }: { value: number; total: number }) 
         <span className="text-black/50 font-medium">
           {value} of {total}
         </span>
-        <span className="font-black text-black">{pct}%</span>
+        <span className="font-display font-black text-black">{pct}%</span>
       </div>
-      <div className="w-full bg-black/10 rounded-full h-3 overflow-hidden">
+      <div className="w-full bg-black/10 rounded-full h-3 overflow-hidden border-[2px] border-black">
         <div
           className={`h-full rounded-full transition-all duration-1000 ${
             pct === 100 ? 'bg-ts-green' : 'bg-bus'

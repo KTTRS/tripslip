@@ -12,15 +12,15 @@ export function Input({ label, err, children, required: rq, className = '', ...p
       {label && (
         <label className="block text-sm font-bold text-black">
           {label}
-          {rq && <span className="text-bus ml-1">*</span>}
+          {rq && <span className="text-ts-red ml-1">*</span>}
         </label>
       )}
       {children || (
         <input
           required={rq}
-          className={`w-full px-4 py-3 rounded-xl border-2 ${
-            err ? 'border-ts-red ring-1 ring-ts-red' : 'border-black/10'
-          } bg-white focus:outline-none focus:border-bus focus:ring-2 focus:ring-bus/30 text-black placeholder-black/30 transition-all font-medium ${className}`}
+          className={`w-full px-4 py-3 rounded-lg border-[2.5px] ${
+            err ? 'border-ts-red focus:shadow-[0_0_0_3px_rgba(230,56,48,0.18)]' : 'border-black'
+          } bg-white focus:outline-none focus:shadow-[0_0_0_3px_#FFD100] text-black placeholder-black/30 transition-all font-medium ${className}`}
           {...props}
         />
       )}
