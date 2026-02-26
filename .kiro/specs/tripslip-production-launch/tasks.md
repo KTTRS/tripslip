@@ -592,34 +592,34 @@ The tasks are organized into 10 phases matching the requirements structure, with
 
 ## Phase 7: Deployment and CI/CD
 
-- [-] 31. Deploy applications to Vercel
-  - [ ] 31.1 Create Vercel projects
+- [x] 31. Deploy applications to Vercel
+  - [x] 31.1 Create Vercel projects
     - Create 5 Vercel projects (landing, parent, teacher, venue, school)
     - Configure custom domains for each application
     - Configure DNS records
     - _Requirements: 24.1, 24.2, 24.3_
   
-  - [ ] 31.2 Configure Vercel environment
+  - [x] 31.2 Configure Vercel environment
     - Set environment variables for each application
     - Configure build settings (build command, output directory)
     - Verify SSL certificates are active
     - _Requirements: 24.4, 24.5, 24.6_
   
-  - [ ] 31.3 Set up deployment environments
+  - [x] 31.3 Set up deployment environments
     - Configure automatic deployments from main branch
     - Create staging environment
     - Verify all applications load successfully
     - _Requirements: 24.7, 24.8, 24.9_
 
-- [ ] 32. Configure CI/CD pipeline
-  - [ ] 32.1 Set up GitHub Actions workflow
+- [x] 32. Configure CI/CD pipeline
+  - [x] 32.1 Set up GitHub Actions workflow
     - Configure CI workflow for pull requests
     - Run linting checks on every PR
     - Run type checking on every PR
     - Run unit tests on every PR
     - _Requirements: 25.1, 25.2, 25.3, 25.4_
   
-  - [ ] 32.2 Configure automated deployments
+  - [x] 32.2 Configure automated deployments
     - Prevent merging if checks fail
     - Auto-deploy to staging on merge to develop
     - Auto-deploy to production on merge to main
@@ -627,7 +627,7 @@ The tasks are organized into 10 phases matching the requirements structure, with
     - Configure GitHub Actions secrets
     - _Requirements: 25.5, 25.6, 25.7, 25.8, 25.9_
 
-- [ ] 33. Checkpoint - Verify deployment pipeline
+- [x] 33. Checkpoint - Verify deployment pipeline
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Phase 8: Testing and Quality Assurance
