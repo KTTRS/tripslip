@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@tripslip/ui'
+import { Card, CardHeader, CardTitle, CardDescription } from '@tripslip/ui'
 
 const features = [
   {
