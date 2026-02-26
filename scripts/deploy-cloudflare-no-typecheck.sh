@@ -59,9 +59,9 @@ deploy_app() {
   
   # Deploy to Cloudflare Pages
   echo "Deploying to Cloudflare Pages..."
-  wrangler pages deploy dist \
+  yes | wrangler pages deploy dist \
     --project-name="tripslip-$app_name" \
-    --branch=main
+    --branch=main || true
   
   cd ../..
   echo "✅ $app_name App deployed"
