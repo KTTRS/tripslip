@@ -1,0 +1,117 @@
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../contexts/AuthContext'
+
+export interface UpcomingBooking {
+  id: string
+  tripDate: string
+  tripTime: string | null
+  studentCount: number
+  status: string
+  experience: {
+    id: string
+    title: string
+  }
+  teacher: {
+    firstName: string
+    lastName: string
+  }
+  school: {
+    name: string
+  } | null
+}
+
+export function useUpcomingBookings(limit: number = 10) {
+  const [bookings, setBookings] = useState<UpcomingBooking[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (!user) {
+      setLoading(false)
+      return
+    }
+
+    fetchUpcomingBookings()
+  }, [user, limit])
+
+  async function fetchUpcomingBookings() {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Get venue_id for current user
+      const { data: venueUser, error: venueError } = await supabase
+        .from('venue_users')
+        .select('venue_id')
+        .eq('user_id', user!.id)
+        .single()
+
+      if (venueError) throw venueError
+      if (!venueUser) throw new Error('Venue not found for user')
+
+      const venueId = venueUser.venue_id
+
+      // Fetch upcoming trips
+      const today = new Date().toISOString().split('T')[0]
+      
+      const { data: trips, error: tripsError } = await supabase
+        .from('trips')
+        .select(`
+          id,
+          trip_date,
+          trip_time,
+          student_count,
+          status,
+          experience:experiences!inner(
+            id,
+            title,
+            venue_id
+          ),
+          teacher:teachers(
+            first_name,
+            last_name,
+            school:schools(
+              name
+            )
+          )
+        `)
+        .eq('experience.venue_id', venueId)
+        .gte('trip_date', today)
+        .order('trip_date', { ascending: true })
+        .order('trip_time', { ascending: true })
+        .limit(limit)
+
+      if (tripsError) throw tripsError
+
+      const formattedBookings: UpcomingBooking[] = trips?.map(trip => ({
+        id: trip.id,
+        tripDate: trip.trip_date,
+        tripTime: trip.trip_time,
+        studentCount: trip.student_count,
+        status: trip.status,
+        experience: {
+          id: trip.experience.id,
+          title: trip.experience.title
+        },
+        teacher: {
+          firstName: trip.teacher?.first_name || 'Unknown',
+          lastName: trip.teacher?.last_name || 'Teacher'
+        },
+        school: trip.teacher?.school ? {
+          name: trip.teacher.school.name
+        } : null
+      })) || []
+
+      setBookings(formattedBookings)
+    } catch (err) {
+      console.error('Error fetching upcoming bookings:', err)
+      setError(err instanceof Error ? err.message : 'Failed to fetch upcoming bookings')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return { bookings, loading, error, refetch: fetchUpcomingBookings }
+}

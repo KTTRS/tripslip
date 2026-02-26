@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+
+    /* Path mapping for monorepo packages */
+    "baseUrl": ".",
+    "paths": {
+      "@tripslip/ui": ["./packages/ui/src"],
+      "@tripslip/database": ["./packages/database/src"],
+      "@tripslip/auth": ["./packages/auth/src"],
+      "@tripslip/i18n": ["./packages/i18n/src"],
+      "@tripslip/utils": ["./packages/utils/src"]
+    }
+  }
+}

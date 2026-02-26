@@ -1,156 +1,156 @@
-# TripSlip
+# TripSlip Platform
 
-Digital permission slips that actually get signed. Built for **Junior Achievement of Southeastern Michigan**.
+Digital field trip management platform connecting venues, schools, teachers, and parents. Built with a modern monorepo architecture using Turborepo.
 
-TripSlip replaces paper permission slips with a mobile-first workflow: JA creates experiences, teachers manage rosters, and parents sign + pay from a single SMS link.
+## Overview
 
-## How It Works
+TripSlip is a multi-application platform that streamlines the field trip experience:
+
+- **Landing App** - Public marketing website (tripslip.com)
+- **Venue App** - Venue management and experience creation (venue.tripslip.com)
+- **School App** - School/district administration (school.tripslip.com)
+- **Teacher App** - Trip planning and roster management (teacher.tripslip.com)
+- **Parent App** - Permission slips and payments (parent.tripslip.com)
+
+All applications share a unified Supabase backend with flexible authentication patterns and support for English, Spanish, and Arabic.
+
+## Monorepo Structure
 
 ```
-JA Dashboard → Teacher → Parent → Auto-Report
+tripslip-monorepo/
+├── apps/                    # Five separate web applications
+│   ├── landing/            # Public marketing site
+│   ├── venue/              # Venue management app
+│   ├── school/             # School/district admin app
+│   ├── teacher/            # Teacher trip management app
+│   └── parent/             # Parent permission slip app
+├── packages/               # Shared packages
+│   ├── ui/                 # Shared Radix UI components
+│   ├── database/           # Supabase client and types
+│   ├── auth/               # Authentication utilities
+│   ├── i18n/               # Internationalization (EN/ES/AR)
+│   └── utils/              # Shared utility functions
+├── supabase/               # Backend configuration
+│   ├── migrations/         # Database migrations
+│   ├── functions/          # Edge functions
+│   └── storage/            # Storage bucket configs
+├── turbo.json              # Turborepo configuration
+└── package.json            # Root workspace configuration
 ```
-
-1. **JA Admin** creates field trip experiences with indemnification documents
-2. **Teachers** import student rosters (CSV) and send permission slips
-3. **Parents** receive an SMS link, review the waiver, sign on their phone, and pay
-4. **Reports** update in real-time — completion rates, payments, fund donations
-
-## Features
-
-- **4-step parent flow** — form, signature capture, payment, confirmation
-- **Multi-payment** — Card, Cash App, Venmo, Zelle, Chime, Apple Pay, Google Pay
-- **No Student Left Behind** — financial assistance option with TripSlip Field Trip Fund
-- **Bilingual** — English and Spanish (auto-switches based on guardian preference)
-- **School addendums** — per-school supplemental permission documents
-- **CSV import** — bulk student/guardian roster upload
-- **Real-time dashboard** — completion metrics, payment tracking, fund totals
-- **Supabase backend** — PostgreSQL with Row Level Security, falls back to demo data
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
+| Monorepo | Turborepo |
 | Framework | React 19 + TypeScript |
+| Build Tool | Vite 7 |
 | Routing | React Router 7 |
-| State | Zustand |
+| UI Components | Radix UI |
 | Styling | Tailwind CSS 4 |
-| Backend | Supabase (PostgreSQL) |
-| i18n | i18next |
-| Signature | react-signature-canvas |
-| Build | Vite 7 |
+| State Management | Zustand |
+| Backend | Supabase (PostgreSQL, Auth, Storage, Edge Functions) |
+| Payments | Stripe |
+| i18n | i18next with react-i18next |
+| Deployment | Vercel/Netlify (frontend), Supabase (backend) |
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20+
-- npm or yarn
+- Node.js 18+ 
+- npm 9+
 
-### Install & Run
+### Installation
 
 ```bash
+# Install dependencies
 npm install
+
+# Copy environment variables
+cp .env.example .env
+# Edit .env with your Supabase and Stripe keys
+```
+
+### Development
+
+```bash
+# Run all apps in development mode
 npm run dev
+
+# Run specific app
+npm run dev --filter=@tripslip/landing
+npm run dev --filter=@tripslip/venue
+npm run dev --filter=@tripslip/teacher
 ```
 
-The app runs at `http://localhost:5173` with pre-loaded demo data (3 experiences, 6 schools, 15 students).
-
-### Connect Supabase (optional)
-
-1. Create a [Supabase](https://supabase.com) project
-2. Run the migrations:
-   ```bash
-   # Using Supabase CLI
-   supabase db push
-   # Or manually run:
-   #   supabase/migrations/00001_initial.sql
-   #   supabase/migrations/00002_add_indemnification.sql
-   ```
-3. Optionally seed demo data:
-   ```bash
-   psql $DATABASE_URL < supabase/seed.sql
-   ```
-4. Copy `.env.example` to `.env` and fill in your keys:
-   ```
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-   ```
-5. Restart the dev server — TripSlip will load from Supabase instead of demo data
-
-### Build for Production
+### Build
 
 ```bash
+# Build all apps
 npm run build
+
+# Build specific app
+npm run build --filter=@tripslip/landing
 ```
 
-Output goes to `dist/`. Deploy to any static host (Vercel, Netlify, Cloudflare Pages).
-
-## Deploy
-
-### Vercel (recommended)
+### Lint
 
 ```bash
-npm i -g vercel
-vercel
+# Lint all packages
+npm run lint
+
+# Lint specific package
+npm run lint --filter=@tripslip/ui
 ```
 
-Or connect your GitHub repo in the Vercel dashboard — it auto-detects Vite.
+### Test
 
-Set environment variables in the Vercel project settings:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+```bash
+# Run all tests
+npm run test
 
-### Netlify
-
-Push to GitHub and import in Netlify. Build settings:
-- **Build command:** `npm run build`
-- **Publish directory:** `dist`
-
-A `netlify.toml` is included for SPA routing.
-
-## Project Structure
-
-```
-src/
-├── pages/
-│   ├── home.tsx          # Landing page with entry points
-│   ├── dashboard.tsx     # JA admin — experiences, schools, metrics
-│   ├── teacher.tsx       # Teacher — roster, forms, send slips
-│   └── parent.tsx        # Parent — 4-step sign + pay flow
-├── components/
-│   ├── ui/               # Button, Card, Badge, Input
-│   ├── signature-pad.tsx # Canvas signature capture
-│   ├── document-viewer.tsx
-│   ├── metric-card.tsx
-│   └── progress-bar.tsx
-├── lib/
-│   ├── store.ts          # Zustand state + Supabase sync
-│   ├── db.ts             # Supabase CRUD operations
-│   ├── supabase.ts       # Client initialization
-│   └── types.ts          # TypeScript interfaces
-├── i18n/
-│   ├── index.ts          # i18next config
-│   └── locales/          # en.json, es.json
-├── App.tsx               # Router + loading screen
-├── main.tsx              # Entry point
-└── index.css             # Tailwind theme + custom colors
-
-supabase/
-├── migrations/
-│   ├── 00001_initial.sql           # Tables, indexes, RLS
-│   └── 00002_add_indemnification.sql
-└── seed.sql              # Demo data
+# Run tests for specific package
+npm run test --filter=@tripslip/database
 ```
 
-## Demo Routes
+## Environment Variables
 
-| Route | View |
-|-------|------|
-| `/` | Landing page |
-| `/dashboard` | JA admin dashboard |
-| `/t/i0` | Teacher view (Cass Tech) |
-| `/p/tok-s4` | Parent permission slip (DeShawn Mitchell) |
+See `.env.example` for required environment variables:
+
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `VITE_STRIPE_PUBLISHABLE_KEY` - Your Stripe publishable key
+- Application URLs for each of the five apps
+
+## Deployment
+
+Each application is deployed independently:
+
+- **Landing**: `tripslip.com`
+- **Venue**: `venue.tripslip.com`
+- **School**: `school.tripslip.com`
+- **Teacher**: `teacher.tripslip.com`
+- **Parent**: `parent.tripslip.com`
+
+All apps share a single Supabase backend for data consistency.
+
+## Key Features
+
+- **Multi-Application Architecture** - Five independent apps sharing common packages
+- **Flexible Authentication** - Required auth for venues, optional for teachers/parents
+- **Payment Processing** - Stripe integration with split payments and refunds
+- **Multi-Language Support** - English, Spanish, and Arabic with RTL support
+- **Document Management** - PDF generation, secure storage, medical form encryption
+- **Compliance** - FERPA compliance, audit trails, data privacy controls
+- **Notifications** - Email, SMS, and in-app notifications
+
+## Documentation
+
+- [Requirements](.kiro/specs/tripslip-platform-architecture/requirements.md)
+- [Technical Design](.kiro/specs/tripslip-platform-architecture/design.md)
+- [Implementation Tasks](.kiro/specs/tripslip-platform-architecture/tasks.md)
 
 ## License
 
-Private — Junior Achievement of Southeastern Michigan
+Private - All rights reserved

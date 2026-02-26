@@ -1,0 +1,19 @@
+{
+  "name": "@tripslip/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.97.0",
+    "@tripslip/database": "file:../database"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
+}
