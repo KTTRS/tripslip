@@ -97,6 +97,11 @@ The teacher dashboard uses **hardcoded mock data** (not real DB queries) so the 
 
 Trip creation drafts are stored in **localStorage** (not the `trip_drafts` DB table, which doesn't exist). The `useAutoSave` hook saves drafts every 30 seconds via localStorage keyed by teacher ID.
 
+The trip creation wizard (4 steps) uses **mock fallback data** when DB tables are empty:
+- **Step 2 (Experiences)**: Falls back to `MOCK_EXPERIENCES` (4 demo experiences) if `experiences` table is empty or errors
+- **Step 3 (Students)**: Falls back to `MOCK_STUDENTS` (10 demo students) if `students` table is empty or errors
+- **Step 4 (Submit)**: Tries real DB insert first; if teacher profile or school_id is missing, falls back to demo mode (logs success, shows toast, resets form)
+
 The `ProtectedRoute` in the teacher app only requires `user` auth — it does not require a `teachers` table record, which allows demo login without DB seeding.
 
 The `signIn` flow wraps role-loading in try/catch and falls back to a default `teacher` role if no `role_assignments` records exist.

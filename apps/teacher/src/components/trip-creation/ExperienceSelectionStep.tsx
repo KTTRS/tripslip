@@ -12,6 +12,69 @@ import { Search, MapPin, Calendar, DollarSign, Check } from 'lucide-react';
 
 type Experience = Tables<'experiences'>;
 
+const MOCK_EXPERIENCES: Experience[] = [
+  {
+    id: 'exp-001',
+    venue_id: 'venue-001',
+    title: 'Science Museum Discovery Tour',
+    description: 'An interactive tour exploring physics, chemistry, and biology exhibits with hands-on experiments.',
+    location: 'National Science Museum, 123 Discovery Blvd',
+    event_date: '2026-04-15',
+    event_time: '09:30',
+    cost_cents: 1500,
+    max_students: 35,
+    min_students: 10,
+    status: 'active',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  } as Experience,
+  {
+    id: 'exp-002',
+    venue_id: 'venue-002',
+    title: 'Nature Center Wildlife Walk',
+    description: 'Guided nature walk through wetlands and forest trails with wildlife observation stations.',
+    location: 'Green Valley Nature Center, 456 Forest Rd',
+    event_date: '2026-04-22',
+    event_time: '10:00',
+    cost_cents: 1200,
+    max_students: 30,
+    min_students: 8,
+    status: 'active',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  } as Experience,
+  {
+    id: 'exp-003',
+    venue_id: 'venue-003',
+    title: 'Art Gallery Workshop',
+    description: 'Explore modern art exhibits followed by a hands-on painting workshop with local artists.',
+    location: 'City Art Gallery, 789 Creative Ave',
+    event_date: '2026-05-01',
+    event_time: '11:00',
+    cost_cents: 2000,
+    max_students: 25,
+    min_students: 5,
+    status: 'active',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  } as Experience,
+  {
+    id: 'exp-004',
+    venue_id: 'venue-004',
+    title: 'Historical Farm Experience',
+    description: 'Step back in time with farming activities, butter churning, and a lesson on agricultural history.',
+    location: 'Heritage Farm, 321 Country Lane',
+    event_date: '2026-05-10',
+    event_time: '09:00',
+    cost_cents: 1000,
+    max_students: 40,
+    min_students: 15,
+    status: 'active',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-01-01T00:00:00Z',
+  } as Experience,
+];
+
 export function ExperienceSelectionStep() {
   const { selectedExperience, setSelectedExperience, nextStep, prevStep } = useTripCreationStore();
   
@@ -39,11 +102,17 @@ export function ExperienceSelectionStep() {
       
       if (error) throw error;
       
-      setExperiences(data || []);
-      setFilteredExperiences(data || []);
+      if (data && data.length > 0) {
+        setExperiences(data);
+        setFilteredExperiences(data);
+      } else {
+        setExperiences(MOCK_EXPERIENCES);
+        setFilteredExperiences(MOCK_EXPERIENCES);
+      }
     } catch (error) {
       console.error('Error fetching experiences:', error);
-      toast.error('Failed to load experiences');
+      setExperiences(MOCK_EXPERIENCES);
+      setFilteredExperiences(MOCK_EXPERIENCES);
     } finally {
       setLoading(false);
     }
