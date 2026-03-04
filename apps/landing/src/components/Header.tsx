@@ -1,4 +1,5 @@
 import { Button } from '@tripslip/ui'
+import { getAppUrl } from '../utils/appUrls'
 
 export default function Header() {
   return (
@@ -17,12 +18,12 @@ export default function Header() {
           <a href="#features" className="text-gray-700 hover:text-black transition-colors">
             Features
           </a>
-          <a href="#about" className="text-gray-700 hover:text-black transition-colors">
-            About
+          <a href="/apps" className="text-gray-700 hover:text-black transition-colors">
+            Apps
           </a>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => window.location.href = 'https://teacher.tripslip.com'}>
+          <Button variant="ghost" onClick={() => window.location.href = getAppUrl('teacher')}>
             Sign In
           </Button>
           <Button 

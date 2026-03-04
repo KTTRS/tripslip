@@ -7,11 +7,11 @@ A multi-app platform for managing school field trips. Includes digital permissio
 Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared packages.
 
 ### Apps
-- `apps/landing` — Public marketing site (port 5000, primary Replit app)
-- `apps/parent` — Parent portal (port 3003)
-- `apps/school` — School admin portal (port 3004)
-- `apps/teacher` — Teacher portal (port 3002)
+- `apps/landing` — Public marketing site (port 5000, primary Replit webview)
 - `apps/venue` — Venue management portal (port 3001)
+- `apps/teacher` — Teacher portal (port 3002)
+- `apps/parent` — Parent portal (port 3003)
+- `apps/school` — School admin portal (port 4200)
 
 ### Packages
 - `packages/auth` — Supabase auth helpers
@@ -31,27 +31,36 @@ Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared pack
 
 ## Running the Project
 
-The Replit workflow runs: `npm run dev --workspace=apps/landing`
+The Replit workflow runs `npx turbo run dev`, which starts all 5 apps simultaneously.
 
-This starts the landing page on port 5000. To run other apps locally:
-```
-npm run dev --workspace=apps/parent    # port 3003
-npm run dev --workspace=apps/venue     # port 3001
-npm run dev --workspace=apps/teacher   # port 3002
-npm run dev --workspace=apps/school    # port 3004
-```
+The landing page (port 5000) is the main entry point and has an /apps page that links to all other portals.
+
+### App URLs (via Replit dev domain)
+- Landing: port 5000 (shown in webview)
+- Venue: port 3001
+- Teacher: port 3002
+- Parent: port 3003
+- School: port 4200
+
+The `apps/landing/src/utils/appUrls.ts` utility dynamically generates correct URLs for each app based on the Replit domain.
 
 ## Environment Variables
 
 Required env vars (see `.env.example`):
 - `VITE_SUPABASE_URL` — Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` — Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (server-only)
+- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (server-only, stored as secret)
 - `VITE_STRIPE_PUBLISHABLE_KEY` — Stripe publishable key
-- `STRIPE_SECRET_KEY` — Stripe secret key (server-only)
-- `VITE_GOOGLE_MAPS_API_KEY` — Google Maps API key (optional)
+- `STRIPE_SECRET_KEY` — Stripe secret key (server-only, stored as secret)
+- `TWILIO_ACCOUNT_SID` — Twilio account SID (stored as secret)
+- `TWILIO_AUTH_TOKEN` — Twilio auth token (stored as secret)
+- `TWILIO_PHONE_NUMBER` — Twilio phone number (stored as secret)
+- `CUSTOMERIO_API_KEY` — Customer.io API key (stored as secret)
 
 ## Replit Migration Notes
-- All vite configs updated to bind `host: '0.0.0.0'` for Replit compatibility
-- Landing app changed from port 3000 to port 5000 (required for Replit webview)
-- Node.js upgraded from 18 to 20 (required by some dependencies)
+- All vite configs bind `host: '0.0.0.0'` and `allowedHosts: true` for Replit compatibility
+- Landing app on port 5000 (required for Replit webview)
+- School app moved from port 3004 to 4200 (3004 not a supported Replit port)
+- Node.js upgraded from 18 to 20 (required by dependencies)
+- Vercel/Netlify config files removed
+- Added /apps hub page on landing site for navigating between portals
