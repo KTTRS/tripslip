@@ -76,3 +76,15 @@ Since all apps run on the same domain, each app uses a unique `storageKey` for i
 - Landing: `sb-tripslip-landing-auth` (in `apps/landing/src/lib/supabase.ts`)
 
 The default `supabase` export from `@tripslip/database` is lazy-initialized (via Proxy) to prevent duplicate GoTrueClient instances during HMR. The `@tripslip/auth` shared package exposes `supabaseClient` through the auth context so child components don't need to create new clients.
+
+## Supabase RLS & Signup
+
+Migration `supabase/migrations/20250304000001_fix_rbac_signup_policies.sql` must be applied to Supabase. It adds:
+- `assign_user_role()` RPC (SECURITY DEFINER) for role assignment during signup
+- `create_teacher_on_signup()` RPC (SECURITY DEFINER) for creating teacher records
+- `list_schools_for_signup()` RPC for school selector (public access)
+- INSERT/UPDATE/DELETE policies on `active_role_context` (user self-management)
+- Public read policy on `schools` table for signup form
+- `is_active` column and unique `user_id` index on `teachers` table
+
+The signup flow uses RPC functions instead of direct table inserts to bypass RLS safely.

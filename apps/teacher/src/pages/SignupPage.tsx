@@ -83,21 +83,17 @@ export default function SignupPage() {
         },
       });
 
-      // Create teacher record
       const { error: teacherError } = await (supabase as any)
-        .from('teachers')
-        .insert({
-          user_id: result.user.id,
-          school_id: formData.schoolId,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          is_active: true,
+        .rpc('create_teacher_on_signup', {
+          p_user_id: result.user.id,
+          p_school_id: formData.schoolId,
+          p_first_name: formData.firstName,
+          p_last_name: formData.lastName,
+          p_email: formData.email,
         });
 
       if (teacherError) {
         console.error('Failed to create teacher record:', teacherError);
-        // Continue anyway - the user account was created
       }
 
       // Redirect to email verification notice

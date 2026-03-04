@@ -78,15 +78,12 @@ export class SupabaseRBACAuthService implements RBACAuthService {
       throw new AuthError('Sign up failed: no user returned', 'SIGNUP_FAILED', 500);
     }
 
-    // Create role assignment
     const { error: assignmentError } = await (this.supabase as any)
-      .from('user_role_assignments')
-      .insert({
-        user_id: data.user.id,
-        role_id: roleData.id,
-        organization_type,
-        organization_id,
-        is_active: true,
+      .rpc('assign_user_role', {
+        p_user_id: data.user.id,
+        p_role_name: role,
+        p_organization_type: organization_type,
+        p_organization_id: organization_id,
       });
 
     if (assignmentError) {
