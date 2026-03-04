@@ -27,10 +27,9 @@ export function useLoginTracker(
           return;
         }
 
-        // Update last_login_at timestamp
         const { error: updateError } = await supabase
           .from('teachers')
-          .update({ last_login_at: new Date().toISOString() })
+          .update({ updated_at: new Date().toISOString() })
           .eq('id', teacher.id);
 
         if (updateError) {

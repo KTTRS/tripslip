@@ -184,8 +184,6 @@ export class SupabaseRBACAuthService implements RBACAuthService {
    */
   private async updateJWTClaims(userId: string, activeRole: ActiveRoleContext): Promise<void> {
     try {
-      // Call database function to update user's app_metadata
-      // This function runs with elevated privileges (SECURITY DEFINER)
       const result = await (this.supabase as any).rpc('update_user_role_claims', {
         p_user_id: userId,
         p_role: activeRole.role_name,
@@ -193,20 +191,11 @@ export class SupabaseRBACAuthService implements RBACAuthService {
         p_organization_id: activeRole.organization_id
       });
 
-      // Check if result exists and has error property
       if (result && result.error) {
         console.error('Failed to update JWT claims:', result.error);
-        // Don't throw - active_role_context table is the source of truth
-      }
-
-      // Refresh the session to get updated JWT claims
-      const refreshResult = await this.supabase.auth.refreshSession();
-      if (refreshResult && refreshResult.error) {
-        console.error('Failed to refresh session:', refreshResult.error);
       }
     } catch (error) {
       console.error('Error updating JWT claims:', error);
-      // Don't throw - active_role_context table is the source of truth
     }
   }
 

@@ -86,13 +86,14 @@ export default function LoginPage({
     } catch (err: any) {
       console.error('Login error:', err);
       
-      // Use generic error message for security (don't reveal if email exists)
       if (err.message?.includes('Invalid login credentials') || 
           err.message?.includes('Invalid email or password') ||
           err.message?.includes('Authentication failed')) {
         setError('Invalid email or password');
       } else if (err.message?.includes('Email not confirmed')) {
         setError('Please verify your email address before logging in');
+      } else if (err.code === 'NO_ROLE_ASSIGNMENTS' || err.message?.includes('No role assignments')) {
+        setError('Your account does not have the required role for this application.');
       } else {
         setError('Failed to sign in. Please try again.');
       }

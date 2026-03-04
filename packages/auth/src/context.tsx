@@ -54,18 +54,19 @@ export function AuthProvider({ children, supabase }: AuthProviderProps) {
    */
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          await loadUserRoles(session.user.id);
+          setTimeout(() => {
+            loadUserRoles(session.user.id).finally(() => setLoading(false));
+          }, 0);
         } else {
           setRoleAssignments([]);
           setActiveRole(null);
+          setLoading(false);
         }
-
-        setLoading(false);
       }
     );
 
