@@ -66,3 +66,13 @@ Required env vars (see `.env.example`):
 - Node.js upgraded from 18 to 20
 - Vercel/Netlify config files removed
 - `packages/database` updated to use `import.meta.env` with `process.env` fallback
+
+## Supabase Auth Isolation
+Since all apps run on the same domain, each app uses a unique `storageKey` for its Supabase client to prevent GoTrueClient lock conflicts:
+- Teacher: `sb-tripslip-teacher-auth` (in `apps/teacher/src/lib/supabase.ts`)
+- Venue: `sb-tripslip-venue-auth` (in `apps/venue/src/lib/supabase.ts`)
+- Parent: `sb-tripslip-parent-auth` (in `apps/parent/src/lib/supabase.ts`)
+- School: `sb-tripslip-school-auth` (in `apps/school/src/lib/supabase.ts`)
+- Landing: `sb-tripslip-landing-auth` (in `apps/landing/src/lib/supabase.ts`)
+
+The default `supabase` export from `@tripslip/database` is lazy-initialized (via Proxy) to prevent duplicate GoTrueClient instances during HMR. The `@tripslip/auth` shared package exposes `supabaseClient` through the auth context so child components don't need to create new clients.

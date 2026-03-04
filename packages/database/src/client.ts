@@ -24,7 +24,8 @@ import type { Database } from './types';
  */
 export function createSupabaseClient(
   supabaseUrl: string,
-  supabaseAnonKey: string
+  supabaseAnonKey: string,
+  storageKey?: string
 ) {
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
@@ -38,6 +39,7 @@ export function createSupabaseClient(
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
+      ...(storageKey ? { storageKey } : {}),
     },
   });
 }

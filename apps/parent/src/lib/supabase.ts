@@ -5,11 +5,10 @@ if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KE
   throw new Error('Missing Supabase environment variables');
 }
 
-// Create Supabase client
 export const supabase = createSupabaseClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  'sb-tripslip-parent-auth'
 );
 
-// Create auth service
 export const authService = createAuthService(supabase);

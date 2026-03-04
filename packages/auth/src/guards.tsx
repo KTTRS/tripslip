@@ -9,7 +9,6 @@ import { useAuth } from './context';
 import { resendVerificationEmail } from './resend-verification';
 import type { UserRole } from './types';
 import { logger } from '@tripslip/utils';
-import { createSupabaseClient } from '@tripslip/database';
 
 /**
  * Props for ProtectedRoute component
@@ -138,7 +137,7 @@ export interface EmailVerificationGuardProps {
 export function EmailVerificationGuard({
   children,
 }: EmailVerificationGuardProps): JSX.Element {
-  const { isEmailVerified, user } = useAuth();
+  const { isEmailVerified, user, supabaseClient } = useAuth();
   const [showBanner, setShowBanner] = React.useState(true);
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
@@ -151,12 +150,7 @@ export function EmailVerificationGuard({
     setResendMessage(null);
 
     try {
-      const supabase = createSupabaseClient(
-        import.meta.env.VITE_SUPABASE_URL,
-        import.meta.env.VITE_SUPABASE_ANON_KEY
-      );
-
-      const result = await resendVerificationEmail(supabase, user.email);
+      const result = await resendVerificationEmail(supabaseClient, user.email);
       
       setResendMessage(result.message);
       setRemainingAttempts(result.remainingAttempts ?? null);

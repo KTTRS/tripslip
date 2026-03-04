@@ -259,6 +259,7 @@ export function AuthProvider({ children, supabase }: AuthProviderProps) {
     canAccessOrganization,
     isAuthenticated: !!user,
     isEmailVerified: !!user?.email_confirmed_at,
+    supabaseClient: supabase,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -3,7 +3,7 @@
  * Defines the shape of the authentication context for React applications
  */
 
-import type { User, Session } from '@tripslip/database';
+import type { User, Session, SupabaseClient } from '@tripslip/database';
 import type {
   SignUpParams,
   RoleAssignment,
@@ -102,4 +102,9 @@ export interface AuthContextType {
    * Whether the user's email is verified
    */
   isEmailVerified: boolean;
+
+  /**
+   * The Supabase client instance used by this auth context
+   */
+  supabaseClient: SupabaseClient;
 }

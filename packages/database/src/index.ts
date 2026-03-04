@@ -2,8 +2,7 @@
 export { createSupabaseClient } from './client';
 export type { SupabaseClient } from './client';
 
-// Default supabase client instance (for backward compatibility)
-import { createSupabaseClient } from './client';
+import { createSupabaseClient as _createSupabaseClient } from './client';
 const getEnv = (key: string) => {
   if (typeof import.meta !== 'undefined' && import.meta.env) {
     return (import.meta.env as Record<string, string>)[key] || '';
@@ -13,10 +12,24 @@ const getEnv = (key: string) => {
   }
   return '';
 };
-export const supabase = createSupabaseClient(
-  getEnv('VITE_SUPABASE_URL'),
-  getEnv('VITE_SUPABASE_ANON_KEY')
-);
+
+let _defaultClient: ReturnType<typeof _createSupabaseClient> | null = null;
+
+export const supabase = new Proxy({} as ReturnType<typeof _createSupabaseClient>, {
+  get(_target, prop, receiver) {
+    if (!_defaultClient) {
+      _defaultClient = _createSupabaseClient(
+        getEnv('VITE_SUPABASE_URL'),
+        getEnv('VITE_SUPABASE_ANON_KEY')
+      );
+    }
+    const value = Reflect.get(_defaultClient, prop, receiver);
+    if (typeof value === 'function') {
+      return value.bind(_defaultClient);
+    }
+    return value;
+  },
+});
 
 // Database types
 export type { Database, Json, Tables, TablesInsert, TablesUpdate } from './types';
