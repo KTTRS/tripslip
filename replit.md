@@ -90,3 +90,13 @@ Migration `supabase/migrations/20250304000001_fix_rbac_signup_policies.sql` must
 - `is_active` column and unique `user_id` index on `teachers` table
 
 The signup flow uses RPC functions instead of direct table inserts to bypass RLS safely.
+
+## Demo Mode / Mock Data
+
+The teacher dashboard uses **hardcoded mock data** (not real DB queries) so the demo works without requiring actual trip records. Mock trip IDs use valid UUIDs.
+
+Trip creation drafts are stored in **localStorage** (not the `trip_drafts` DB table, which doesn't exist). The `useAutoSave` hook saves drafts every 30 seconds via localStorage keyed by teacher ID.
+
+The `ProtectedRoute` in the teacher app only requires `user` auth — it does not require a `teachers` table record, which allows demo login without DB seeding.
+
+The `signIn` flow wraps role-loading in try/catch and falls back to a default `teacher` role if no `role_assignments` records exist.

@@ -26,6 +26,10 @@ export default function Hero() {
                 variant="outline" 
                 size="lg"
                 className="border-2 border-black"
+                onClick={() => {
+                  const el = document.getElementById('features');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
                 Watch Demo
               </Button>

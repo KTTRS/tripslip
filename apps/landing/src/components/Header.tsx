@@ -15,7 +15,7 @@ export default function Header() {
           <a href="/pricing" className="text-gray-700 hover:text-black transition-colors">
             Pricing
           </a>
-          <a href="#features" className="text-gray-700 hover:text-black transition-colors">
+          <a href="/#features" className="text-gray-700 hover:text-black transition-colors">
             Features
           </a>
           <a href="/apps" className="text-gray-700 hover:text-black transition-colors">

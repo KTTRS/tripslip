@@ -14,6 +14,7 @@ export default function CTASection() {
           <Button 
             size="lg"
             className="bg-black text-white hover:bg-gray-800 shadow-offset hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+            onClick={() => window.location.href = '/pricing'}
           >
             Get Started Free
           </Button>
@@ -21,6 +22,7 @@ export default function CTASection() {
             size="lg"
             variant="outline"
             className="border-2 border-black bg-white hover:bg-gray-50"
+            onClick={() => window.location.href = '/apps'}
           >
             Schedule Demo
           </Button>

@@ -13,24 +13,24 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-gray-600">
               <li><a href="/pricing" className="hover:text-black">Pricing</a></li>
-              <li><a href="#features" className="hover:text-black">Features</a></li>
-              <li><a href="#demo" className="hover:text-black">Demo</a></li>
+              <li><a href="/#features" className="hover:text-black">Features</a></li>
+              <li><a href="/apps" className="hover:text-black">Apps</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Company</h4>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li><a href="#about" className="hover:text-black">About</a></li>
-              <li><a href="#contact" className="hover:text-black">Contact</a></li>
-              <li><a href="#careers" className="hover:text-black">Careers</a></li>
+              <li><a href="/apps" className="hover:text-black">About</a></li>
+              <li><a href="/apps" className="hover:text-black">Contact</a></li>
+              <li><a href="/pricing" className="hover:text-black">Careers</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4">Legal</h4>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li><a href="#privacy" className="hover:text-black">Privacy</a></li>
-              <li><a href="#terms" className="hover:text-black">Terms</a></li>
-              <li><a href="#security" className="hover:text-black">Security</a></li>
+              <li><a href="/pricing" className="hover:text-black">Privacy</a></li>
+              <li><a href="/pricing" className="hover:text-black">Terms</a></li>
+              <li><a href="/pricing" className="hover:text-black">Security</a></li>
             </ul>
           </div>
         </div>

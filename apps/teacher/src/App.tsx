@@ -31,6 +31,14 @@ export default function App() {
           }
         />
         <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/trips/create"
           element={
             <ProtectedRoute>

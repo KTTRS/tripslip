@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { Tables } from '@tripslip/database';
 import { logger } from '@tripslip/utils';
-import { supabase } from '../lib/supabase';
+
 
 type Experience = Tables<'experiences'>;
 type Student = Tables<'students'>;
@@ -142,49 +142,32 @@ export const useTripCreationStore = create<TripCreationState>((set, get) => ({
         venueForms: state.venueForms,
       };
 
-      const { data, error } = await supabase
-        .from('trip_drafts')
-        .upsert({
-          teacher_id: teacherId,
-          draft_data: draftData,
-          last_saved_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
+      const draftKey = `tripslip_draft_${teacherId}`;
+      localStorage.setItem(draftKey, JSON.stringify(draftData));
       
       set({ 
         isDraft: true, 
-        draftId: data.id,
+        draftId: draftKey,
         lastSaved: new Date() 
       });
       
-      logger.info('Draft saved successfully', { draftId: data.id });
+      logger.info('Draft saved successfully', { draftId: draftKey });
     } catch (error) {
       logger.error('Failed to save draft', error as Error);
-      throw error;
     }
   },
   
   loadDraft: async (teacherId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('trip_drafts')
-        .select('*')
-        .eq('teacher_id', teacherId)
-        .single();
+      const draftKey = `tripslip_draft_${teacherId}`;
+      const stored = localStorage.getItem(draftKey);
       
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No draft found - this is not an error
-          logger.debug('No draft found for teacher', { teacherId });
-          return;
-        }
-        throw error;
+      if (!stored) {
+        logger.debug('No draft found for teacher', { teacherId });
+        return;
       }
       
-      const draft = data.draft_data as any;
+      const draft = JSON.parse(stored);
       
       set({
         currentStep: draft.currentStep || 1,
@@ -194,26 +177,21 @@ export const useTripCreationStore = create<TripCreationState>((set, get) => ({
         venueInfo: draft.venueInfo || null,
         venueForms: draft.venueForms || [],
         isDraft: true,
-        draftId: data.id,
-        lastSaved: new Date(data.last_saved_at),
+        draftId: draftKey,
+        lastSaved: new Date(),
         teacherId,
       });
       
-      logger.info('Draft loaded successfully', { draftId: data.id });
+      logger.info('Draft loaded successfully', { draftId: draftKey });
     } catch (error) {
       logger.error('Failed to load draft', error as Error);
-      throw error;
     }
   },
 
   clearDraft: async (teacherId: string) => {
     try {
-      const { error } = await supabase
-        .from('trip_drafts')
-        .delete()
-        .eq('teacher_id', teacherId);
-      
-      if (error) throw error;
+      const draftKey = `tripslip_draft_${teacherId}`;
+      localStorage.removeItem(draftKey);
       
       set({ 
         isDraft: false, 

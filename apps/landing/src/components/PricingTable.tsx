@@ -50,6 +50,15 @@ const plans = [
 ]
 
 export default function PricingTable() {
+  const getAppLink = (planName: string) => {
+    switch (planName) {
+      case 'Teacher': return '/teacher/signup';
+      case 'School': return '/school/signup';
+      case 'Venue': return '/venue/signup';
+      default: return '/apps';
+    }
+  };
+
   return (
     <section className="bg-white py-20 px-6">
       <div className="mx-auto max-w-7xl">
@@ -99,6 +108,7 @@ export default function PricingTable() {
                       : ''
                   }`}
                   variant={plan.highlighted ? 'default' : 'outline'}
+                  onClick={() => window.location.href = getAppLink(plan.name)}
                 >
                   {plan.cta}
                 </Button>

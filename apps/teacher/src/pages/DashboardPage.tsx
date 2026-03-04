@@ -6,7 +6,7 @@ import { Navigation } from '@tripslip/auth';
 
 const MOCK_TRIPS = [
   {
-    id: '1',
+    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567801',
     trip_date: '2026-03-18',
     trip_time: '09:00:00',
     status: 'confirmed',
@@ -24,7 +24,7 @@ const MOCK_TRIPS = [
     ],
   },
   {
-    id: '2',
+    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567802',
     trip_date: '2026-03-25',
     trip_time: '10:30:00',
     status: 'confirmed',
@@ -40,7 +40,7 @@ const MOCK_TRIPS = [
     ],
   },
   {
-    id: '3',
+    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567803',
     trip_date: '2026-04-10',
     trip_time: '08:00:00',
     status: 'pending',
@@ -52,7 +52,7 @@ const MOCK_TRIPS = [
     ],
   },
   {
-    id: '4',
+    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567804',
     trip_date: '2026-04-22',
     trip_time: '09:30:00',
     status: 'pending',
@@ -206,10 +206,10 @@ export default function DashboardPage() {
                 <Button className="shadow-offset" onClick={() => navigate('/trips/create')}>
                   + Create New Trip
                 </Button>
-                <Button variant="outline" className="border-2 border-black">
+                <Button variant="outline" className="border-2 border-black" onClick={() => { alert('Reminder emails sent to all parents with unsigned permission slips!'); }}>
                   Send Reminders
                 </Button>
-                <Button variant="outline" className="border-2 border-black">
+                <Button variant="outline" className="border-2 border-black" onClick={() => setStatusFilter('all')}>
                   View All Trips
                 </Button>
               </div>

@@ -46,26 +46,26 @@ export function TripCreationWizard() {
   const currentStepInfo = STEPS[currentStep - 1];
   const progress = (currentStep / STEPS.length) * 100;
   
-  // Load teacher ID and draft on mount
   useEffect(() => {
     const loadTeacherData = async () => {
       if (!user) return;
       
       try {
-        // Fetch teacher profile
         const { data: teacher } = await supabase
           .from('teachers')
           .select('id')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         if (teacher) {
           setTeacherId(teacher.id);
-          // Try to load existing draft
           await loadDraft(teacher.id);
+        } else {
+          setTeacherId(user.id);
         }
       } catch (error) {
         console.error('Error loading teacher data:', error);
+        setTeacherId(user.id);
       }
     };
     

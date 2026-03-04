@@ -49,6 +49,7 @@ export function PaymentSuccessPage() {
   const [slipData, setSlipData] = useState<PermissionSlipData | null>(null);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [downloading, setDownloading] = useState(false);
+  const [receiptError, setReceiptError] = useState<string | null>(null);
   const [parentName, setParentName] = useState<string>('');
 
   useEffect(() => {
@@ -153,7 +154,7 @@ export function PaymentSuccessPage() {
       downloadReceipt(pdf, latestPayment.id);
     } catch (err) {
       console.error('Error generating receipt:', err);
-      alert(t('payment.receiptError', 'Failed to generate receipt. Please try again.'));
+      setReceiptError(t('payment.receiptError', 'Failed to generate receipt. Please try again.'));
     } finally {
       setDownloading(false);
     }
@@ -322,8 +323,13 @@ export function PaymentSuccessPage() {
 
         {/* Action Buttons */}
         <div className="space-y-3">
+          {receiptError && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+              {receiptError}
+            </div>
+          )}
           <Button
-            onClick={handleDownloadReceipt}
+            onClick={() => { setReceiptError(null); handleDownloadReceipt(); }}
             variant="outline"
             className="w-full"
             size="lg"
