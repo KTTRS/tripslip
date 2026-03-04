@@ -32,3 +32,12 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[userenv]
+
+[userenv.shared]
+VITE_SUPABASE_URL = "https://yvzpgbhinxibebgeevcu.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2enBnYmhpbnhpYmViZ2VldmN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5MTEwNjgsImV4cCI6MjA4NzQ4NzA2OH0.LImihfOdUBdrgSnYa6m5kgvJB9gKJ-4a3FTcJrQXgaU"
+VITE_STRIPE_PUBLISHABLE_KEY = "pk_test_51T7GJaJUmzvyDO7zNJoLkNUg7mnI1pBnhWiD0lEidLlzn3yA1LASjx1TdgcCkdUvS95iSCrXXywK5TRIL25AOreE00wDc0ynLq"
+VITE_ENVIRONMENT = "development"
+NODE_ENV = "development"
