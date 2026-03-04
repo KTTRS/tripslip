@@ -1,101 +1,94 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
+import { Badge } from '@tripslip/ui/components/badge';
 import { useAuth } from '../contexts/AuthContext';
 import { Navigation } from '@tripslip/auth';
+import { supabase } from '../lib/supabase';
+import { MapPin, Calendar, Users, Plus, Clock, ArrowRight, Compass } from 'lucide-react';
 
-const MOCK_TRIPS = [
-  {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567801',
-    trip_date: '2026-03-18',
-    trip_time: '09:00:00',
-    status: 'confirmed',
-    student_count: 28,
-    experience: { title: 'Natural History Museum Tour', venue: { name: 'Smithsonian Museum' } },
-    permission_slips: [
-      { id: 's1', status: 'paid', signed_at: '2026-03-02T14:30:00Z', payments: [{ status: 'succeeded', amount_cents: 1500 }] },
-      { id: 's2', status: 'paid', signed_at: '2026-03-02T15:00:00Z', payments: [{ status: 'succeeded', amount_cents: 1500 }] },
-      { id: 's3', status: 'signed', signed_at: '2026-03-03T09:00:00Z', payments: [] },
-      { id: 's4', status: 'signed', signed_at: '2026-03-03T10:15:00Z', payments: [] },
-      { id: 's5', status: 'paid', signed_at: '2026-03-01T11:00:00Z', payments: [{ status: 'succeeded', amount_cents: 1500 }] },
-      { id: 's6', status: 'pending', signed_at: null, payments: [] },
-      { id: 's7', status: 'paid', signed_at: '2026-03-01T16:00:00Z', payments: [{ status: 'succeeded', amount_cents: 1500 }] },
-      { id: 's8', status: 'pending', signed_at: null, payments: [] },
-    ],
-  },
-  {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567802',
-    trip_date: '2026-03-25',
-    trip_time: '10:30:00',
-    status: 'confirmed',
-    student_count: 32,
-    experience: { title: 'Science Center Workshop', venue: { name: 'Discovery Science Center' } },
-    permission_slips: [
-      { id: 's9', status: 'paid', signed_at: '2026-03-03T08:00:00Z', payments: [{ status: 'succeeded', amount_cents: 2000 }] },
-      { id: 's10', status: 'signed', signed_at: '2026-03-03T12:00:00Z', payments: [] },
-      { id: 's11', status: 'pending', signed_at: null, payments: [] },
-      { id: 's12', status: 'paid', signed_at: '2026-03-02T09:30:00Z', payments: [{ status: 'succeeded', amount_cents: 2000 }] },
-      { id: 's13', status: 'pending', signed_at: null, payments: [] },
-      { id: 's14', status: 'paid', signed_at: '2026-03-01T14:00:00Z', payments: [{ status: 'succeeded', amount_cents: 2000 }] },
-    ],
-  },
-  {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567803',
-    trip_date: '2026-04-10',
-    trip_time: '08:00:00',
-    status: 'pending',
-    student_count: 25,
-    experience: { title: 'Botanical Garden Field Study', venue: { name: 'City Botanical Gardens' } },
-    permission_slips: [
-      { id: 's15', status: 'pending', signed_at: null, payments: [] },
-      { id: 's16', status: 'signed', signed_at: '2026-03-04T10:00:00Z', payments: [] },
-    ],
-  },
-  {
-    id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567804',
-    trip_date: '2026-04-22',
-    trip_time: '09:30:00',
-    status: 'pending',
-    student_count: 30,
-    experience: { title: 'Art Gallery Visit', venue: { name: 'Metropolitan Art Museum' } },
-    permission_slips: [],
-  },
-];
-
-const MOCK_ACTIVITIES = [
-  { id: 'a1', type: 'payment' as const, studentName: 'Emma Johnson', tripName: 'Natural History Museum Tour', timestamp: new Date(Date.now() - 25 * 60000).toISOString() },
-  { id: 'a2', type: 'signature' as const, studentName: 'Liam Chen', tripName: 'Science Center Workshop', timestamp: new Date(Date.now() - 45 * 60000).toISOString() },
-  { id: 'a3', type: 'payment' as const, studentName: 'Sophia Martinez', tripName: 'Natural History Museum Tour', timestamp: new Date(Date.now() - 2 * 3600000).toISOString() },
-  { id: 'a4', type: 'signature' as const, studentName: 'Noah Williams', tripName: 'Natural History Museum Tour', timestamp: new Date(Date.now() - 3 * 3600000).toISOString() },
-  { id: 'a5', type: 'payment' as const, studentName: 'Olivia Brown', tripName: 'Science Center Workshop', timestamp: new Date(Date.now() - 5 * 3600000).toISOString() },
-  { id: 'a6', type: 'signature' as const, studentName: 'Ava Davis', tripName: 'Botanical Garden Field Study', timestamp: new Date(Date.now() - 8 * 3600000).toISOString() },
-  { id: 'a7', type: 'payment' as const, studentName: 'James Wilson', tripName: 'Science Center Workshop', timestamp: new Date(Date.now() - 24 * 3600000).toISOString() },
-  { id: 'a8', type: 'signature' as const, studentName: 'Isabella Garcia', tripName: 'Natural History Museum Tour', timestamp: new Date(Date.now() - 26 * 3600000).toISOString() },
-];
+interface TripWithDetails {
+  id: string;
+  trip_date: string;
+  trip_time: string | null;
+  status: string;
+  student_count: number;
+  experience_id: string;
+  created_at: string;
+  experience?: {
+    title: string;
+    duration_minutes: number;
+    venue?: {
+      name: string;
+      address: any;
+    } | null;
+  } | null;
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { teacher, user, signOut, activeRole } = useAuth();
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [trips, setTrips] = useState<TripWithDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [studentCount, setStudentCount] = useState(0);
 
-  const filteredTrips = statusFilter === 'all'
-    ? MOCK_TRIPS
-    : MOCK_TRIPS.filter(t => t.status === statusFilter);
+  useEffect(() => {
+    fetchDashboardData();
+  }, [user]);
 
-  const allSlips = filteredTrips.flatMap(t => t.permission_slips);
-  const metrics = {
-    totalTrips: filteredTrips.length,
-    totalStudents: allSlips.length,
-    signedSlips: allSlips.filter(s => s.status === 'signed' || s.status === 'paid').length,
-    pendingPayments: allSlips.filter(s => s.status === 'signed' && !s.payments?.some(p => p.status === 'succeeded')).length,
+  const fetchDashboardData = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const { data: teacherRecord } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (teacherRecord) {
+        const { data: tripData } = await supabase
+          .from('trips')
+          .select('*, experience:experiences(title, duration_minutes, venue:venues(name, address))')
+          .eq('teacher_id', teacherRecord.id)
+          .order('trip_date', { ascending: true });
+
+        if (tripData) {
+          setTrips(tripData as TripWithDetails[]);
+        }
+
+        const { data: rosters } = await supabase
+          .from('rosters')
+          .select('id')
+          .eq('teacher_id', teacherRecord.id);
+
+        if (rosters && rosters.length > 0) {
+          const rosterIds = rosters.map(r => r.id);
+          const { count } = await supabase
+            .from('students')
+            .select('id', { count: 'exact', head: true })
+            .in('roster_id', rosterIds);
+          setStudentCount(count || 0);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const today = new Date().toISOString().split('T')[0];
-  const upcomingTrips = filteredTrips.filter(t => t.trip_date >= today).slice(0, 5);
+  const upcomingTrips = trips.filter(t => t.trip_date >= today);
+  const pastTrips = trips.filter(t => t.trip_date < today);
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   const formatTime = (timeStr: string | null) => {
@@ -103,224 +96,244 @@ export default function DashboardPage() {
     return new Date(`2000-01-01T${timeStr}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   };
 
-  const getCompletionRate = (trip: typeof MOCK_TRIPS[0]) => {
-    const total = trip.permission_slips?.length || 0;
-    if (total === 0) return 0;
-    const completed = trip.permission_slips.filter(s => s.status === 'paid' || s.status === 'signed').length;
-    return Math.round((completed / total) * 100);
-  };
-
-  const formatRelativeTime = (timestamp: string) => {
-    const now = new Date();
-    const then = new Date(timestamp);
-    const diffMs = now.getTime() - then.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
+  const getStatusConfig = (status: string) => {
+    switch (status) {
+      case 'confirmed': return { label: 'Active', bg: 'bg-green-100 text-green-800 border-green-300' };
+      case 'completed': return { label: 'Completed', bg: 'bg-gray-100 text-gray-800 border-gray-300' };
+      case 'cancelled': return { label: 'Cancelled', bg: 'bg-red-100 text-red-800 border-red-300' };
+      default: return { label: 'Draft', bg: 'bg-[#FFFDE7] text-[#0A0A0A] border-[#F5C518]' };
+    }
   };
 
   const displayName = teacher ? `${teacher.first_name} ${teacher.last_name}` : (user?.email?.split('@')[0] || 'Teacher');
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navigation activeRole={activeRole} userName={displayName} onSignOut={signOut} appName="TripSlip Teacher" />
+        <main className="max-w-7xl mx-auto p-8">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5C518] mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading your dashboard...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation
-        activeRole={activeRole}
-        userName={displayName}
-        onSignOut={signOut}
-        appName="TripSlip Teacher"
-      />
+      <Navigation activeRole={activeRole} userName={displayName} onSignOut={signOut} appName="TripSlip Teacher" />
 
-      <main className="max-w-7xl mx-auto p-8">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">Dashboard</h2>
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border-2 border-black rounded-md"
-            >
-              <option value="all">All Trips</option>
-              <option value="pending">Draft</option>
-              <option value="confirmed">Active</option>
-              <option value="completed">Completed</option>
-            </select>
+      <main className="max-w-7xl mx-auto p-6 md:p-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <div>
+            <h2 className="text-3xl font-bold text-[#0A0A0A]">
+              Welcome back, {displayName.split(' ')[0]}
+            </h2>
+            <p className="text-gray-500 mt-1">Manage your field trips and track permission slips</p>
           </div>
+          <Button
+            onClick={() => navigate('/trips/create')}
+            className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200 font-semibold px-6"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create New Trip
+          </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-4 mb-8">
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
-              <CardTitle className="text-sm text-gray-600">Total Trips</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{metrics.totalTrips}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
-              <CardTitle className="text-sm text-gray-600">Total Students</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{metrics.totalStudents}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
-              <CardTitle className="text-sm text-gray-600">Signed Slips</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">
-                {metrics.signedSlips}
-                <span className="text-lg text-gray-600">/{metrics.totalStudents}</span>
-              </p>
-              {metrics.totalStudents > 0 && (
-                <p className="text-sm text-gray-600 mt-1">
-                  {Math.round((metrics.signedSlips / metrics.totalStudents) * 100)}% complete
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
-              <CardTitle className="text-sm text-gray-600">Pending Payments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-4xl font-bold">{metrics.pendingPayments}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mb-8">
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-4">
-                <Button className="shadow-offset" onClick={() => navigate('/trips/create')}>
-                  + Create New Trip
-                </Button>
-                <Button variant="outline" className="border-2 border-black" onClick={() => { alert('Reminder emails sent to all parents with unsigned permission slips!'); }}>
-                  Send Reminders
-                </Button>
-                <Button variant="outline" className="border-2 border-black" onClick={() => setStatusFilter('all')}>
-                  View All Trips
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
-              <CardTitle>Upcoming Trips</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {upcomingTrips.length === 0 ? (
-                <p className="text-gray-600 text-center py-8">No upcoming trips</p>
-              ) : (
-                <div className="space-y-4">
-                  {upcomingTrips.map((trip) => (
-                    <div
-                      key={trip.id}
-                      className="p-4 border-2 border-black rounded-md hover:shadow-offset transition-shadow"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-bold">{trip.experience?.title}</h3>
-                          <p className="text-sm text-gray-600">{trip.experience?.venue?.name}</p>
-                        </div>
-                        <span
-                          className={`px-2 py-1 text-xs font-semibold rounded ${
-                            trip.status === 'confirmed'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                        >
-                          {trip.status === 'confirmed' ? 'Active' : 'Draft'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">
-                          {formatDate(trip.trip_date)}
-                          {trip.trip_time && ` at ${formatTime(trip.trip_time)}`}
-                        </span>
-                        <span className="font-semibold">
-                          {getCompletionRate(trip)}% complete
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                        <div
-                          className="bg-black rounded-full h-2 transition-all"
-                          style={{ width: `${getCompletionRate(trip)}%` }}
-                        ></div>
-                      </div>
-                      <div className="mt-2 text-sm text-gray-600">
-                        {trip.permission_slips?.length || 0} students
-                      </div>
-                      <div className="mt-3 flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => navigate(`/trips/${trip.id}/roster`)}
-                          className="border-2 border-black text-xs"
-                        >
-                          Manage Roster
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => navigate(`/trips/${trip.id}/slips`)}
-                          className="shadow-offset text-xs"
-                        >
-                          Track Slips
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+        <div className="grid gap-4 md:grid-cols-3 mb-8">
+          <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#F5C518] border-2 border-[#0A0A0A] flex items-center justify-center">
+                  <Compass className="h-6 w-6 text-[#0A0A0A]" />
                 </div>
-              )}
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Total Trips</p>
+                  <p className="text-3xl font-bold text-[#0A0A0A]">{trips.length}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {MOCK_ACTIVITIES.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-start gap-3 p-3 border border-gray-200 rounded-md"
-                  >
-                    <div
-                      className={`w-2 h-2 rounded-full mt-2 ${
-                        activity.type === 'signature' ? 'bg-blue-500' : 'bg-green-500'
-                      }`}
-                    ></div>
-                    <div className="flex-1">
-                      <p className="text-sm">
-                        <span className="font-semibold">{activity.studentName}</span>
-                        {activity.type === 'signature' ? ' signed' : ' paid for'}
-                        <span className="text-gray-600"> {activity.tripName}</span>
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatRelativeTime(activity.timestamp)}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+          <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center">
+                  <Calendar className="h-6 w-6 text-green-700" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Upcoming</p>
+                  <p className="text-3xl font-bold text-[#0A0A0A]">{upcomingTrips.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A]">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-blue-100 border-2 border-[#0A0A0A] flex items-center justify-center">
+                  <Users className="h-6 w-6 text-blue-700" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 font-medium">Students</p>
+                  <p className="text-3xl font-bold text-[#0A0A0A]">{studentCount || trips.reduce((sum, t) => sum + t.student_count, 0)}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {trips.length === 0 ? (
+          <Card className="border-2 border-dashed border-gray-300 bg-white">
+            <CardContent className="py-16">
+              <div className="text-center max-w-md mx-auto">
+                <div className="w-20 h-20 rounded-full bg-[#FFFDE7] border-2 border-[#F5C518] flex items-center justify-center mx-auto mb-6">
+                  <Compass className="h-10 w-10 text-[#F5C518]" />
+                </div>
+                <h3 className="text-2xl font-bold text-[#0A0A0A] mb-3">Plan Your First Trip!</h3>
+                <p className="text-gray-500 mb-6">
+                  Create a field trip, select experiences, add students, and automatically generate permission slips for parents.
+                </p>
+                <Button
+                  onClick={() => navigate('/trips/create')}
+                  className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200 font-semibold px-8 py-3"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Your First Trip
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {upcomingTrips.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold text-[#0A0A0A] mb-4 flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Upcoming Trips
+                </h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {upcomingTrips.map((trip) => {
+                    const status = getStatusConfig(trip.status);
+                    return (
+                      <Card
+                        key={trip.id}
+                        className="border-2 border-[#0A0A0A] hover:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-200 cursor-pointer"
+                        onClick={() => navigate(`/trips/${trip.id}`)}
+                      >
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-[#0A0A0A] text-lg truncate">
+                                {trip.experience?.title || 'Untitled Experience'}
+                              </h4>
+                              {trip.experience?.venue?.name && (
+                                <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                                  {trip.experience.venue.name}
+                                </p>
+                              )}
+                            </div>
+                            <Badge className={`${status.bg} border shrink-0 ml-2`}>
+                              {status.label}
+                            </Badge>
+                          </div>
+
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-4">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5" />
+                              <span>{formatDate(trip.trip_date)}</span>
+                            </div>
+                            {trip.trip_time && (
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="h-3.5 w-3.5" />
+                                <span>{formatTime(trip.trip_time)}</span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1.5">
+                              <Users className="h-3.5 w-3.5" />
+                              <span>{trip.student_count} students</span>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end mt-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-[#0A0A0A] hover:bg-[#FFFDE7] font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/trips/${trip.id}`);
+                              }}
+                            >
+                              View Details
+                              <ArrowRight className="h-4 w-4 ml-1" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {pastTrips.length > 0 && (
+              <div>
+                <h3 className="text-lg font-bold text-[#0A0A0A] mb-4 flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Past Trips
+                </h3>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {pastTrips.map((trip) => {
+                    const status = getStatusConfig(trip.status);
+                    return (
+                      <Card
+                        key={trip.id}
+                        className="border-2 border-gray-200 hover:border-[#0A0A0A] transition-all duration-200 cursor-pointer opacity-80"
+                        onClick={() => navigate(`/trips/${trip.id}`)}
+                      >
+                        <CardContent className="pt-6">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-gray-700 truncate">
+                                {trip.experience?.title || 'Untitled Experience'}
+                              </h4>
+                              {trip.experience?.venue?.name && (
+                                <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
+                                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                                  {trip.experience.venue.name}
+                                </p>
+                              )}
+                            </div>
+                            <Badge className={`${status.bg} border shrink-0 ml-2`}>
+                              {status.label}
+                            </Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-400 mt-4">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-3.5 w-3.5" />
+                              <span>{formatDate(trip.trip_date)}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Users className="h-3.5 w-3.5" />
+                              <span>{trip.student_count} students</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

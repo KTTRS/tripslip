@@ -91,17 +91,36 @@ Migration `supabase/migrations/20250304000001_fix_rbac_signup_policies.sql` must
 
 The signup flow uses RPC functions instead of direct table inserts to bypass RLS safely.
 
-## Demo Mode / Mock Data
+## Database Seeding
 
-The teacher dashboard uses **hardcoded mock data** (not real DB queries) so the demo works without requiring actual trip records. Mock trip IDs use valid UUIDs.
+Run `node scripts/seed-demo-data.mjs` to populate Supabase with professional demo data:
+- 6 venues (Science Museum, Zoo, Botanical Garden, History Museum, Aquarium, Art Center)
+- 12 experiences (2 per venue) with real descriptions, durations, grade levels
+- 15 pricing tiers with tiered pricing ($10-$25 per student)
+- 1 school (Lincoln Elementary)
+- 1 roster with 15 students
+The script uses `upsert` and is idempotent.
+
+## Real Database Integration
+
+The teacher app queries **real Supabase data** (no mock fallbacks):
+- **Dashboard**: Queries `trips` joined with `experiences` and `venues` for the logged-in teacher. Shows empty welcome state if no trips exist.
+- **Step 2 (Experiences)**: Queries `experiences` joined with `venues` and `pricing_tiers`. Shows venue name, duration, grade levels, and pricing.
+- **Step 3 (Students)**: Queries `students` via the teacher's `rosters`. Falls back to all students (scoped to authenticated user) if no roster found.
+- **Step 4 (Review/Submit)**: Fetches `pricing_tiers` for cost calculation, `venues` for location display. Creates real trip record in DB.
 
 Trip creation drafts are stored in **localStorage** (not the `trip_drafts` DB table, which doesn't exist). The `useAutoSave` hook saves drafts every 30 seconds via localStorage keyed by teacher ID.
-
-The trip creation wizard (4 steps) uses **mock fallback data** when DB tables are empty:
-- **Step 2 (Experiences)**: Falls back to `MOCK_EXPERIENCES` (4 demo experiences) if `experiences` table is empty or errors
-- **Step 3 (Students)**: Falls back to `MOCK_STUDENTS` (10 demo students) if `students` table is empty or errors
-- **Step 4 (Submit)**: Tries real DB insert first; if teacher profile or school_id is missing, falls back to demo mode (logs success, shows toast, resets form)
 
 The `ProtectedRoute` in the teacher app only requires `user` auth — it does not require a `teachers` table record, which allows demo login without DB seeding.
 
 The `signIn` flow wraps role-loading in try/catch and falls back to a default `teacher` role if no `role_assignments` records exist.
+
+## Design System
+
+TripSlip uses a neo-brutalist design language:
+- Primary yellow: `#F5C518`
+- Primary black: `#0A0A0A`
+- Card borders: `border-2 border-[#0A0A0A]`
+- Drop shadows: `shadow-[4px_4px_0px_#0A0A0A]`
+- Hover effect: `hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px]`
+- Accent background: `bg-[#FFFDE7]`

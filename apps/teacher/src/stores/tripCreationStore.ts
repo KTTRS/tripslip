@@ -117,7 +117,7 @@ export const useTripCreationStore = create<TripCreationState>((set, get) => ({
     tripDetails: {
       name: `${venue.name} - ${experience.title}`,
       date: '',
-      time: experience.event_time || '',
+      time: '',
       description: experience.description || '',
       specialRequirements: '',
     },

@@ -1,7 +1,7 @@
 modules = ["bash", "web", "nodejs-20", "python-3.11"]
 [agent]
 expertMode = true
-integrations = ["twilio:1.0.0"]
+integrations = ["twilio:1.0.0", "stripe:1.0.0"]
 
 [nix]
 channel = "stable-25_05"
