@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Layout from '../components/Layout'
+import { Layout } from '../components/Layout'
 import { Card, CardHeader, CardTitle, CardContent } from '@tripslip/ui'
 import { MetricCard } from '@tripslip/ui'
 import { useVenueAnalytics } from '../hooks/useVenueAnalytics'

@@ -6,7 +6,7 @@
 -- =====================================================
 
 CREATE TABLE notifications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL,
   user_type TEXT NOT NULL,
   channel TEXT NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE notifications (
 -- =====================================================
 
 CREATE TABLE audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID,
   user_type TEXT,
   action TEXT NOT NULL,

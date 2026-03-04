@@ -1,7 +1,16 @@
 {
+  "extends": "./tsconfig.base.json",
   "files": [],
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    { "path": "./apps/landing" },
+    { "path": "./apps/parent" },
+    { "path": "./apps/school" },
+    { "path": "./apps/teacher" },
+    { "path": "./apps/venue" },
+    { "path": "./packages/auth" },
+    { "path": "./packages/database" },
+    { "path": "./packages/i18n" },
+    { "path": "./packages/ui" },
+    { "path": "./packages/utils" }
   ]
 }

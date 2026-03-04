@@ -1,7 +1,13 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { createSupabaseClient, User, Session } from '@tripslip/database';
-import { createAuthService } from '@tripslip/auth';
+import { User, Session } from '@tripslip/database';
+import { 
+  AuthProvider as RBACAuthProvider, 
+  useAuth as useRBACAuth,
+  useLoginTracker,
+  type AuthContextType as RBACAuthContextType 
+} from '@tripslip/auth';
+import { supabase } from '../lib/supabase';
 
 interface Teacher {
   id: string;
@@ -13,62 +19,27 @@ interface Teacher {
   is_active: boolean;
 }
 
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+interface AuthContextType extends RBACAuthContextType {
   teacher: Teacher | null;
-  loading: boolean;
-  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
-
-const authService = createAuthService(supabase);
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const rbacAuth = useRBACAuth();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Track login timestamps for teachers
+  useLoginTracker(rbacAuth.user, supabase);
+
   useEffect(() => {
-    // Check for existing session
-    authService.getSession().then((session) => {
-      setSession(session);
-      if (session?.user) {
-        setUser(session.user);
-        loadTeacherData(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-
-        if (session?.user) {
-          await loadTeacherData(session.user.id);
-        } else {
-          setTeacher(null);
-        }
-
-        setLoading(false);
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    if (rbacAuth.user) {
+      loadTeacherData(rbacAuth.user.id);
+    } else {
+      setTeacher(null);
+    }
+  }, [rbacAuth.user]);
 
   const loadTeacherData = async (userId: string) => {
     try {
@@ -85,23 +56,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error loading teacher data:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const signOut = async () => {
-    await authService.signOut();
-    setUser(null);
-    setSession(null);
+  const handleSignOut = async () => {
+    await rbacAuth.signOut();
     setTeacher(null);
     navigate('/login');
   };
 
+  const value: AuthContextType = {
+    ...rbacAuth,
+    teacher,
+    signOut: handleSignOut,
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, teacher, loading, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
+  );
+}
+
+// Wrapper component to provide both RBAC and teacher-specific context
+export function TeacherAuthProvider({ children }: { children: ReactNode }) {
+  return (
+    <RBACAuthProvider supabase={supabase}>
+      <AuthProvider>{children}</AuthProvider>
+    </RBACAuthProvider>
   );
 }
 

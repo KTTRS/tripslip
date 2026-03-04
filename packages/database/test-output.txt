@@ -1,0 +1,842 @@
+
+> @tripslip/database@0.0.0 test
+> vitest run
+
+[dotenv@17.3.1] injecting env (1) from ../../.env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+
+ RUN  v1.6.1 /Users/totalreentrysolutions/kiro/tripslip/packages/database
+
+ ✓ src/__tests__/venue-booking-workflow.test.ts  (20 tests) 7ms
+ ✓ src/__tests__/property/profile-required-fields.property.test.ts  (17 tests) 80ms
+ ✓ src/__tests__/property/access-control.property.test.ts  (16 tests) 74ms
+ ✓ src/__tests__/property/venue-claiming-workflow.property.test.ts  (14 tests) 98ms
+ ✓ src/__tests__/venue-booking-service.test.ts  (23 tests) 8ms
+ ✓ src/__tests__/property/file-upload-validation.property.test.ts  (21 tests) 31ms
+ ✓ src/__tests__/venue-employee-service.test.ts  (34 tests) 8ms
+ ✓ src/__tests__/venue-claim-service.test.ts  (11 tests) 5ms
+stdout | src/__tests__/venue-claim-service.test.ts > VenueClaimService > verifyEmail > should verify email and move claim to under_review
+Claim claim-789 is ready for review
+
+ ✓ src/__tests__/venue-media-service.test.ts  (15 tests) 180ms
+ ✓ src/__tests__/search-service.test.ts  (11 tests) 6ms
+ ❯ src/__tests__/property/venue-booking.property.test.ts  (6 tests | 6 failed) 4034ms
+   ❯ src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 31: All booking confirmation numbers are unique
+     → invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513917638"
+   ❯ src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 31: Confirmation numbers unique across time
+     → invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513919276"
+   ❯ src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 32: Valid status transitions are allowed
+     → invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513919645"
+   ❯ src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 32: Completed bookings cannot transition to other states
+     → invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513920203"
+   ❯ src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 32: Cancelled bookings cannot transition to other states
+     → invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513921017"
+   ❯ src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 32: Modified bookings can transition to completed or cancelled
+     → invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513921314"
+ ✓ src/__tests__/venue-permissions.test.ts  (34 tests) 5ms
+ ✓ src/__tests__/venue-profile-service.test.ts  (10 tests) 4ms
+ ✓ src/__tests__/property/venue-data-integrity.property.test.ts  (5 tests) 19ms
+ ❯ src/__tests__/property/search-functionality.property.test.ts  (7 tests | 7 failed) 5312ms
+   ❯ src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 4: Text search returns only venues matching query terms
+     → Property failed after 1 tests
+{ seed: -1933422421, path: "0:0", endOnFailure: true }
+Counterexample: [{"searchTerm":"science"}]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 5: Geographic search returns only venues within radius
+     → Property failed after 1 tests
+{ seed: -163418596, path: "0:0", endOnFailure: true }
+Counterexample: [{"radiusMiles":20}]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 6: Multi-criteria filters use AND logic
+     → Property failed after 1 tests
+{ seed: -1194456544, path: "0:0:0", endOnFailure: true }
+Counterexample: [{"minCapacity":10,"maxCapacity":40}]
+Shrunk 2 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 6: Verified filter returns only verified venues
+     → Property failed after 1 tests
+{ seed: 1540551251, path: "0", endOnFailure: true }
+Counterexample: [true]
+Shrunk 0 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 7: All search results have complete structure
+     → Property failed after 1 tests
+{ seed: -798134560, path: "0:0:0", endOnFailure: true }
+Counterexample: [{"lat":35,"lng":-90}]
+Shrunk 2 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 8: Text search results are sorted by relevance
+     → Property failed after 1 tests
+{ seed: 876725198, path: "0:0", endOnFailure: true }
+Counterexample: [{"searchTerm":"science"}]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 8: Geographic search results are sorted by distance
+     → Property failed after 1 tests
+{ seed: 1815254794, path: "0", endOnFailure: true }
+Counterexample: [true]
+Shrunk 0 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-capacity.property.test.ts  (6 tests | 6 failed) 6530ms
+   ❯ src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 19: Confirmed bookings reduce available capacity
+     → Property failed after 1 tests
+{ seed: -1225937780, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [[{"studentCount":10,"startTime":"09:00:00","endTime":"12:00:00"}]]
+Shrunk 3 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:148:39
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:106:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 19: Multiple bookings cumulatively reduce capacity
+     → Property failed after 1 tests
+{ seed: -515315551, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [[10,10]]
+Shrunk 3 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:256:39
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:215:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 20: Cannot create bookings when capacity is zero
+     → Property failed after 1 tests
+{ seed: -480862906, path: "0:0", endOnFailure: true }
+Counterexample: [1]
+Shrunk 1 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:337:38
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:316:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 20: Cannot create bookings exceeding remaining capacity
+     → Property failed after 1 tests
+{ seed: 591327946, path: "0:0", endOnFailure: true }
+Counterexample: [{"firstBookingSize":50,"secondBookingSize":30}]
+Shrunk 1 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:447:38
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:423:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 20: Cancelled bookings restore capacity
+     → Property failed after 1 tests
+{ seed: -887489089, path: "0:0", endOnFailure: true }
+Counterexample: [30]
+Shrunk 1 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:566:38
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:532:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 19 & 20: Overlapping time slots share capacity constraints
+     → Property failed after 1 tests
+{ seed: -1839053516, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"booking1Students":40,"booking2Students":40,"booking1Start":"09:00:00","booking1End":"13:00:00","booking2Start":"11:00:00","booking2End":"15:00:00"}]
+Shrunk 4 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:665:38
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:639:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/approval-workflow.property.test.ts  (6 tests | 6 failed) 7668ms
+   ❯ src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 25: Trip is routed to all required approvers based on chain configuration
+     → Property failed after 1 tests
+{ seed: 1948524661, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"costCents":1000,"isOvernight":false,"isOutOfState":false,"durationDays":1,"numApprovers":1}]
+Shrunk 4 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 25: Trip routing respects cost thresholds
+     → Property failed after 1 tests
+{ seed: -337453549, path: "0:0", endOnFailure: true }
+Counterexample: [1000]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 27: Valid status transitions are allowed
+     → Property failed after 1 tests
+{ seed: -443091025, path: "0:0", endOnFailure: true }
+Counterexample: [["pending","approved"]]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 27: Approved status cannot transition to other states
+     → Property failed after 1 tests
+{ seed: 1086962829, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: ["         !"]
+Shrunk 17 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 28: Rejection requires a non-empty reason
+     → Property failed after 1 tests
+{ seed: -337673427, path: "0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: ["!"]
+Shrunk 6 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 28: Rejection with empty reason should fail
+     → insert or update on table "approval_chains" violates foreign key constraint "approval_chains_school_id_fkey"
+ ✓ src/__tests__/venue-review-service.test.ts  (29 tests) 9333ms
+ ✓ src/__tests__/venue-category-service.test.ts  (32 tests) 10508ms
+ ✓ src/__tests__/experience-service.test.ts  (27 tests) 14027ms
+ ❯ src/__tests__/property/consent-enforcement.property.test.ts  (6 tests | 5 failed) 33391ms
+   ❯ src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Consent preferences are enforced - only consented data is shared
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ❯ src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Consent can be updated and changes are reflected immediately
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ❯ src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Consent revocation removes access to all data
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ❯ src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Each student-booking pair has at most one consent record
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+   ❯ src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Consent timestamps are monotonically increasing
+     → Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/__tests__/property/venue-category.property.test.ts  (8 tests | 1 failed) 72003ms
+   ❯ src/__tests__/property/venue-category.property.test.ts > Property-Based Tests - Venue Category System (Task 7.2) > Property 34: Category assignment prevents duplicate assignments
+     → Property failed after 1 tests
+{ seed: 1440078961, path: "0:0", endOnFailure: true }
+Counterexample: ["1666005f-ca64-48cf-baa1-8161c1649ef3","8cf884e4-edd7-48b3-8c5f-2370713e0a51"]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-review.property.test.ts  (10 tests | 3 failed) 161784ms
+   ❯ src/__tests__/property/venue-review.property.test.ts > Property-Based Tests - Venue Review System (Task 8.2) > Property 21: Aspect ratings outside 1-5 range are rejected
+     → Property failed after 64 tests
+{ seed: -1397678825, path: "63:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [1,0,"                                                  "]
+Shrunk 48 time(s)
+Got AssertionError: expected [Function] to throw error including 'All aspect ratings must be between 1 …' but got 'Feedback text must be at least 50 cha…'
+    at Assertion.<anonymous> (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/expect/dist/index.js:1324:19)
+    at Assertion.<anonymous> (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/expect/dist/index.js:800:17)
+    at Assertion.methodWrapper (/Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/chai/lib/chai/utils/addMethod.js:57:25)
+    at file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/expect/dist/index.js:1525:29
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/venue-review.property.test.ts > Property-Based Tests - Venue Review System (Task 8.2) > Property 23: Venue rating is arithmetic mean of non-flagged reviews
+     → Property failed after 1 tests
+{ seed: 323565557, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [[{"rating":1,"feedback":"                                                  "}]]
+Shrunk 52 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-review.property.test.ts:390:30
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-review.property.test.ts:362:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+   ❯ src/__tests__/property/venue-review.property.test.ts > Property-Based Tests - Venue Review System (Task 8.2) > Property 23: Flagged reviews excluded from rating calculation
+     → Property failed after 1 tests
+{ seed: -565050850, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [[{"rating":1,"feedback":"                                                  ","flagged":false},{"rating":1,"feedback":"                                                  ","flagged":false}]]
+Shrunk 106 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-review.property.test.ts:476:30
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-review.property.test.ts:447:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ✓ src/__tests__/property/experience-operations.property.test.ts  (8 tests) 288518ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 34 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 25: Trip is routed to all required approvers based on chain configuration
+Error: Property failed after 1 tests
+{ seed: 1948524661, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"costCents":1000,"isOvernight":false,"isOutOfState":false,"durationDays":1,"numApprovers":1}]
+Shrunk 4 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/34]⎯
+
+ FAIL  src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 25: Trip routing respects cost thresholds
+Error: Property failed after 1 tests
+{ seed: -337453549, path: "0:0", endOnFailure: true }
+Counterexample: [1000]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/34]⎯
+
+ FAIL  src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 27: Valid status transitions are allowed
+Error: Property failed after 1 tests
+{ seed: -443091025, path: "0:0", endOnFailure: true }
+Counterexample: [["pending","approved"]]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/34]⎯
+
+ FAIL  src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 27: Approved status cannot transition to other states
+Error: Property failed after 1 tests
+{ seed: 1086962829, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: ["         !"]
+Shrunk 17 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/34]⎯
+
+ FAIL  src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 28: Rejection requires a non-empty reason
+Error: Property failed after 1 tests
+{ seed: -337673427, path: "0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: ["!"]
+Shrunk 6 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/34]⎯
+
+ FAIL  src/__tests__/property/approval-workflow.property.test.ts > Property-Based Tests - Approval Workflow (Task 13.4) > Property 28: Rejection with empty reason should fail
+Unknown Error: insert or update on table "approval_chains" violates foreign key constraint "approval_chains_school_id_fkey"
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: '23503', details: 'Key (school_id)=(00000000-0000-0000-0001-019cb210168f) is not present in table "schools".', hint: null }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/34]⎯
+
+ FAIL  src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Consent preferences are enforced - only consented data is shared
+ FAIL  src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Consent can be updated and changes are reflected immediately
+ FAIL  src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Consent revocation removes access to all data
+ FAIL  src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Each student-booking pair has at most one consent record
+ FAIL  src/__tests__/property/consent-enforcement.property.test.ts > Property 30: Data Sharing Consent Enforcement > Property: Consent timestamps are monotonically increasing
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/34]⎯
+
+ FAIL  src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 4: Text search returns only venues matching query terms
+Error: Property failed after 1 tests
+{ seed: -1933422421, path: "0:0", endOnFailure: true }
+Counterexample: [{"searchTerm":"science"}]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/34]⎯
+
+ FAIL  src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 5: Geographic search returns only venues within radius
+Error: Property failed after 1 tests
+{ seed: -163418596, path: "0:0", endOnFailure: true }
+Counterexample: [{"radiusMiles":20}]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/34]⎯
+
+ FAIL  src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 6: Multi-criteria filters use AND logic
+Error: Property failed after 1 tests
+{ seed: -1194456544, path: "0:0:0", endOnFailure: true }
+Counterexample: [{"minCapacity":10,"maxCapacity":40}]
+Shrunk 2 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/34]⎯
+
+ FAIL  src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 6: Verified filter returns only verified venues
+Error: Property failed after 1 tests
+{ seed: 1540551251, path: "0", endOnFailure: true }
+Counterexample: [true]
+Shrunk 0 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/34]⎯
+
+ FAIL  src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 7: All search results have complete structure
+Error: Property failed after 1 tests
+{ seed: -798134560, path: "0:0:0", endOnFailure: true }
+Counterexample: [{"lat":35,"lng":-90}]
+Shrunk 2 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/34]⎯
+
+ FAIL  src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 8: Text search results are sorted by relevance
+Error: Property failed after 1 tests
+{ seed: 876725198, path: "0:0", endOnFailure: true }
+Counterexample: [{"searchTerm":"science"}]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/34]⎯
+
+ FAIL  src/__tests__/property/search-functionality.property.test.ts > Property-Based Tests - Search Functionality (Task 6.2) > Property 8: Geographic search results are sorted by distance
+Error: Property failed after 1 tests
+{ seed: 1815254794, path: "0", endOnFailure: true }
+Counterexample: [true]
+Shrunk 0 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/34]⎯
+
+ FAIL  src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 31: All booking confirmation numbers are unique
+Unknown Error: invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513917638"
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: '22P02', details: null, hint: null }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/34]⎯
+
+ FAIL  src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 31: Confirmation numbers unique across time
+Unknown Error: invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513919276"
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: '22P02', details: null, hint: null }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/34]⎯
+
+ FAIL  src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 32: Valid status transitions are allowed
+Unknown Error: invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513919645"
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: '22P02', details: null, hint: null }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/34]⎯
+
+ FAIL  src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 32: Completed bookings cannot transition to other states
+Unknown Error: invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513920203"
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: '22P02', details: null, hint: null }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/34]⎯
+
+ FAIL  src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 32: Cancelled bookings cannot transition to other states
+Unknown Error: invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513921017"
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: '22P02', details: null, hint: null }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/34]⎯
+
+ FAIL  src/__tests__/property/venue-booking.property.test.ts > Property-Based Tests - Venue Booking System (Task 12.2) > Property 32: Modified bookings can transition to completed or cancelled
+Unknown Error: invalid input syntax for type uuid: "00000000-0000-0000-0000-1772513921314"
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: '22P02', details: null, hint: null }
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/34]⎯
+
+ FAIL  src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 19: Confirmed bookings reduce available capacity
+Error: Property failed after 1 tests
+{ seed: -1225937780, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [[{"studentCount":10,"startTime":"09:00:00","endTime":"12:00:00"}]]
+Shrunk 3 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:148:39
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:106:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:148:39
+    146|               .single();
+    147| 
+    148|             createdTripIds.push(trip!.id);
+       |                                       ^
+    149| 
+    150|             const input: CreateBookingInput = {
+ ❯ AsyncProperty.run ../../node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28
+ ❯ asyncRunIt ../../node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:106:5
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/34]⎯
+
+ FAIL  src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 19: Multiple bookings cumulatively reduce capacity
+Error: Property failed after 1 tests
+{ seed: -515315551, path: "0:0:0:0", endOnFailure: true }
+Counterexample: [[10,10]]
+Shrunk 3 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:256:39
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:215:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:256:39
+    254|               .single();
+    255| 
+    256|             createdTripIds.push(trip!.id);
+       |                                       ^
+    257| 
+    258|             const input: CreateBookingInput = {
+ ❯ AsyncProperty.run ../../node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28
+ ❯ asyncRunIt ../../node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:215:5
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/34]⎯
+
+ FAIL  src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 20: Cannot create bookings when capacity is zero
+Error: Property failed after 1 tests
+{ seed: -480862906, path: "0:0", endOnFailure: true }
+Counterexample: [1]
+Shrunk 1 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:337:38
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:316:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:337:38
+    335|             .single();
+    336| 
+    337|           createdTripIds.push(trip1!.id);
+       |                                      ^
+    338| 
+    339|           const fullCapacityBooking: CreateBookingInput = {
+ ❯ AsyncProperty.run ../../node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28
+ ❯ asyncRunIt ../../node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:316:5
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/34]⎯
+
+ FAIL  src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 20: Cannot create bookings exceeding remaining capacity
+Error: Property failed after 1 tests
+{ seed: 591327946, path: "0:0", endOnFailure: true }
+Counterexample: [{"firstBookingSize":50,"secondBookingSize":30}]
+Shrunk 1 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:447:38
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:423:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:447:38
+    445|             .single();
+    446| 
+    447|           createdTripIds.push(trip1!.id);
+       |                                      ^
+    448| 
+    449|           const firstBooking: CreateBookingInput = {
+ ❯ AsyncProperty.run ../../node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28
+ ❯ asyncRunIt ../../node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:423:5
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/34]⎯
+
+ FAIL  src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 20: Cancelled bookings restore capacity
+Error: Property failed after 1 tests
+{ seed: -887489089, path: "0:0", endOnFailure: true }
+Counterexample: [30]
+Shrunk 1 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:566:38
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:532:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:566:38
+    564|             .single();
+    565| 
+    566|           createdTripIds.push(trip1!.id);
+       |                                      ^
+    567| 
+    568|           const bookingInput: CreateBookingInput = {
+ ❯ AsyncProperty.run ../../node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28
+ ❯ asyncRunIt ../../node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:532:5
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/34]⎯
+
+ FAIL  src/__tests__/property/venue-capacity.property.test.ts > Property-Based Tests - Venue Capacity Management (Task 12.4) > Property 19 & 20: Overlapping time slots share capacity constraints
+Error: Property failed after 1 tests
+{ seed: -1839053516, path: "0:0:0:0:0", endOnFailure: true }
+Counterexample: [{"booking1Students":40,"booking2Students":40,"booking1Start":"09:00:00","booking1End":"13:00:00","booking2Start":"11:00:00","booking2End":"15:00:00"}]
+Shrunk 4 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:665:38
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-capacity.property.test.ts:639:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:665:38
+    663|             .single();
+    664| 
+    665|           createdTripIds.push(trip1!.id);
+       |                                      ^
+    666| 
+    667|           const booking1Input: CreateBookingInput = {
+ ❯ AsyncProperty.run ../../node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28
+ ❯ asyncRunIt ../../node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21
+ ❯ src/__tests__/property/venue-capacity.property.test.ts:639:5
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/34]⎯
+
+ FAIL  src/__tests__/property/venue-category.property.test.ts > Property-Based Tests - Venue Category System (Task 7.2) > Property 34: Category assignment prevents duplicate assignments
+Error: Property failed after 1 tests
+{ seed: 1440078961, path: "0:0", endOnFailure: true }
+Counterexample: ["1666005f-ca64-48cf-baa1-8161c1649ef3","8cf884e4-edd7-48b3-8c5f-2370713e0a51"]
+Shrunk 1 time(s)
+Got [object Object]
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/34]⎯
+
+ FAIL  src/__tests__/property/venue-review.property.test.ts > Property-Based Tests - Venue Review System (Task 8.2) > Property 21: Aspect ratings outside 1-5 range are rejected
+Error: Property failed after 64 tests
+{ seed: -1397678825, path: "63:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [1,0,"                                                  "]
+Shrunk 48 time(s)
+Got AssertionError: expected [Function] to throw error including 'All aspect ratings must be between 1 …' but got 'Feedback text must be at least 50 cha…'
+    at Assertion.<anonymous> (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/expect/dist/index.js:1324:19)
+    at Assertion.<anonymous> (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/expect/dist/index.js:800:17)
+    at Assertion.methodWrapper (/Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/chai/lib/chai/utils/addMethod.js:57:25)
+    at file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/expect/dist/index.js:1525:29
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/34]⎯
+
+ FAIL  src/__tests__/property/venue-review.property.test.ts > Property-Based Tests - Venue Review System (Task 8.2) > Property 23: Venue rating is arithmetic mean of non-flagged reviews
+Error: Property failed after 1 tests
+{ seed: 323565557, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [[{"rating":1,"feedback":"                                                  "}]]
+Shrunk 52 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-review.property.test.ts:390:30
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-review.property.test.ts:362:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-review.property.test.ts:390:30
+    388|             const input: CreateReviewInput = {
+    389|               venue_id: testVenueId,
+    390|               trip_id: trip!.id,
+       |                              ^
+    391|               overall_rating: reviewData.rating,
+    392|               feedback_text: reviewData.feedback,
+ ❯ AsyncProperty.run ../../node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28
+ ❯ asyncRunIt ../../node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21
+ ❯ src/__tests__/property/venue-review.property.test.ts:362:5
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/34]⎯
+
+ FAIL  src/__tests__/property/venue-review.property.test.ts > Property-Based Tests - Venue Review System (Task 8.2) > Property 23: Flagged reviews excluded from rating calculation
+Error: Property failed after 1 tests
+{ seed: -565050850, path: "0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0:0", endOnFailure: true }
+Counterexample: [[{"rating":1,"feedback":"                                                  ","flagged":false},{"rating":1,"feedback":"                                                  ","flagged":false}]]
+Shrunk 106 time(s)
+Got TypeError: Cannot read properties of null (reading 'id')
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-review.property.test.ts:476:30
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at AsyncProperty.run (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28)
+    at asyncRunIt (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21)
+    at /Users/totalreentrysolutions/kiro/tripslip/packages/database/src/__tests__/property/venue-review.property.test.ts:447:5
+    at runTest (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:781:11)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runSuite (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:909:15)
+    at runFiles (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:958:5)
+    at startTests (file:///Users/totalreentrysolutions/kiro/tripslip/node_modules/vitest/node_modules/@vitest/runner/dist/index.js:967:3)
+
+Hint: Enable verbose mode in order to have the list of all failing values encountered during the run
+ ❯ src/__tests__/property/venue-review.property.test.ts:476:30
+    474|             const input: CreateReviewInput = {
+    475|               venue_id: testVenueId,
+    476|               trip_id: trip!.id,
+       |                              ^
+    477|               overall_rating: reviewData.rating,
+    478|               feedback_text: reviewData.feedback,
+ ❯ AsyncProperty.run ../../node_modules/fast-check/lib/esm/check/property/AsyncProperty.generic.js:46:28
+ ❯ asyncRunIt ../../node_modules/fast-check/lib/esm/check/runner/Runner.js:33:21
+ ❯ src/__tests__/property/venue-review.property.test.ts:447:5
+ ❯ buildError ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:126:15
+ ❯ asyncThrowIfFailed ../../node_modules/fast-check/lib/esm/check/runner/utils/RunDetailsFormatter.js:143:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/34]⎯
+
+ Test Files  7 failed | 17 passed (24)
+      Tests  34 failed | 342 passed (376)
+   Start at  23:58:37
+   Duration  288.91s (transform 596ms, setup 1ms, collect 2.10s, tests 613.63s, environment 3ms, prepare 1.35s)
+
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path /Users/totalreentrysolutions/kiro/tripslip/packages/database
+npm error workspace @tripslip/database@0.0.0
+npm error location /Users/totalreentrysolutions/kiro/tripslip/packages/database
+npm error command failed
+npm error command sh -c vitest run

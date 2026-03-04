@@ -19,12 +19,41 @@ import {
   Label
 } from '@tripslip/ui'
 import type { VenueTrip } from '../hooks/useVenueTrips'
+import { CapacityDisplay } from './CapacityDisplay'
+import { useExperienceCapacity } from '../hooks/useExperienceCapacity'
 
 interface TripBookingListProps {
   trips: VenueTrip[]
   onConfirm: (tripId: string) => Promise<{ success: boolean; error?: string }>
   onDecline: (tripId: string, reason: string) => Promise<{ success: boolean; error?: string }>
   onAddNote: (tripId: string, note: string) => Promise<{ success: boolean; error?: string }>
+}
+
+function TripCapacityCell({ trip }: { trip: VenueTrip }) {
+  const { capacityInfo, loading } = useExperienceCapacity({
+    experienceId: trip.experience_id,
+    date: trip.trip_date,
+    startTime: trip.trip_time,
+    endTime: trip.trip_time, // Simplified - would need end time from booking
+    enabled: true,
+  });
+
+  if (loading) {
+    return <TableCell className="text-sm text-gray-500">Loading...</TableCell>;
+  }
+
+  if (!capacityInfo) {
+    return <TableCell className="text-sm text-gray-500">-</TableCell>;
+  }
+
+  return (
+    <TableCell>
+      <CapacityDisplay
+        totalCapacity={capacityInfo.totalCapacity}
+        bookedCount={capacityInfo.bookedCount}
+      />
+    </TableCell>
+  );
 }
 
 export function TripBookingList({ trips, onConfirm, onDecline, onAddNote }: TripBookingListProps) {
@@ -125,6 +154,7 @@ export function TripBookingList({ trips, onConfirm, onDecline, onAddNote }: Trip
               <TableHead>School</TableHead>
               <TableHead>Teacher</TableHead>
               <TableHead>Students</TableHead>
+              <TableHead>Capacity</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -145,6 +175,7 @@ export function TripBookingList({ trips, onConfirm, onDecline, onAddNote }: Trip
                   <div className="text-xs text-gray-500">{trip.teacher.email}</div>
                 </TableCell>
                 <TableCell>{trip.student_count}</TableCell>
+                <TripCapacityCell trip={trip} />
                 <TableCell>{getStatusBadge(trip.status)}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">

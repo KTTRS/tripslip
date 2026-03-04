@@ -1,129 +1,148 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { supabase } from '../lib/supabase';
+import { Button } from '@tripslip/ui';
+import { createPaymentIntent } from '../services/payment-service';
+import { useTranslation } from 'react-i18next';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 interface PaymentFormProps {
-  slipId: string;
-  amount: number;
-  tripName: string;
-  studentName: string;
+  permissionSlipId: string;
+  amountCents: number;
+  parentId?: string;
+  isSplitPayment?: boolean;
   onSuccess: () => void;
-  onError: (error: string) => void;
+  onError?: (error: string) => void;
 }
 
-function PaymentFormInner({ slipId, amount, tripName, studentName, onSuccess, onError }: PaymentFormProps) {
-  const { t } = useTranslation();
+function PaymentFormInner({ 
+  permissionSlipId, 
+  amountCents, 
+  parentId,
+  isSplitPayment,
+  onSuccess, 
+  onError 
+}: PaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-
-  // Create payment intent when component mounts
-  useState(() => {
-    const createPaymentIntent = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-          body: {
-            permissionSlipId: slipId,
-            amountCents: amount,
-            isSplitPayment: false
-          }
-        });
-
-        if (error) throw error;
-        setClientSecret(data.clientSecret);
-      } catch (err: any) {
-        onError(err.message || 'Failed to initialize payment');
-      }
-    };
-
-    createPaymentIntent();
-  });
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!stripe || !elements || !clientSecret) {
+    if (!stripe || !elements) {
       return;
     }
 
-    setLoading(true);
+    setIsProcessing(true);
+    setError(null);
 
     try {
-      const { error: submitError } = await elements.submit();
-      if (submitError) {
-        throw new Error(submitError.message);
-      }
+      // Create payment intent using payment service
+      const { clientSecret } = await createPaymentIntent({
+        permissionSlipId,
+        amountCents,
+        parentId,
+        isSplitPayment,
+      });
 
-      const { error } = await stripe.confirmPayment({
+      // Confirm payment with Stripe
+      const { error: confirmError } = await stripe.confirmPayment({
         elements,
         clientSecret,
         confirmParams: {
-          return_url: `${window.location.origin}/payment/success?slip_id=${slipId}`
-        }
+          return_url: `${window.location.origin}/payment/success`,
+        },
       });
 
-      if (error) {
-        onError(error.message || 'Payment failed');
+      if (confirmError) {
+        const errorMessage = confirmError.message || t('payment.error', 'Payment failed. Please try again.');
+        setError(errorMessage);
+        onError?.(errorMessage);
       } else {
         onSuccess();
       }
-    } catch (err: any) {
-      onError(err.message || 'Payment processing failed');
+    } catch (err) {
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : t('payment.error', 'An error occurred. Please try again.');
+      setError(errorMessage);
+      onError?.(errorMessage);
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  if (!clientSecret) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  const formattedAmount = new Intl.NumberFormat(i18n.language, {
+    style: 'currency',
+    currency: 'USD',
+  }).format(amountCents / 100);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">{t('tripDetails')}</span>
-          <span className="font-semibold">{tripName}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Student</span>
-          <span className="font-semibold">{studentName}</span>
-        </div>
-        <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-          <span className="text-lg font-semibold">{t('cost')}</span>
-          <span className="text-lg font-bold text-blue-600">
-            ${(amount / 100).toFixed(2)}
+      {/* Amount Display */}
+      <div className="p-6 bg-white border-[2px] border-[#0A0A0A] rounded-xl">
+        <div className="flex items-baseline justify-between">
+          <span className="text-sm font-medium text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+            {t('payment.totalAmount', 'Total Amount')}
+          </span>
+          <span className="text-2xl font-bold text-[#0A0A0A] font-['Space_Mono']">
+            {formattedAmount}
           </span>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <PaymentElement />
+      {/* Payment Element */}
+      <div className="p-6 bg-white border-[2px] border-[#0A0A0A] rounded-xl">
+        <PaymentElement 
+          options={{
+            layout: 'tabs',
+          }}
+        />
       </div>
 
-      <button
+      {/* Error Display */}
+      {error && (
+        <div 
+          className="p-4 bg-red-50 border-[2px] border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]"
+          role="alert"
+          aria-live="assertive"
+        >
+          <p className="text-sm font-medium text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+            {error}
+          </p>
+        </div>
+      )}
+
+      {/* Submit Button */}
+      <Button
         type="submit"
-        disabled={!stripe || loading}
-        className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+        disabled={!stripe || isProcessing}
+        className="w-full"
+        size="lg"
       >
-        {loading ? t('processing') || 'Processing...' : `${t('pay')} $${(amount / 100).toFixed(2)}`}
-      </button>
+        {isProcessing 
+          ? t('payment.processing', 'Processing...') 
+          : t('payment.payNow', `Pay ${formattedAmount}`)}
+      </Button>
+
+      {/* Processing State Indicator */}
+      {isProcessing && (
+        <div className="flex items-center justify-center gap-2 text-sm text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+          <div className="size-4 border-2 border-[#0A0A0A] border-t-transparent rounded-full animate-spin" />
+          <span>{t('payment.processingMessage', 'Securely processing your payment...')}</span>
+        </div>
+      )}
     </form>
   );
 }
 
 export function PaymentForm(props: PaymentFormProps) {
   return (
-    <Elements stripe={stripePromise} options={{ appearance: { theme: 'stripe' } }}>
+    <Elements stripe={stripePromise}>
       <PaymentFormInner {...props} />
     </Elements>
   );

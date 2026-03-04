@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import Layout from '../components/Layout'
+import { Layout } from '../components/Layout'
 import { Card, CardHeader, CardTitle, CardContent, Tabs, TabsContent, TabsList, TabsTrigger } from '@tripslip/ui'
 import { TripBookingList } from '../components/TripBookingList'
 import { TripCalendarView } from '../components/TripCalendarView'

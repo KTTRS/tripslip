@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from '../components/Layout';
+import { Layout } from '../components/Layout';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@tripslip/ui';
 import { Badge } from '@tripslip/ui/components/badge';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { Plus, Edit, Eye, Clock, Users } from 'lucide-react';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 interface Experience {
   id: string;

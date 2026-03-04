@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'https://esm.sh/stripe@14.11.0?target=deno'
+import { validateUUID, validateAmount } from '../_shared/security.ts'
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
@@ -26,10 +27,27 @@ serve(async (req) => {
 
     const { permissionSlipId, parentId, amountCents, isSplitPayment, splitPaymentGroupId } = await req.json()
 
+    // Validate required inputs
+    if (!permissionSlipId || !validateUUID(permissionSlipId)) {
+      throw new Error('Invalid permission slip ID')
+    }
+
+    if (!validateAmount(amountCents)) {
+      throw new Error('Invalid amount. Must be a positive integer in cents')
+    }
+
+    if (parentId && !validateUUID(parentId)) {
+      throw new Error('Invalid parent ID')
+    }
+
+    if (splitPaymentGroupId && !validateUUID(splitPaymentGroupId)) {
+      throw new Error('Invalid split payment group ID')
+    }
+
     // Validate permission slip exists
     const { data: slip, error: slipError } = await supabase
       .from('permission_slips')
-      .select('*, trips(*, experiences(title))')
+      .select('*, trips(*, experiences(title, currency))')
       .eq('id', permissionSlipId)
       .single()
 
@@ -37,10 +55,13 @@ serve(async (req) => {
       throw new Error('Permission slip not found')
     }
 
+    // Get currency from experience, default to 'usd'
+    const currency = slip.trips?.experiences?.currency || 'usd'
+
     // Create Stripe payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountCents,
-      currency: 'usd',
+      currency: currency.toLowerCase(),
       metadata: {
         permission_slip_id: permissionSlipId,
         parent_id: parentId || '',

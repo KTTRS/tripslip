@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import Layout from '../components/Layout';
+import { Layout } from '../components/Layout';
 import { Button } from '@tripslip/ui/components/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tripslip/ui/components/card';
 import { Badge } from '@tripslip/ui/components/badge';

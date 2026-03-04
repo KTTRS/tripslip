@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@tripslip/ui';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../lib/supabase';
 import type { Tables } from '@tripslip/database';
 import { toast } from 'sonner';
 import { 
@@ -29,11 +29,6 @@ interface StudentWithSlip extends Student {
     payments?: Array<{ status: string; amount_cents: number }>;
   };
 }
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 export default function TripRosterPage() {
   const { tripId } = useParams<{ tripId: string }>();

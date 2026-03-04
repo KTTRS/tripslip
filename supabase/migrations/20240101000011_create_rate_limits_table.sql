@@ -2,7 +2,7 @@
 -- Migration: 20240101000011_create_rate_limits_table.sql
 
 CREATE TABLE rate_limits (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   identifier TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

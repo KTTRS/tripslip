@@ -6,7 +6,7 @@
 -- =====================================================
 
 CREATE TABLE trip_approvals (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
   administrator_id UUID NOT NULL,
   administrator_name TEXT NOT NULL,

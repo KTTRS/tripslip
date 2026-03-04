@@ -6,7 +6,7 @@
 -- =====================================================
 
 CREATE TABLE payments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   permission_slip_id UUID NOT NULL REFERENCES permission_slips(id) ON DELETE RESTRICT,
   parent_id UUID REFERENCES parents(id) ON DELETE SET NULL,
   amount_cents INTEGER NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE payments (
 -- =====================================================
 
 CREATE TABLE refunds (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   payment_id UUID NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
   amount_cents INTEGER NOT NULL,
   stripe_refund_id TEXT UNIQUE,

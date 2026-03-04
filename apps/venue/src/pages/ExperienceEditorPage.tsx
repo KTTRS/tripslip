@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useForm } from 'react-hook-form';
-import Layout from '../components/Layout';
+import { Layout } from '../components/Layout';
 import { PhotoUpload } from '../components/PhotoUpload';
 import { PricingConfiguration, PricingTier } from '../components/PricingConfiguration';
 import { AvailabilityConfiguration, AvailabilitySlot, BlackoutDate } from '../components/AvailabilityConfiguration';
@@ -11,14 +11,9 @@ import { Input } from '@tripslip/ui/components/input';
 import { Label } from '@tripslip/ui/components/label';
 import { Textarea } from '@tripslip/ui/components/textarea';
 import { Alert, AlertDescription } from '@tripslip/ui/components/alert';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 interface ExperienceFormData {
   title: string;

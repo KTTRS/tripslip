@@ -1,14 +1,9 @@
 import { useState, useRef } from 'react';
 import { Button } from '@tripslip/ui/components/button';
 import { Card, CardContent } from '@tripslip/ui/components/card';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { Upload, X, GripVertical } from 'lucide-react';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 interface Photo {
   id: string;

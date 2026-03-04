@@ -6,29 +6,39 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@tripslip/ui": "*",
-    "@tripslip/database": "*",
+    "@googlemaps/js-api-loader": "2.0.2",
+    "@stripe/react-stripe-js": "^5.6.0",
+    "@stripe/stripe-js": "^8.8.0",
+    "@supabase/supabase-js": "^2.47.10",
     "@tripslip/auth": "*",
+    "@tripslip/database": "*",
     "@tripslip/i18n": "*",
+    "@tripslip/ui": "*",
     "@tripslip/utils": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.1.1",
-    "@supabase/supabase-js": "^2.47.10",
-    "@stripe/stripe-js": "^8.8.0",
-    "@stripe/react-stripe-js": "^5.6.0"
+    "react-router-dom": "7.13.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/coverage-v8": "1.6.1",
     "autoprefixer": "^10.4.20",
+    "jsdom": "25.0.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "vitest": "1.6.1"
   }
 }

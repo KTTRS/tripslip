@@ -1,0 +1,8 @@
+{
+  "specVersion": "1.0",
+  "name": "Codebase Fixes - Critical Launch Issues",
+  "description": "Fix all 47 issues identified in comprehensive codebase review to prepare for production launch",
+  "status": "in_progress",
+  "createdAt": "2026-03-04T00:00:00Z",
+  "updatedAt": "2026-03-04T00:00:00Z"
+}

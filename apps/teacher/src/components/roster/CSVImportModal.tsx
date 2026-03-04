@@ -1,14 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@tripslip/ui';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 import { X, Upload, AlertCircle, CheckCircle, Download } from 'lucide-react';
 import Papa from 'papaparse';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 interface CSVRow {
   first_name: string;
@@ -89,15 +84,20 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
             }
           });
           
-          // Check for existing students in trip
-          const { data: existingStudents } = await supabase
-            .from('students')
-            .select('first_name, last_name')
-            .eq('invitation_id', tripId);
+          // Check for existing students in this trip (via permission slips)
+          const { data: existingSlips } = await supabase
+            .from('permission_slips')
+            .select(`
+              student:students (
+                first_name,
+                last_name
+              )
+            `)
+            .eq('trip_id', tripId);
           
           const existingNames = new Set(
-            (existingStudents || []).map(s => 
-              `${s.first_name} ${s.last_name}`.toLowerCase()
+            (existingSlips || []).map((slip: any) => 
+              `${slip.student?.first_name} ${slip.student?.last_name}`.toLowerCase()
             )
           );
           
@@ -115,6 +115,45 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
           if (errors.length === 0 && duplicates.length === 0) {
             for (const row of validRows) {
               try {
+                // Get current user (teacher)
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error('Not authenticated');
+                
+                // Get teacher record
+                const { data: teacher, error: teacherError } = await supabase
+                  .from('teachers')
+                  .select('id')
+                  .eq('user_id', user.id)
+                  .single();
+                
+                if (teacherError) throw teacherError;
+                
+                // Get or create a default roster for this teacher
+                let { data: roster, error: rosterError } = await supabase
+                  .from('rosters')
+                  .select('id')
+                  .eq('teacher_id', teacher.id)
+                  .eq('name', 'Default Roster')
+                  .single();
+                
+                if (rosterError && rosterError.code === 'PGRST116') {
+                  // Roster doesn't exist, create it
+                  const { data: newRoster, error: createRosterError } = await supabase
+                    .from('rosters')
+                    .insert({
+                      teacher_id: teacher.id,
+                      name: 'Default Roster',
+                      grade_level: row.grade.trim()
+                    })
+                    .select()
+                    .single();
+                  
+                  if (createRosterError) throw createRosterError;
+                  roster = newRoster;
+                } else if (rosterError) {
+                  throw rosterError;
+                }
+                
                 // Create student
                 const { data: student, error: studentError } = await supabase
                   .from('students')
@@ -122,21 +161,21 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
                     first_name: row.first_name.trim(),
                     last_name: row.last_name.trim(),
                     grade: row.grade.trim(),
-                    invitation_id: tripId,
+                    roster_id: roster!.id,
                   })
                   .select()
                   .single();
                 
                 if (studentError) throw studentError;
                 
-                // Create permission slip
+                // Create permission slip for this trip
                 const { error: slipError } = await supabase
                   .from('permission_slips')
                   .insert({
                     student_id: student.id,
-                    invitation_id: tripId,
+                    trip_id: tripId,
                     status: 'pending',
-                    token: crypto.randomUUID(),
+                    magic_link_token: crypto.randomUUID(),
                   });
                 
                 if (slipError) throw slipError;

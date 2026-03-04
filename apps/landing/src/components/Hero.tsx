@@ -47,10 +47,28 @@ export default function Hero() {
           </div>
           <div className="relative">
             <div className="aspect-square rounded-2xl bg-primary/10 border-4 border-black shadow-offset-lg p-8">
-              <div className="h-full w-full rounded-xl bg-white border-2 border-black p-6 flex items-center justify-center">
-                <p className="text-center text-gray-500 font-mono">
-                  [Hero Image Placeholder]
-                </p>
+              <div className="h-full w-full rounded-xl bg-white border-2 border-black p-6 flex flex-col gap-4">
+                <div className="flex-1 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border-2 border-black p-4 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">🎒</div>
+                    <p className="font-bold text-lg">Teachers</p>
+                    <p className="text-sm text-gray-600">Plan trips</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-lg border-2 border-black p-3 flex flex-col items-center justify-center">
+                    <div className="text-3xl mb-1">🏛️</div>
+                    <p className="text-xs font-semibold">Venues</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-lg border-2 border-black p-3 flex flex-col items-center justify-center">
+                    <div className="text-3xl mb-1">👨‍👩‍👧</div>
+                    <p className="text-xs font-semibold">Parents</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-pink-50 to-red-50 rounded-lg border-2 border-black p-3 flex flex-col items-center justify-center">
+                    <div className="text-3xl mb-1">🏫</div>
+                    <p className="text-xs font-semibold">Schools</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

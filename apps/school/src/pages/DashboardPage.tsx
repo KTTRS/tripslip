@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent } from '@tripslip/ui';
-import { createSupabaseClient } from '@tripslip/database';
+import { useSchoolAuth } from '../contexts/SchoolAuthContext';
+import { supabase } from '../lib/supabase';
+import { Layout } from '../components/Layout';
 import BudgetTracking from '../components/BudgetTracking';
 import TripFilters from '../components/TripFilters';
 import TripAlerts from '../components/TripAlerts';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 interface DashboardMetrics {
   totalTrips: number;
@@ -51,6 +47,7 @@ interface Alert {
 }
 
 export default function DashboardPage() {
+  const { schoolId, schoolLoading, schoolError } = useSchoolAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     totalTrips: 0,
     activeTrips: 0,
@@ -66,7 +63,6 @@ export default function DashboardPage() {
   const [recentTrips, setRecentTrips] = useState<TripOverview[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [schoolId] = useState('default-school-id'); // TODO: Get from auth context
 
   // Filter states
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
@@ -75,15 +71,24 @@ export default function DashboardPage() {
   const [teacherList, setTeacherList] = useState<Array<{ id: string; name: string }>>([]);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [schoolId, dateRange, selectedTeacher, selectedStatus]);
+    if (!schoolLoading && schoolId) {
+      fetchDashboardData();
+    }
+  }, [dateRange, selectedTeacher, selectedStatus, schoolId, schoolLoading]);
 
   const fetchDashboardData = async () => {
+    if (!schoolId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
       // Build query with filters
-      let query = supabase
+      // Note: RLS policies automatically filter trips based on user's role and organization
+      // School admins see trips from their school, district admins see trips from their district
+      let query = (supabase as any)
         .from('trips')
         .select(`
           id,
@@ -109,7 +114,6 @@ export default function DashboardPage() {
             )
           )
         `)
-        .eq('teachers.school_id', schoolId)
         .order('trip_date', { ascending: false });
 
       // Apply date range filter
@@ -136,7 +140,7 @@ export default function DashboardPage() {
 
       // Calculate metrics
       const calculatedMetrics = (trips || []).reduce(
-        (acc, trip: any) => {
+        (acc: DashboardMetrics, trip: any) => {
           const slips = trip.permission_slips || [];
           const completedSlips = slips.filter(
             (s: any) => s.status === 'paid' || s.status === 'signed'
@@ -372,7 +376,7 @@ export default function DashboardPage() {
     setSelectedStatus('');
   };
 
-  if (loading) {
+  if (schoolLoading || loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -383,27 +387,37 @@ export default function DashboardPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b-2 border-black p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold font-display">TripSlip School</h1>
-          <div className="flex gap-4">
-            <Link to="/" className="px-4 py-2 font-semibold hover:bg-gray-100 rounded">
-              Dashboard
-            </Link>
-            <Link to="/teachers" className="px-4 py-2 font-semibold hover:bg-gray-100 rounded">
-              Teachers
-            </Link>
-            <Link to="/approvals" className="px-4 py-2 font-semibold hover:bg-gray-100 rounded">
-              Approvals
-            </Link>
-          </div>
+  if (schoolError || !schoolId) {
+    return (
+      <Layout>
+        <div className="text-center py-12">
+          <svg
+            className="mx-auto h-12 w-12 text-red-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <h3 className="mt-2 text-lg font-medium text-gray-900">
+            No School Association
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            {schoolError || 'Your account is not associated with a school. Please contact support.'}
+          </p>
         </div>
-      </nav>
+      </Layout>
+    );
+  }
 
-      <main className="max-w-7xl mx-auto p-8">
-        <h2 className="text-3xl font-bold mb-8">School Dashboard</h2>
+  return (
+    <Layout>
+      <h2 className="text-3xl font-bold mb-8">School Dashboard</h2>
 
         {/* Alerts */}
         <TripAlerts alerts={alerts} />
@@ -468,11 +482,7 @@ export default function DashboardPage() {
 
         <div className="grid gap-6 md:grid-cols-2 mb-8">
           {/* Budget Tracking */}
-          <BudgetTracking
-            totalBudget={metrics.totalBudget}
-            spentAmount={metrics.spentAmount}
-            remainingAmount={metrics.remainingAmount}
-          />
+          <BudgetTracking schoolId={schoolId} />
 
           {/* Teacher Statistics */}
           <Card className="border-2 border-black shadow-offset">
@@ -563,7 +573,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+    </Layout>
   );
 }

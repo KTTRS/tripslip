@@ -6,7 +6,7 @@
 -- =====================================================
 
 CREATE TABLE trips (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   experience_id UUID NOT NULL REFERENCES experiences(id) ON DELETE RESTRICT,
   teacher_id UUID NOT NULL REFERENCES teachers(id) ON DELETE RESTRICT,
   trip_date DATE NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE trips (
 -- =====================================================
 
 CREATE TABLE permission_slips (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
   student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   magic_link_token TEXT UNIQUE,
@@ -47,7 +47,7 @@ CREATE TABLE permission_slips (
 -- =====================================================
 
 CREATE TABLE documents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   permission_slip_id UUID NOT NULL REFERENCES permission_slips(id) ON DELETE CASCADE,
   document_type TEXT NOT NULL,
   storage_path TEXT NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE documents (
 -- =====================================================
 
 CREATE TABLE attendance (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
   student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   present BOOLEAN NOT NULL,
@@ -76,7 +76,7 @@ CREATE TABLE attendance (
 -- =====================================================
 
 CREATE TABLE chaperones (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id UUID NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
   parent_id UUID NOT NULL REFERENCES parents(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'invited',
@@ -104,7 +104,7 @@ CREATE INDEX idx_trips_status ON trips(status);
 CREATE INDEX idx_permission_slips_trip ON permission_slips(trip_id);
 CREATE INDEX idx_permission_slips_student ON permission_slips(student_id);
 CREATE INDEX idx_permission_slips_magic_link_token ON permission_slips(magic_link_token) 
-  WHERE magic_link_token IS NOT NULL AND token_expires_at > NOW();
+  WHERE magic_link_token IS NOT NULL;
 CREATE INDEX idx_permission_slips_status ON permission_slips(status);
 CREATE INDEX idx_permission_slips_signed_by ON permission_slips(signed_by_parent_id);
 

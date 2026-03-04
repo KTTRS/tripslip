@@ -21,54 +21,15 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 -- DISTRICTS POLICIES
 -- =====================================================
 
--- Districts: District admins can view their district
-CREATE POLICY "District admins can view their district"
-  ON districts FOR SELECT
-  USING (
-    auth.uid() IN (
-      SELECT user_id FROM districts WHERE id = districts.id
-    )
-  );
-
--- Districts: District admins can update their district
-CREATE POLICY "District admins can update their district"
-  ON districts FOR UPDATE
-  USING (
-    auth.uid() IN (
-      SELECT user_id FROM districts WHERE id = districts.id
-    )
-  );
+-- NOTE: District RLS policies are handled in migration 20240101000017_create_rbac_rls_policies.sql
+-- after the RBAC schema is created
 
 -- =====================================================
 -- SCHOOLS POLICIES
 -- =====================================================
 
--- Schools: School admins can view their school
-CREATE POLICY "School admins can view their school"
-  ON schools FOR SELECT
-  USING (
-    auth.uid() IN (
-      SELECT user_id FROM schools WHERE id = schools.id
-    )
-  );
-
--- Schools: District admins can view schools in their district
-CREATE POLICY "District admins can view schools in their district"
-  ON schools FOR SELECT
-  USING (
-    district_id IN (
-      SELECT id FROM districts WHERE user_id = auth.uid()
-    )
-  );
-
--- Schools: School admins can update their school
-CREATE POLICY "School admins can update their school"
-  ON schools FOR UPDATE
-  USING (
-    auth.uid() IN (
-      SELECT user_id FROM schools WHERE id = schools.id
-    )
-  );
+-- NOTE: School RLS policies are handled in migration 20240101000017_create_rbac_rls_policies.sql
+-- after the RBAC schema is created
 
 -- =====================================================
 -- TEACHERS POLICIES

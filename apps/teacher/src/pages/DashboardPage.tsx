@@ -2,12 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
 import { useAuth } from '../contexts/AuthContext';
-import { createSupabaseClient } from '@tripslip/database';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { Navigation } from '@tripslip/auth';
+import { supabase } from '../lib/supabase';
+import { logger } from '@tripslip/utils';
 
 interface DashboardMetrics {
   totalTrips: number;
@@ -49,7 +46,7 @@ interface Activity {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { teacher, signOut } = useAuth();
+  const { teacher, signOut, activeRole } = useAuth();
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     totalTrips: 0,
     totalStudents: 0,
@@ -87,7 +84,7 @@ export default function DashboardPage() {
           table: 'permission_slips',
         },
         (payload) => {
-          console.log('Permission slip changed:', payload);
+          logger.debug('Permission slip changed', { payload });
           // Refresh dashboard data when changes occur
           fetchDashboardData();
         }
@@ -100,7 +97,7 @@ export default function DashboardPage() {
           table: 'payments',
         },
         (payload) => {
-          console.log('Payment changed:', payload);
+          logger.debug('Payment changed', { payload });
           // Refresh dashboard data when payments change
           fetchDashboardData();
         }
@@ -117,6 +114,7 @@ export default function DashboardPage() {
       setLoading(true);
 
       // Build query with optional status filter
+      // Note: RLS policies automatically filter trips to only show this teacher's trips
       let query = (supabase as any)
         .from('trips')
         .select(`
@@ -145,7 +143,6 @@ export default function DashboardPage() {
             )
           )
         `)
-        .eq('teacher_id', teacher.id)
         .order('trip_date', { ascending: true });
 
       // Apply status filter if not 'all'
@@ -282,19 +279,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b-2 border-black p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold font-display">TripSlip Teacher</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              {teacher?.first_name} {teacher?.last_name}
-            </span>
-            <Button onClick={signOut} className="text-sm" variant="outline">
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <Navigation
+        activeRole={activeRole}
+        userName={teacher ? `${teacher.first_name} ${teacher.last_name}` : undefined}
+        onSignOut={signOut}
+        appName="TripSlip Teacher"
+      />
 
       <main className="max-w-7xl mx-auto p-8">
         <div className="flex justify-between items-center mb-8">

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Sync Supabase Database Before Build",
+  "description": "Automatically applies pending Supabase database migrations before building the application to ensure the database schema is up-to-date and prevent runtime errors",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Before building the application, check if there are pending Supabase database migrations in the supabase/migrations/ directory. If migrations exist that haven't been applied to the linked Supabase project, run 'supabase db push --linked' to apply them. Verify the migrations were applied successfully by running 'supabase migration list --linked'. Only proceed with the build after confirming the database schema is synchronized."
+  }
+}

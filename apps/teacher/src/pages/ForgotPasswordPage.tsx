@@ -1,12 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
-import { createSupabaseClient } from '@tripslip/database';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '../lib/supabase';
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();

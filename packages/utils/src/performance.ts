@@ -1,5 +1,7 @@
 // Performance optimization utilities
 
+import { logger } from './logger';
+
 // Debounce function for search inputs
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
@@ -105,7 +107,7 @@ export function measurePerformance(name: string): () => void {
   
   return () => {
     const duration = performance.now() - start
-    console.log(`[Performance] ${name}: ${duration.toFixed(2)}ms`)
+    logger.debug(`Performance measurement: ${name}`, { durationMs: duration.toFixed(2) })
   }
 }
 

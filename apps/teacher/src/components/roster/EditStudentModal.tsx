@@ -1,16 +1,11 @@
 import { useState } from 'react';
 import { Button, Input } from '@tripslip/ui';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../../lib/supabase';
 import type { Tables } from '@tripslip/database';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 
 type Student = Tables<'students'>;
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 interface EditStudentModalProps {
   student: Student;
@@ -22,7 +17,7 @@ export function EditStudentModal({ student, onClose, onSuccess }: EditStudentMod
   const [formData, setFormData] = useState({
     first_name: student.first_name,
     last_name: student.last_name,
-    grade: student.grade,
+    grade: student.grade || '',
   });
   const [loading, setLoading] = useState(false);
   

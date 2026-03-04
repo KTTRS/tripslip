@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import { createSupabaseClient } from '@tripslip/database';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { useAuditLog } from '@tripslip/auth';
+import { useSchoolAuth } from '../contexts/SchoolAuthContext';
+import { supabase } from '../lib/supabase';
 
 interface PendingTrip {
   id: string;
@@ -46,11 +43,13 @@ export default function TripApprovalModal({
   onClose,
   onApprovalComplete,
 }: TripApprovalModalProps) {
+  const { user, schoolName } = useSchoolAuth();
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(null);
   const [comments, setComments] = useState('');
   const [reason, setReason] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { logUpdate } = useAuditLog();
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -93,9 +92,10 @@ export default function TripApprovalModal({
     setError(null);
 
     try {
-      // Get current user info (in production, this would come from auth context)
-      const administratorId = 'admin-user-id'; // TODO: Get from auth context
-      const administratorName = 'School Administrator'; // TODO: Get from auth context
+      // Get current user info from auth context
+      if (!administratorId || !administratorName) {
+        throw new Error('Administrator information not available');
+      }
 
       // Update trip status
       const newStatus = decision === 'approve' ? 'confirmed' : 'rejected';
@@ -105,6 +105,14 @@ export default function TripApprovalModal({
         .eq('id', trip.id);
 
       if (tripError) throw tripError;
+
+      // Log the trip status update for audit trail
+      await logUpdate(
+        'trips',
+        trip.id,
+        { status: trip.status },
+        { status: newStatus }
+      );
 
       // Create approval record
       const { error: approvalError } = await supabase

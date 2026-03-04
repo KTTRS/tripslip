@@ -1,15 +1,15 @@
 -- Create core entity tables for TripSlip platform
 -- Migration: 20240101000000_create_core_entities.sql
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable UUID extension (pgcrypto for gen_random_uuid)
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =====================================================
 -- VENUES AND VENUE USERS
 -- =====================================================
 
 CREATE TABLE venues (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   description TEXT,
   address JSONB,
@@ -21,7 +21,7 @@ CREATE TABLE venues (
 );
 
 CREATE TABLE venue_users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   venue_id UUID NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role TEXT NOT NULL DEFAULT 'admin',
@@ -34,7 +34,7 @@ CREATE TABLE venue_users (
 -- =====================================================
 
 CREATE TABLE experiences (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   venue_id UUID NOT NULL REFERENCES venues(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   description TEXT,
@@ -51,7 +51,7 @@ CREATE TABLE experiences (
 );
 
 CREATE TABLE availability (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   experience_id UUID NOT NULL REFERENCES experiences(id) ON DELETE CASCADE,
   available_date DATE NOT NULL,
   start_time TIME,
@@ -63,7 +63,7 @@ CREATE TABLE availability (
 );
 
 CREATE TABLE pricing_tiers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   experience_id UUID NOT NULL REFERENCES experiences(id) ON DELETE CASCADE,
   min_students INTEGER NOT NULL,
   max_students INTEGER NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE pricing_tiers (
 -- =====================================================
 
 CREATE TABLE districts (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   code TEXT UNIQUE,
   address JSONB,
@@ -88,7 +88,7 @@ CREATE TABLE districts (
 );
 
 CREATE TABLE schools (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   district_id UUID REFERENCES districts(id) ON DELETE SET NULL,
   name TEXT NOT NULL,
   code TEXT UNIQUE,
@@ -98,7 +98,7 @@ CREATE TABLE schools (
 );
 
 CREATE TABLE teachers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   school_id UUID REFERENCES schools(id) ON DELETE SET NULL,
   first_name TEXT NOT NULL,
@@ -115,7 +115,7 @@ CREATE TABLE teachers (
 -- =====================================================
 
 CREATE TABLE rosters (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   teacher_id UUID NOT NULL REFERENCES teachers(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   grade_level TEXT,
@@ -124,7 +124,7 @@ CREATE TABLE rosters (
 );
 
 CREATE TABLE students (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   roster_id UUID NOT NULL REFERENCES rosters(id) ON DELETE CASCADE,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE students (
 );
 
 CREATE TABLE parents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,

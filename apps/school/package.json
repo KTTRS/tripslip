@@ -9,15 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tripslip/ui": "*",
-    "@tripslip/database": "*",
+    "@googlemaps/js-api-loader": "2.0.2",
+    "@supabase/supabase-js": "^2.47.10",
     "@tripslip/auth": "*",
+    "@tripslip/database": "*",
     "@tripslip/i18n": "*",
+    "@tripslip/ui": "*",
     "@tripslip/utils": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.1.1",
-    "@supabase/supabase-js": "^2.47.10"
+    "react-router-dom": "7.13.1"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

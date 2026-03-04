@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router'
-import { AuthProvider } from './contexts/AuthContext'
+import { TeacherAuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
@@ -8,10 +8,12 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import CreateTripPage from './pages/CreateTripPage'
 import TripRosterPage from './pages/TripRosterPage'
 import PermissionSlipTrackingPage from './pages/PermissionSlipTrackingPage'
+import VenueSearchPage from './pages/VenueSearchPage'
+import VenueDetailPage from './pages/VenueDetailPage'
 
 export default function App() {
   return (
-    <AuthProvider>
+    <TeacherAuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -48,8 +50,24 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/venues/search"
+          element={
+            <ProtectedRoute>
+              <VenueSearchPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/venues/:venueId"
+          element={
+            <ProtectedRoute>
+              <VenueDetailPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </AuthProvider>
+    </TeacherAuthProvider>
   )
 }

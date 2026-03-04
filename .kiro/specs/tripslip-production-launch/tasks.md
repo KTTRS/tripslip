@@ -587,7 +587,7 @@ The tasks are organized into 10 phases matching the requirements structure, with
     - Support multi-language messages
     - _Requirements: 23.7, 23.8, 23.9_
 
-- [x] 30. Checkpoint - Test backend integrations
+- [ ] 30. Checkpoint - Test backend integrations
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Phase 7: Deployment and CI/CD

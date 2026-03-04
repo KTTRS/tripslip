@@ -1,13 +1,8 @@
 import { useState } from 'react';
 import { Button, Input } from '@tripslip/ui';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../../lib/supabase';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 interface AddStudentModalProps {
   tripId: string;
@@ -34,18 +29,61 @@ export function AddStudentModal({ tripId, onClose, onSuccess }: AddStudentModalP
     try {
       setLoading(true);
       
-      // Check for duplicate student in this trip
+      // For this implementation, we'll need to get the teacher's roster
+      // In a complete system, there would be a way to select which roster to add to
+      // For now, we'll create a default roster if none exists
+      
+      // Get current user (teacher)
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      
+      // Get teacher record
+      const { data: teacher, error: teacherError } = await supabase
+        .from('teachers')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (teacherError) throw teacherError;
+      
+      // Get or create a default roster for this teacher
+      let { data: roster, error: rosterError } = await supabase
+        .from('rosters')
+        .select('id')
+        .eq('teacher_id', teacher.id)
+        .eq('name', 'Default Roster')
+        .single();
+      
+      if (rosterError && rosterError.code === 'PGRST116') {
+        // Roster doesn't exist, create it
+        const { data: newRoster, error: createRosterError } = await supabase
+          .from('rosters')
+          .insert({
+            teacher_id: teacher.id,
+            name: 'Default Roster',
+            grade_level: formData.grade
+          })
+          .select()
+          .single();
+        
+        if (createRosterError) throw createRosterError;
+        roster = newRoster;
+      } else if (rosterError) {
+        throw rosterError;
+      }
+      
+      // Check for duplicate student in this roster
       const { data: existingStudents, error: checkError } = await supabase
         .from('students')
         .select('id')
-        .eq('invitation_id', tripId)
+        .eq('roster_id', roster!.id)
         .eq('first_name', formData.first_name)
         .eq('last_name', formData.last_name);
       
       if (checkError) throw checkError;
       
       if (existingStudents && existingStudents.length > 0) {
-        toast.error('This student is already in the trip roster');
+        toast.error('This student is already in the roster');
         return;
       }
       
@@ -56,21 +94,21 @@ export function AddStudentModal({ tripId, onClose, onSuccess }: AddStudentModalP
           first_name: formData.first_name,
           last_name: formData.last_name,
           grade: formData.grade,
-          invitation_id: tripId,
+          roster_id: roster!.id,
         })
         .select()
         .single();
       
       if (studentError) throw studentError;
       
-      // Create permission slip for the student
+      // Create permission slip for the student and this trip
       const { error: slipError } = await supabase
         .from('permission_slips')
         .insert({
           student_id: student.id,
-          invitation_id: tripId,
+          trip_id: tripId,
           status: 'pending',
-          token: crypto.randomUUID(),
+          magic_link_token: crypto.randomUUID(),
         });
       
       if (slipError) throw slipError;

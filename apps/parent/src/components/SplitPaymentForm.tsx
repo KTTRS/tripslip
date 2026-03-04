@@ -1,173 +1,272 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { supabase } from '../lib/supabase';
+import { Button, Input, Label } from '@tripslip/ui';
+import { createPaymentIntent, getPaymentsByPermissionSlip, type Payment } from '../services/payment-service';
+import { useTranslation } from 'react-i18next';
+import { Logger } from '@tripslip/utils';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
-
-interface Contributor {
-  id: string;
-  parentId: string;
-  email: string;
-  amountCents: number;
-  status: 'pending' | 'paid' | 'failed';
-}
+const logger = new Logger();
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
 
 interface SplitPaymentFormProps {
-  slipId: string;
-  totalAmount: number;
-  tripName: string;
-  studentName: string;
-  splitPaymentGroupId: string;
+  permissionSlipId: string;
+  totalAmountCents: number;
   onSuccess: () => void;
-  onError: (error: string) => void;
+  onError?: (error: string) => void;
 }
 
-function SplitPaymentFormInner({
-  slipId,
-  totalAmount,
-  tripName,
-  studentName,
-  splitPaymentGroupId,
-  onSuccess,
-  onError
+function SplitPaymentFormInner({ 
+  permissionSlipId, 
+  totalAmountCents, 
+  onSuccess, 
+  onError 
 }: SplitPaymentFormProps) {
-  const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
-  const [loading, setLoading] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [myContribution, setMyContribution] = useState(0);
-  const [contributors, setContributors] = useState<Contributor[]>([]);
-  const [remainingBalance, setRemainingBalance] = useState(totalAmount);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [existingPayments, setExistingPayments] = useState<Payment[]>([]);
+  const [contributionAmount, setContributionAmount] = useState<string>('');
+  const [contributorName, setContributorName] = useState<string>('');
+  const [contributorEmail, setContributorEmail] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const { t, i18n } = useTranslation();
 
-  // Fetch existing contributors
+  // Load existing payments on mount
   useEffect(() => {
-    const fetchContributors = async () => {
-      const { data, error } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('split_payment_group_id', splitPaymentGroupId);
+    loadExistingPayments();
+  }, [permissionSlipId]);
 
-      if (error) {
-        console.error('Error fetching contributors:', error);
-        return;
-      }
+  const loadExistingPayments = async () => {
+    try {
+      const payments = await getPaymentsByPermissionSlip(permissionSlipId);
+      setExistingPayments(payments.filter(p => p.status === 'succeeded'));
+      setLoading(false);
+    } catch (err) {
+      logger.error('Failed to load existing payments', err as Error, {
+        permissionSlipId,
+      });
+      setLoading(false);
+    }
+  };
 
-      const mappedContributors: Contributor[] = (data || []).map((payment: any) => ({
-        id: payment.id,
-        parentId: payment.parent_id || '',
-        email: payment.parent_email || 'Unknown',
-        amountCents: payment.amount_cents,
-        status: payment.status === 'succeeded' ? 'paid' : payment.status
-      }));
+  const calculateRemainingBalance = () => {
+    const paidAmount = existingPayments.reduce((sum, payment) => sum + payment.amount_cents, 0);
+    return Math.max(0, totalAmountCents - paidAmount);
+  };
 
-      setContributors(mappedContributors);
+  const calculatePaidAmount = () => {
+    return existingPayments.reduce((sum, payment) => sum + payment.amount_cents, 0);
+  };
 
-      // Calculate remaining balance
-      const paidAmount = mappedContributors
-        .filter(c => c.status === 'paid')
-        .reduce((sum, c) => sum + c.amountCents, 0);
-      
-      setRemainingBalance(totalAmount - paidAmount);
-    };
+  const formatCurrency = (cents: number) => {
+    return new Intl.NumberFormat(i18n.language, {
+      style: 'currency',
+      currency: 'USD',
+    }).format(cents / 100);
+  };
 
-    fetchContributors();
-  }, [splitPaymentGroupId, totalAmount]);
-
-  const handleCreatePaymentIntent = async () => {
-    if (myContribution <= 0 || myContribution > remainingBalance) {
-      onError('Please enter a valid contribution amount');
+  const handleContributionAmountChange = (value: string) => {
+    // Remove non-numeric characters except decimal point
+    const cleanValue = value.replace(/[^\d.]/g, '');
+    
+    // Ensure only one decimal point
+    const parts = cleanValue.split('.');
+    if (parts.length > 2) {
+      return;
+    }
+    
+    // Limit to 2 decimal places
+    if (parts[1] && parts[1].length > 2) {
       return;
     }
 
-    try {
-      const { data, error } = await supabase.functions.invoke('create-payment-intent', {
-        body: {
-          permissionSlipId: slipId,
-          amountCents: myContribution,
-          isSplitPayment: true,
-          splitPaymentGroupId
-        }
-      });
+    setContributionAmount(cleanValue);
+  };
 
-      if (error) throw error;
-      setClientSecret(data.clientSecret);
-    } catch (err: any) {
-      onError(err.message || 'Failed to initialize payment');
+  const getContributionAmountCents = () => {
+    const amount = parseFloat(contributionAmount || '0');
+    return Math.round(amount * 100);
+  };
+
+  const validateForm = () => {
+    const contributionCents = getContributionAmountCents();
+    const remainingBalance = calculateRemainingBalance();
+
+    if (!contributorName.trim()) {
+      return t('splitPayment.validation.nameRequired', 'Contributor name is required');
     }
+
+    if (!contributorEmail.trim()) {
+      return t('splitPayment.validation.emailRequired', 'Contributor email is required');
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contributorEmail)) {
+      return t('splitPayment.validation.emailInvalid', 'Please enter a valid email address');
+    }
+
+    if (contributionCents <= 0) {
+      return t('splitPayment.validation.amountRequired', 'Contribution amount must be greater than $0');
+    }
+
+    if (contributionCents > remainingBalance) {
+      return t('splitPayment.validation.amountTooHigh', 'Contribution amount cannot exceed remaining balance');
+    }
+
+    return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!stripe || !elements || !clientSecret) {
+    if (!stripe || !elements) {
       return;
     }
 
-    setLoading(true);
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
 
     try {
-      const { error: submitError } = await elements.submit();
-      if (submitError) {
-        throw new Error(submitError.message);
-      }
+      const contributionCents = getContributionAmountCents();
 
-      const { error } = await stripe.confirmPayment({
+      // Create payment intent for this contribution
+      const { clientSecret } = await createPaymentIntent({
+        permissionSlipId,
+        amountCents: contributionCents,
+        isSplitPayment: true,
+        splitPaymentGroupId: permissionSlipId, // Use slip ID as group ID for simplicity
+      });
+
+      // Confirm payment with Stripe
+      const { error: confirmError } = await stripe.confirmPayment({
         elements,
         clientSecret,
         confirmParams: {
-          return_url: `${window.location.origin}/payment/success?slip_id=${slipId}`
-        }
+          return_url: `${window.location.origin}/payment/success?slip=${permissionSlipId}`,
+          payment_method_data: {
+            billing_details: {
+              name: contributorName,
+              email: contributorEmail,
+            },
+          },
+        },
       });
 
-      if (error) {
-        onError(error.message || 'Payment failed');
+      if (confirmError) {
+        const errorMessage = confirmError.message || t('payment.error', 'Payment failed. Please try again.');
+        setError(errorMessage);
+        onError?.(errorMessage);
       } else {
+        logger.info('Split payment contribution successful', {
+          permissionSlipId,
+          contributionCents,
+          contributorName,
+          contributorEmail,
+        });
         onSuccess();
       }
-    } catch (err: any) {
-      onError(err.message || 'Payment processing failed');
+    } catch (err) {
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : t('payment.error', 'An error occurred. Please try again.');
+      setError(errorMessage);
+      onError?.(errorMessage);
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
+  const remainingBalance = calculateRemainingBalance();
+  const paidAmount = calculatePaidAmount();
+  const isFullyPaid = remainingBalance === 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="size-6 border-2 border-[#0A0A0A] border-t-transparent rounded-full animate-spin" />
+        <span className="ml-2 text-sm text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+          {t('common.loading', 'Loading...')}
+        </span>
+      </div>
+    );
+  }
+
+  if (isFullyPaid) {
+    return (
+      <div className="text-center p-8">
+        <div className="text-6xl mb-4">✅</div>
+        <h3 className="text-xl font-bold text-[#0A0A0A] font-['Fraunces'] mb-2">
+          {t('splitPayment.fullyPaid', 'Payment Complete')}
+        </h3>
+        <p className="text-sm text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+          {t('splitPayment.fullyPaidMessage', 'This trip has been fully paid for.')}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">{t('tripDetails')}</span>
-          <span className="font-semibold">{tripName}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Student</span>
-          <span className="font-semibold">{studentName}</span>
-        </div>
-        <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-          <span className="text-sm text-gray-600">Total Amount</span>
-          <span className="font-semibold">${(totalAmount / 100).toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-semibold text-blue-600">Remaining Balance</span>
-          <span className="text-lg font-bold text-blue-600">
-            ${(remainingBalance / 100).toFixed(2)}
-          </span>
+      {/* Payment Summary */}
+      <div className="p-6 bg-white border-[2px] border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
+        <h3 className="text-lg font-bold text-[#0A0A0A] font-['Fraunces'] mb-4">
+          {t('splitPayment.paymentSummary', 'Payment Summary')}
+        </h3>
+        
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+              {t('splitPayment.totalCost', 'Total Cost')}
+            </span>
+            <span className="text-sm font-bold text-[#0A0A0A] font-['Space_Mono']">
+              {formatCurrency(totalAmountCents)}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+              {t('splitPayment.paidSoFar', 'Paid So Far')}
+            </span>
+            <span className="text-sm font-bold text-green-600 font-['Space_Mono']">
+              {formatCurrency(paidAmount)}
+            </span>
+          </div>
+
+          <div className="border-t-[2px] border-[#0A0A0A] pt-2">
+            <div className="flex items-center justify-between">
+              <span className="text-base font-bold text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+                {t('splitPayment.remainingBalance', 'Remaining Balance')}
+              </span>
+              <span className="text-xl font-bold text-[#0A0A0A] font-['Space_Mono']">
+                {formatCurrency(remainingBalance)}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {contributors.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="font-semibold text-sm text-gray-700">Contributors:</h4>
-          <div className="space-y-1">
-            {contributors.map(contributor => (
-              <div key={contributor.id} className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">{contributor.email}</span>
-                <span className={`font-medium ${
-                  contributor.status === 'paid' ? 'text-green-600' : 'text-gray-400'
-                }`}>
-                  ${(contributor.amountCents / 100).toFixed(2)} - {contributor.status}
+      {/* Existing Payments */}
+      {existingPayments.length > 0 && (
+        <div className="p-6 bg-white border-[2px] border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
+          <h3 className="text-lg font-bold text-[#0A0A0A] font-['Fraunces'] mb-4">
+            {t('splitPayment.previousContributions', 'Previous Contributions')}
+          </h3>
+          
+          <div className="space-y-2">
+            {existingPayments.map((payment, index) => (
+              <div key={payment.id} className="flex items-center justify-between py-2">
+                <span className="text-sm text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+                  {t('splitPayment.contribution', 'Contribution {{number}}', { number: index + 1 })}
+                </span>
+                <span className="text-sm font-bold text-green-600 font-['Space_Mono']">
+                  {formatCurrency(payment.amount_cents)}
                 </span>
               </div>
             ))}
@@ -175,59 +274,176 @@ function SplitPaymentFormInner({
         </div>
       )}
 
-      {!clientSecret ? (
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="contribution" className="block text-sm font-medium text-gray-700 mb-2">
-              {t('amountYouCanPay')}
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-              <input
-                id="contribution"
-                type="number"
-                min="0.01"
-                max={(remainingBalance / 100).toFixed(2)}
-                step="0.01"
-                value={(myContribution / 100).toFixed(2)}
-                onChange={(e) => setMyContribution(Math.round(parseFloat(e.target.value || '0') * 100))}
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="0.00"
+      {/* Contribution Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Contributor Information */}
+        <div className="p-6 bg-white border-[2px] border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
+          <h3 className="text-lg font-bold text-[#0A0A0A] font-['Fraunces'] mb-4">
+            {t('splitPayment.contributorInfo', 'Contributor Information')}
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="contributorName" className="text-sm font-medium text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+                {t('splitPayment.contributorName', 'Full Name')}
+              </Label>
+              <Input
+                id="contributorName"
+                type="text"
+                value={contributorName}
+                onChange={(e) => setContributorName(e.target.value)}
+                placeholder={t('splitPayment.contributorNamePlaceholder', 'Enter your full name')}
+                className="mt-1"
+                required
               />
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              {t('fullCostIs', { amount: (totalAmount / 100).toFixed(2) })}
+
+            <div>
+              <Label htmlFor="contributorEmail" className="text-sm font-medium text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+                {t('splitPayment.contributorEmail', 'Email Address')}
+              </Label>
+              <Input
+                id="contributorEmail"
+                type="email"
+                value={contributorEmail}
+                onChange={(e) => setContributorEmail(e.target.value)}
+                placeholder={t('splitPayment.contributorEmailPlaceholder', 'Enter your email')}
+                className="mt-1"
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Contribution Amount */}
+        <div className="p-6 bg-white border-[2px] border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
+          <h3 className="text-lg font-bold text-[#0A0A0A] font-['Fraunces'] mb-4">
+            {t('splitPayment.contributionAmount', 'Contribution Amount')}
+          </h3>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="contributionAmount" className="text-sm font-medium text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+                {t('splitPayment.amount', 'Amount')} (USD)
+              </Label>
+              <div className="relative mt-1">
+                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#0A0A0A] font-['Space_Mono']">
+                  $
+                </span>
+                <Input
+                  id="contributionAmount"
+                  type="text"
+                  value={contributionAmount}
+                  onChange={(e) => handleContributionAmountChange(e.target.value)}
+                  placeholder="0.00"
+                  className="pl-8"
+                  required
+                />
+              </div>
+              <p className="mt-1 text-xs text-[#0A0A0A] opacity-60 font-['Plus_Jakarta_Sans']">
+                {t('splitPayment.maxAmount', 'Maximum: {{amount}}', { 
+                  amount: formatCurrency(remainingBalance) 
+                })}
+              </p>
+            </div>
+
+            {/* Quick Amount Buttons */}
+            <div className="flex flex-wrap gap-2">
+              {[25, 50, 75, 100].map((percentage) => {
+                const amount = Math.round((remainingBalance * percentage) / 100);
+                if (amount <= 0) return null;
+                
+                return (
+                  <button
+                    key={percentage}
+                    type="button"
+                    onClick={() => setContributionAmount((amount / 100).toFixed(2))}
+                    className="px-3 py-1 text-xs font-medium text-[#0A0A0A] bg-white border-[2px] border-[#0A0A0A] rounded-lg hover:bg-[#F5C518] hover:shadow-[2px_2px_0px_#0A0A0A] transition-all duration-200 font-['Plus_Jakarta_Sans']"
+                  >
+                    {percentage}% ({formatCurrency(amount)})
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setContributionAmount((remainingBalance / 100).toFixed(2))}
+                className="px-3 py-1 text-xs font-medium text-[#0A0A0A] bg-white border-[2px] border-[#0A0A0A] rounded-lg hover:bg-[#F5C518] hover:shadow-[2px_2px_0px_#0A0A0A] transition-all duration-200 font-['Plus_Jakarta_Sans']"
+              >
+                {t('splitPayment.payRemaining', 'Pay Remaining')} ({formatCurrency(remainingBalance)})
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Element */}
+        {getContributionAmountCents() > 0 && (
+          <div className="p-6 bg-white border-[2px] border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
+            <h3 className="text-lg font-bold text-[#0A0A0A] font-['Fraunces'] mb-4">
+              {t('splitPayment.paymentMethod', 'Payment Method')}
+            </h3>
+            <PaymentElement 
+              options={{
+                layout: 'tabs',
+              }}
+            />
+          </div>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <div 
+            className="p-4 bg-red-50 border-[2px] border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]"
+            role="alert"
+            aria-live="assertive"
+          >
+            <p className="text-sm font-medium text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+              {error}
             </p>
           </div>
+        )}
 
-          <button
-            type="button"
-            onClick={handleCreatePaymentIntent}
-            disabled={myContribution <= 0 || myContribution > remainingBalance}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            Continue to Payment
-          </button>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <PaymentElement />
-          <button
-            type="submit"
-            disabled={!stripe || loading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Processing...' : `${t('pay')} $${(myContribution / 100).toFixed(2)}`}
-          </button>
-        </form>
-      )}
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={!stripe || isProcessing || getContributionAmountCents() <= 0}
+          className="w-full"
+          size="lg"
+        >
+          {isProcessing 
+            ? t('payment.processing', 'Processing...') 
+            : t('splitPayment.contributeAmount', 'Contribute {{amount}}', {
+                amount: formatCurrency(getContributionAmountCents())
+              })}
+        </Button>
+
+        {/* Processing State Indicator */}
+        {isProcessing && (
+          <div className="flex items-center justify-center gap-2 text-sm text-[#0A0A0A] font-['Plus_Jakarta_Sans']">
+            <div className="size-4 border-2 border-[#0A0A0A] border-t-transparent rounded-full animate-spin" />
+            <span>{t('payment.processingMessage', 'Securely processing your payment...')}</span>
+          </div>
+        )}
+      </form>
+
+      {/* Split Payment Info */}
+      <div className="p-4 bg-blue-50 border-[2px] border-[#0A0A0A] rounded-xl">
+        <h4 className="text-sm font-bold text-[#0A0A0A] font-['Plus_Jakarta_Sans'] mb-2">
+          {t('splitPayment.howItWorks', 'How Split Payments Work')}
+        </h4>
+        <ul className="text-xs text-[#0A0A0A] space-y-1 font-['Plus_Jakarta_Sans']">
+          <li>• {t('splitPayment.info1', 'Multiple people can contribute to this trip payment')}</li>
+          <li>• {t('splitPayment.info2', 'Each contribution is processed separately and securely')}</li>
+          <li>• {t('splitPayment.info3', 'The trip is approved once the full amount is paid')}</li>
+          <li>• {t('splitPayment.info4', 'All contributors will receive payment confirmations')}</li>
+        </ul>
+      </div>
     </div>
   );
 }
 
 export function SplitPaymentForm(props: SplitPaymentFormProps) {
   return (
-    <Elements stripe={stripePromise} options={{ appearance: { theme: 'stripe' } }}>
+    <Elements stripe={stripePromise}>
       <SplitPaymentFormInner {...props} />
     </Elements>
   );

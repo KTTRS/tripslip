@@ -8,8 +8,8 @@
 -- =====================================================
 
 -- Composite index for finding available experiences by date and capacity
-CREATE INDEX idx_availability_date_capacity ON availability(available_date, available_capacity)
-  WHERE available_capacity > 0;
+CREATE INDEX idx_availability_date_capacity ON availability(available_date, capacity)
+  WHERE (capacity - booked_count) > 0;
 
 -- Composite index for finding trips by status and date
 CREATE INDEX idx_trips_status_date ON trips(status, trip_date);

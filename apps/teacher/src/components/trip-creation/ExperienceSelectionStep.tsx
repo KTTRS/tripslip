@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTripCreationStore } from '../../stores/tripCreationStore';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../../lib/supabase';
 import type { Tables } from '@tripslip/database';
 import { Button } from '@tripslip/ui/components/button';
 import { Input } from '@tripslip/ui/components/input';
@@ -11,11 +11,6 @@ import { toast } from 'sonner';
 import { Search, MapPin, Calendar, DollarSign, Check } from 'lucide-react';
 
 type Experience = Tables<'experiences'>;
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 export function ExperienceSelectionStep() {
   const { selectedExperience, setSelectedExperience, nextStep, prevStep } = useTripCreationStore();

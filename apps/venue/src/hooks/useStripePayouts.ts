@@ -48,14 +48,14 @@ export function useStripePayouts() {
       if (!venueUser) throw new Error('Venue not found for user')
 
       // Get venue's Stripe Connect account ID
-      // TODO: Stripe Connect integration - venues table needs stripe_account_id column
-      // For now, return empty data
-      setPayouts([])
-      setBalance({ available: 0, pending: 0 })
-      setLoading(false)
-      return
+      const { data: venue, error: venueDataError } = await supabase
+        .from('venues')
+        .select('stripe_account_id')
+        .eq('id', venueUser.venue_id)
+        .single()
 
-      /* Commented out until stripe_account_id is added to venues table
+      if (venueDataError) throw venueDataError
+
       if (!venue?.stripe_account_id) {
         // No Stripe account connected yet
         setPayouts([])
@@ -79,7 +79,6 @@ export function useStripePayouts() {
 
       setPayouts(stripeData.payouts || [])
       setBalance(stripeData.balance || { available: 0, pending: 0 })
-      */
     } catch (err) {
       console.error('Error fetching Stripe data:', err)
       setError(err instanceof Error ? err.message : 'Failed to fetch Stripe data')

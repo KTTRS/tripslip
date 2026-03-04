@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@tripslip/ui';
-import { createSupabaseClient } from '@tripslip/database';
+import { supabase } from '../../lib/supabase';
 import type { Tables } from '@tripslip/database';
 import { toast } from 'sonner';
 import { X, Send, Eye, Mail, MessageSquare, Users } from 'lucide-react';
@@ -74,11 +74,6 @@ Thank you,
 {teacherName}`
   }
 ];
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 export default function CommunicationModal({
   tripId,

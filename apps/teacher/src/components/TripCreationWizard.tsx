@@ -1,4 +1,7 @@
+import { useEffect } from 'react';
 import { useTripCreationStore } from '../stores/tripCreationStore';
+import { useAutoSave } from '../hooks/useAutoSave';
+import { useAuth } from '@tripslip/auth';
 import { TripDetailsStep } from './trip-creation/TripDetailsStep';
 import { ExperienceSelectionStep } from './trip-creation/ExperienceSelectionStep';
 import { StudentSelectionStep } from './trip-creation/StudentSelectionStep';
@@ -7,7 +10,12 @@ import { Progress } from '@tripslip/ui/components/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@tripslip/ui/components/card';
 import { Button } from '@tripslip/ui/components/button';
 import { ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
+import {
+  createVenueProfileService,
+  createExperienceService,
+} from '@tripslip/database';
+import { supabase } from '../lib/supabase';
 
 const STEPS = [
   { number: 1, title: 'Trip Details', description: 'Basic information about the trip' },
@@ -18,10 +26,109 @@ const STEPS = [
 
 export function TripCreationWizard() {
   const navigate = useNavigate();
-  const { currentStep, prevStep, reset } = useTripCreationStore();
+  const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const { 
+    currentStep, 
+    prevStep, 
+    reset, 
+    prePopulateFromVenue, 
+    venueInfo,
+    setTeacherId,
+    loadDraft,
+    lastSaved,
+    isDraft
+  } = useTripCreationStore();
+  
+  // Enable auto-save
+  useAutoSave(30000); // Auto-save every 30 seconds
   
   const currentStepInfo = STEPS[currentStep - 1];
   const progress = (currentStep / STEPS.length) * 100;
+  
+  // Load teacher ID and draft on mount
+  useEffect(() => {
+    const loadTeacherData = async () => {
+      if (!user) return;
+      
+      try {
+        // Fetch teacher profile
+        const { data: teacher } = await supabase
+          .from('teachers')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (teacher) {
+          setTeacherId(teacher.id);
+          // Try to load existing draft
+          await loadDraft(teacher.id);
+        }
+      } catch (error) {
+        console.error('Error loading teacher data:', error);
+      }
+    };
+    
+    loadTeacherData();
+  }, [user, setTeacherId, loadDraft]);
+  
+  // Load venue and experience data from URL parameters
+  useEffect(() => {
+    const venueId = searchParams.get('venueId');
+    const experienceId = searchParams.get('experienceId');
+    
+    if (venueId && experienceId && !venueInfo) {
+      loadVenueAndExperience(venueId, experienceId);
+    }
+  }, [searchParams, venueInfo]);
+  
+  const loadVenueAndExperience = async (venueId: string, experienceId: string) => {
+    try {
+      const venueService = createVenueProfileService(supabase);
+      const experienceService = createExperienceService(supabase);
+      
+      // Load venue profile
+      const { data: venue, error: venueError } = await venueService.getVenueProfile(venueId);
+      if (venueError) throw venueError;
+      
+      // Load experience
+      const experience = await experienceService.getExperience(experienceId);
+      if (!experience) throw new Error('Experience not found');
+      
+      // Load venue forms associated with the experience
+      const { data: forms } = await supabase
+        .from('experience_forms')
+        .select(`
+          form:venue_forms (
+            id,
+            name,
+            category,
+            file_url,
+            required
+          )
+        `)
+        .eq('experience_id', experienceId);
+      
+      const venueForms = forms?.map((f: any) => f.form).filter(Boolean) || [];
+      
+      // Pre-populate the store
+      prePopulateFromVenue(
+        {
+          id: venue.id,
+          name: venue.name,
+          address: venue.address,
+          contact_email: venue.contact_email,
+          contact_phone: venue.contact_phone,
+          website: venue.website,
+        },
+        experience,
+        venueForms
+      );
+    } catch (error) {
+      console.error('Error loading venue/experience:', error);
+      // Continue with normal flow if loading fails
+    }
+  };
   
   const handleCancel = () => {
     if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
@@ -50,6 +157,13 @@ export function TripCreationWizard() {
           <p className="text-gray-600">
             Step {currentStep} of {STEPS.length}: {currentStepInfo.title}
           </p>
+          
+          {/* Draft indicator */}
+          {isDraft && lastSaved && (
+            <p className="text-sm text-gray-500 mt-2">
+              Draft saved at {lastSaved.toLocaleTimeString()}
+            </p>
+          )}
         </div>
         
         {/* Progress Bar */}
