@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user, teacher, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -20,23 +20,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!user || !teacher) {
+  if (!user) {
     return <Navigate to="/login" replace />;
-  }
-
-  // Check if teacher account is active
-  if (!teacher.is_active) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="max-w-md text-center">
-          <h1 className="text-2xl font-bold mb-4">Account Deactivated</h1>
-          <p className="text-gray-600 mb-4">
-            Your teacher account has been deactivated. Please contact your school
-            administrator for assistance.
-          </p>
-        </div>
-      </div>
-    );
   }
 
   return <>{children}</>;

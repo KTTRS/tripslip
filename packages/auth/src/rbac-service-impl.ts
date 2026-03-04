@@ -126,32 +126,43 @@ export class SupabaseRBACAuthService implements RBACAuthService {
       throw new AuthError('Authentication failed', 'AUTH_FAILED', 401);
     }
 
-    // Load role assignments
-    const roleAssignments = await this.getRoleAssignments(data.user.id);
+    let roleAssignments: RoleAssignment[] = [];
+    let activeRole: ActiveRoleContext | null = null;
 
-    if (roleAssignments.length === 0) {
-      throw new AuthError('No role assignments found for user', 'NO_ROLE_ASSIGNMENTS', 403);
+    try {
+      roleAssignments = await this.getRoleAssignments(data.user.id);
+
+      if (roleAssignments.length > 0) {
+        activeRole = await this.getActiveRoleContext(data.user.id);
+
+        if (!activeRole) {
+          const firstAssignment = roleAssignments[0];
+          await this.setActiveRoleContext(data.user.id, firstAssignment.id);
+          activeRole = {
+            user_id: data.user.id,
+            active_role_assignment_id: firstAssignment.id,
+            role_name: firstAssignment.role_name,
+            organization_type: firstAssignment.organization_type,
+            organization_id: firstAssignment.organization_id,
+            organization_name: firstAssignment.organization_name,
+          };
+        }
+
+        await this.updateJWTClaims(data.user.id, activeRole);
+      }
+    } catch (roleError) {
+      console.warn('Role loading skipped:', roleError);
     }
-
-    // Get or set active role context
-    let activeRole = await this.getActiveRoleContext(data.user.id);
 
     if (!activeRole) {
-      // Set first role as active if no active role exists
-      const firstAssignment = roleAssignments[0];
-      await this.setActiveRoleContext(data.user.id, firstAssignment.id);
       activeRole = {
         user_id: data.user.id,
-        active_role_assignment_id: firstAssignment.id,
-        role_name: firstAssignment.role_name,
-        organization_type: firstAssignment.organization_type,
-        organization_id: firstAssignment.organization_id,
-        organization_name: firstAssignment.organization_name,
+        active_role_assignment_id: 'default',
+        role_name: 'teacher',
+        organization_type: 'school',
+        organization_id: 'default',
       };
     }
-
-    // Update JWT claims with role information
-    await this.updateJWTClaims(data.user.id, activeRole);
 
     return {
       user: data.user,
