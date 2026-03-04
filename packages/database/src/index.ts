@@ -4,9 +4,18 @@ export type { SupabaseClient } from './client';
 
 // Default supabase client instance (for backward compatibility)
 import { createSupabaseClient } from './client';
+const getEnv = (key: string) => {
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return (import.meta.env as Record<string, string>)[key] || '';
+  }
+  if (typeof process !== 'undefined' && process.env) {
+    return (process.env as Record<string, string>)[key] || '';
+  }
+  return '';
+};
 export const supabase = createSupabaseClient(
-  process.env.VITE_SUPABASE_URL || '',
-  process.env.VITE_SUPABASE_ANON_KEY || ''
+  getEnv('VITE_SUPABASE_URL'),
+  getEnv('VITE_SUPABASE_ANON_KEY')
 );
 
 // Database types

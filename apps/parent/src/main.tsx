@@ -24,7 +24,7 @@ initI18n();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/parent">
       <App />
     </BrowserRouter>
   </React.StrictMode>

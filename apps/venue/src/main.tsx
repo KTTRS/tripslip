@@ -20,7 +20,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/venue">
       <App />
     </BrowserRouter>
   </React.StrictMode>

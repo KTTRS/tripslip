@@ -4,14 +4,14 @@ A multi-app platform for managing school field trips. Includes digital permissio
 
 ## Architecture
 
-Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared packages.
+Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared packages, served through a reverse proxy on port 5000.
 
-### Apps
-- `apps/landing` — Public marketing site (port 5000, primary Replit webview)
-- `apps/venue` — Venue management portal (port 3001)
-- `apps/teacher` — Teacher portal (port 3002)
-- `apps/parent` — Parent portal (port 3003)
-- `apps/school` — School admin portal (port 4200)
+### Apps (all served through proxy on port 5000)
+- `/` — Landing page (internal port 3000)
+- `/venue/` — Venue management portal (internal port 3001)
+- `/teacher/` — Teacher portal (internal port 3002)
+- `/parent/` — Parent portal (internal port 3003)
+- `/school/` — School admin portal (internal port 4200)
 
 ### Packages
 - `packages/auth` — Supabase auth helpers
@@ -31,36 +31,38 @@ Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared pack
 
 ## Running the Project
 
-The Replit workflow runs `npx turbo run dev`, which starts all 5 apps simultaneously.
+The workflow runs `bash start-dev.sh` which:
+1. Starts all 5 Vite dev servers via `turbo dev`
+2. Starts a reverse proxy (`proxy-server.mjs`) on port 5000
 
-The landing page (port 5000) is the main entry point and has an /apps page that links to all other portals.
+The landing page at `/` has an `/apps` hub page that links to all other portals.
 
-### App URLs (via Replit dev domain)
-- Landing: port 5000 (shown in webview)
-- Venue: port 3001
-- Teacher: port 3002
-- Parent: port 3003
-- School: port 4200
+### Key Files
+- `proxy-server.mjs` — Reverse proxy routing requests to the correct app
+- `start-dev.sh` — Startup script for turbo + proxy
+- `apps/landing/src/utils/appUrls.ts` — URL helper for cross-app navigation
+- `apps/landing/src/pages/AppsPage.tsx` — Apps hub page
 
-The `apps/landing/src/utils/appUrls.ts` utility dynamically generates correct URLs for each app based on the Replit domain.
+### Routing
+Each sub-app uses a `basename` on its `BrowserRouter` (e.g., `/venue`, `/teacher`) and a matching `base` in its Vite config. The proxy forwards requests by path prefix to the correct internal Vite dev server.
 
 ## Environment Variables
 
 Required env vars (see `.env.example`):
-- `VITE_SUPABASE_URL` — Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` — Supabase anonymous key
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (server-only, stored as secret)
-- `VITE_STRIPE_PUBLISHABLE_KEY` — Stripe publishable key
-- `STRIPE_SECRET_KEY` — Stripe secret key (server-only, stored as secret)
-- `TWILIO_ACCOUNT_SID` — Twilio account SID (stored as secret)
-- `TWILIO_AUTH_TOKEN` — Twilio auth token (stored as secret)
-- `TWILIO_PHONE_NUMBER` — Twilio phone number (stored as secret)
-- `CUSTOMERIO_API_KEY` — Customer.io API key (stored as secret)
+- `VITE_SUPABASE_URL` — Supabase project URL (env var)
+- `VITE_SUPABASE_ANON_KEY` — Supabase anonymous key (env var)
+- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (secret)
+- `VITE_STRIPE_PUBLISHABLE_KEY` — Stripe publishable key (env var)
+- `STRIPE_SECRET_KEY` — Stripe secret key (secret)
+- `TWILIO_ACCOUNT_SID` — Twilio account SID (secret)
+- `TWILIO_AUTH_TOKEN` — Twilio auth token (secret)
+- `TWILIO_PHONE_NUMBER` — Twilio phone number (secret)
+- `CUSTOMERIO_API_KEY` — Customer.io API key (secret)
 
 ## Replit Migration Notes
-- All vite configs bind `host: '0.0.0.0'` and `allowedHosts: true` for Replit compatibility
-- Landing app on port 5000 (required for Replit webview)
-- School app moved from port 3004 to 4200 (3004 not a supported Replit port)
-- Node.js upgraded from 18 to 20 (required by dependencies)
+- All vite configs bind `host: '0.0.0.0'` and `allowedHosts: true`
+- Reverse proxy on port 5000 routes to all apps by path prefix
+- Each app has `base` set in vite config and `basename` on BrowserRouter
+- Node.js upgraded from 18 to 20
 - Vercel/Netlify config files removed
-- Added /apps hub page on landing site for navigating between portals
+- `packages/database` updated to use `import.meta.env` with `process.env` fallback

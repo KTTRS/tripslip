@@ -59,7 +59,7 @@ export default function AppsPage() {
                 <p className="text-sm text-gray-700 mb-4">{app.description}</p>
                 <Button
                   className="w-full border-2 border-black"
-                  onClick={() => window.open(getAppUrl(app.key), '_blank')}
+                  onClick={() => window.location.href = getAppUrl(app.key)}
                 >
                   Open {app.name}
                 </Button>

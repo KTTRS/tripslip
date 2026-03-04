@@ -26,8 +26,12 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npx turbo run dev"
+args = "bash start-dev.sh"
 waitForPort = 5000
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
 
 [[ports]]
 localPort = 3001
