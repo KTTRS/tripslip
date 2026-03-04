@@ -185,6 +185,9 @@ export type {
   FERPADisclosure,
 } from './ferpa-data-export';
 
+// Twilio client (Replit integration)
+export { getTwilioClient, getTwilioFromPhoneNumber } from './twilio-client';
+
 // Accessibility testing
 export {
   checkColorContrast,
