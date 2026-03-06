@@ -3,16 +3,6 @@ import { useParams, useNavigate } from 'react-router';
 import { supabase } from '../lib/supabase';
 import { LanguageSelector } from '../components/LanguageSelector';
 
-interface StudentResult {
-  id: string;
-  first_name: string;
-  last_name: string;
-  grade: string;
-  slipId: string | null;
-  slipToken: string | null;
-  slipStatus: string | null;
-}
-
 interface TripInfo {
   id: string;
   trip_date: string;
@@ -31,11 +21,13 @@ export function TripLookupPage() {
   const navigate = useNavigate();
 
   const [trip, setTrip] = useState<TripInfo | null>(null);
-  const [students, setStudents] = useState<StudentResult[]>([]);
-  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selecting, setSelecting] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [studentFirstName, setStudentFirstName] = useState('');
+  const [studentLastName, setStudentLastName] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ first?: string; last?: string }>({});
 
   useEffect(() => {
     if (!token) {
@@ -72,49 +64,6 @@ export function TripLookupPage() {
       }
 
       setTrip(tripData as unknown as TripInfo);
-
-      const { data: slips } = await supabase
-        .from('permission_slips')
-        .select('id, student_id, magic_link_token, status')
-        .eq('trip_id', tripData.id);
-
-      const slipMap = new Map<string, { id: string; token: string; status: string }>();
-      for (const s of slips || []) {
-        slipMap.set(s.student_id, {
-          id: s.id,
-          token: s.magic_link_token,
-          status: s.status,
-        });
-      }
-
-      const studentIds = (slips || []).map(s => s.student_id);
-
-      if (studentIds.length === 0) {
-        setStudents([]);
-        setLoading(false);
-        return;
-      }
-
-      const { data: studentsData } = await supabase
-        .from('students')
-        .select('id, first_name, last_name, grade')
-        .in('id', studentIds)
-        .order('last_name');
-
-      const results: StudentResult[] = (studentsData || []).map(s => {
-        const slip = slipMap.get(s.id);
-        return {
-          id: s.id,
-          first_name: s.first_name,
-          last_name: s.last_name,
-          grade: s.grade || '',
-          slipId: slip?.id || null,
-          slipToken: slip?.token || null,
-          slipStatus: slip?.status || null,
-        };
-      });
-
-      setStudents(results);
     } catch (err) {
       console.error('Error loading trip:', err);
       setError('Something went wrong. Please try again.');
@@ -123,52 +72,83 @@ export function TripLookupPage() {
     }
   };
 
-  const handleSelectStudent = async (student: StudentResult) => {
-    if (student.slipStatus === 'signed' || student.slipStatus === 'paid') {
-      setError(`The permission slip for ${student.first_name} has already been signed.`);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const errors: { first?: string; last?: string } = {};
+    if (!studentFirstName.trim()) errors.first = 'Required';
+    if (!studentLastName.trim()) errors.last = 'Required';
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
-
-    setSelecting(student.id);
+    setFieldErrors({});
+    setSubmitting(true);
 
     try {
-      if (student.slipToken) {
-        navigate(`/slip/${student.slipId}?token=${student.slipToken}`);
+      const first = studentFirstName.trim().toLowerCase();
+      const last = studentLastName.trim().toLowerCase();
+
+      const { data: slips } = await supabase
+        .from('permission_slips')
+        .select('id, student_id, magic_link_token, status')
+        .eq('trip_id', trip!.id);
+
+      if (!slips || slips.length === 0) {
+        setError('No permission slips have been set up for this trip yet. Please contact the teacher.');
+        setSubmitting(false);
         return;
       }
 
-      const newToken = crypto.randomUUID();
-      const { data: newSlip, error: insertErr } = await supabase
-        .from('permission_slips')
-        .insert({
-          student_id: student.id,
-          trip_id: trip!.id,
-          status: 'pending',
-          magic_link_token: newToken,
-        })
-        .select('id')
-        .single();
+      const studentIds = slips.map(s => s.student_id);
 
-      if (insertErr || !newSlip) {
-        throw new Error('Could not create permission slip');
+      const { data: students } = await supabase
+        .from('students')
+        .select('id, first_name, last_name')
+        .in('id', studentIds);
+
+      const match = (students || []).find(s =>
+        s.first_name.toLowerCase() === first &&
+        s.last_name.toLowerCase() === last
+      );
+
+      if (!match) {
+        setError('We couldn\'t find a student with that name on this trip. Please check the spelling and try again, or contact the teacher.');
+        setSubmitting(false);
+        return;
       }
 
-      navigate(`/slip/${newSlip.id}?token=${newToken}`);
+      const slip = slips.find(s => s.student_id === match.id);
+
+      if (!slip) {
+        setError('No permission slip found for this student. Please contact the teacher.');
+        setSubmitting(false);
+        return;
+      }
+
+      if (slip.status === 'signed' || slip.status === 'paid') {
+        setError(`The permission slip for ${match.first_name} ${match.last_name} has already been signed.`);
+        setSubmitting(false);
+        return;
+      }
+
+      let slipToken = slip.magic_link_token;
+      if (!slipToken) {
+        slipToken = crypto.randomUUID();
+        await supabase
+          .from('permission_slips')
+          .update({ magic_link_token: slipToken })
+          .eq('id', slip.id);
+      }
+
+      navigate(`/slip/${slip.id}?token=${slipToken}`);
     } catch (err) {
-      console.error('Error selecting student:', err);
+      console.error('Error looking up student:', err);
       setError('Something went wrong. Please try again.');
-      setSelecting(null);
+      setSubmitting(false);
     }
   };
-
-  const filtered = students.filter(s => {
-    if (!search.trim()) return true;
-    const q = search.toLowerCase();
-    return (
-      s.first_name.toLowerCase().includes(q) ||
-      s.last_name.toLowerCase().includes(q)
-    );
-  });
 
   if (loading) {
     return (
@@ -241,89 +221,81 @@ export function TripLookupPage() {
           )}
         </div>
 
-        {error && (
-          <div className="mb-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 text-sm text-yellow-800">
-            {error}
-          </div>
-        )}
-
         <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6">
           <h2 className="text-lg font-bold text-[#0A0A0A] mb-1">
-            Find Your Child
+            Enter Your Child's Name
           </h2>
-          <p className="text-sm text-gray-600 mb-4">
-            Search for your child's name to sign their permission slip.
+          <p className="text-sm text-gray-600 mb-5">
+            Please enter your child's name exactly as it appears on the class roster.
           </p>
 
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => { setSearch(e.target.value); setError(null); }}
-            placeholder="Type your child's name..."
-            autoFocus
-            className="w-full border-2 border-[#0A0A0A] rounded-lg px-4 py-3 text-base mb-4 focus:outline-none focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518]"
-          />
-
-          {filtered.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              {search.trim()
-                ? `No students found matching "${search}". Please check the spelling or contact the teacher.`
-                : 'No students are assigned to this trip yet.'}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
+                First Name
+              </label>
+              <input
+                id="firstName"
+                type="text"
+                value={studentFirstName}
+                onChange={(e) => { setStudentFirstName(e.target.value); setFieldErrors(prev => ({ ...prev, first: undefined })); setError(null); }}
+                placeholder="e.g. Sofia"
+                autoFocus
+                autoComplete="off"
+                className={`w-full border-2 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518] ${
+                  fieldErrors.first ? 'border-red-400' : 'border-[#0A0A0A]'
+                }`}
+              />
+              {fieldErrors.first && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.first}</p>
+              )}
             </div>
-          ) : (
-            <div className="space-y-2">
-              {filtered.map((student) => {
-                const isSigned = student.slipStatus === 'signed' || student.slipStatus === 'paid';
-                const isSelecting = selecting === student.id;
 
-                return (
-                  <button
-                    key={student.id}
-                    onClick={() => handleSelectStudent(student)}
-                    disabled={isSelecting || isSigned}
-                    className={`w-full flex items-center justify-between p-4 rounded-lg border-2 transition-all text-left ${
-                      isSigned
-                        ? 'border-green-300 bg-green-50 cursor-default'
-                        : isSelecting
-                        ? 'border-[#F5C518] bg-[#F5C518]/10 cursor-wait'
-                        : 'border-gray-200 bg-white hover:border-[#F5C518] hover:shadow-md active:bg-[#F5C518]/10'
-                    }`}
-                  >
-                    <div>
-                      <span className="font-semibold text-[#0A0A0A] text-base">
-                        {student.first_name} {student.last_name}
-                      </span>
-                      {student.grade && (
-                        <span className="ml-2 text-sm text-gray-500">
-                          Grade {student.grade}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      {isSigned ? (
-                        <span className="inline-flex items-center gap-1 text-green-700 text-sm font-medium">
-                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                          </svg>
-                          Signed
-                        </span>
-                      ) : isSelecting ? (
-                        <div className="h-5 w-5 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
+                Last Name
+              </label>
+              <input
+                id="lastName"
+                type="text"
+                value={studentLastName}
+                onChange={(e) => { setStudentLastName(e.target.value); setFieldErrors(prev => ({ ...prev, last: undefined })); setError(null); }}
+                placeholder="e.g. Garcia"
+                autoComplete="off"
+                className={`w-full border-2 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518] ${
+                  fieldErrors.last ? 'border-red-400' : 'border-[#0A0A0A]'
+                }`}
+              />
+              {fieldErrors.last && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors.last}</p>
+              )}
             </div>
-          )}
+
+            {error && (
+              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] rounded-lg px-4 py-3 text-base font-bold shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-60 disabled:cursor-wait"
+            >
+              {submitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-[#0A0A0A] border-t-transparent rounded-full animate-spin" />
+                  Looking up...
+                </span>
+              ) : (
+                'Continue'
+              )}
+            </button>
+          </form>
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          Don't see your child? Contact the teacher for help.
+          Having trouble? Contact your child's teacher for help.
         </p>
       </div>
     </div>
