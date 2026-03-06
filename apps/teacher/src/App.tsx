@@ -13,6 +13,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import CreateTripPage from './pages/CreateTripPage'
 import TripRosterPage from './pages/TripRosterPage'
 import PermissionSlipTrackingPage from './pages/PermissionSlipTrackingPage'
+import TripManifestPage from './pages/TripManifestPage'
 import VenueSearchPage from './pages/VenueSearchPage'
 import VenueDetailPage from './pages/VenueDetailPage'
 
@@ -70,6 +71,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <PermissionSlipTrackingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trips/:tripId/manifest"
+          element={
+            <ProtectedRoute>
+              <TripManifestPage />
             </ProtectedRoute>
           }
         />

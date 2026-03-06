@@ -189,12 +189,11 @@ export class SearchService {
           location
         `);
 
-      // Apply text search filter (Requirement 3.1)
       if (query.query && query.query.trim()) {
-        venueQuery = venueQuery.textSearch('name,description', query.query, {
-          type: 'websearch',
-          config: 'english'
-        });
+        const q = query.query.trim().replace(/[%_\\,().*]/g, '');
+        if (q.length > 0) {
+          venueQuery = venueQuery.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
+        }
       }
 
       // Apply verified filter

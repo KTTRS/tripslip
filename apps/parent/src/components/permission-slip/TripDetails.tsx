@@ -16,7 +16,7 @@ interface TripDetailsProps {
       description: string;
       venue?: {
         name: string;
-        address: string;
+        address: any;
       } | null;
       pricing_tiers?: Array<{ price_cents: number }>;
     } | null;
@@ -26,7 +26,7 @@ interface TripDetailsProps {
     } | null;
     venues?: {
       name: string;
-      address: string;
+      address: any;
     } | null;
   };
 }
@@ -48,6 +48,15 @@ export function TripDetails({ trip }: TripDetailsProps) {
   const experienceTitle = trip.experience?.title || trip.experiences?.title;
   const experienceDescription = trip.experience?.description || trip.experiences?.description;
   const venue = trip.experience?.venue || trip.venues;
+
+  const formatAddress = (addr: any): string => {
+    if (!addr) return '';
+    if (typeof addr === 'string') return addr;
+    if (typeof addr === 'object') {
+      return [addr.street, addr.city, addr.state, addr.zipCode].filter(Boolean).join(', ');
+    }
+    return '';
+  };
 
   return (
     <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 space-y-4">
@@ -75,7 +84,7 @@ export function TripDetails({ trip }: TripDetailsProps) {
               </p>
               <p className="text-[#0A0A0A] font-medium">{venue.name}</p>
               <p className="text-sm text-gray-600">
-                {venue.address}
+                {formatAddress(venue.address)}
               </p>
             </div>
           )}
@@ -85,7 +94,7 @@ export function TripDetails({ trip }: TripDetailsProps) {
               {t('permissionSlip.date')}
             </p>
             <p className="text-[#0A0A0A] font-medium">
-              {formatDate(trip.trip_date, i18n.language)}
+              {formatDate(trip.trip_date, 'PPP', i18n.language)}
             </p>
           </div>
 

@@ -107,20 +107,18 @@ export function TripStatistics({ tripId }: TripStatisticsProps) {
       let totalPaymentsExpected = 0;
 
       slipsData?.forEach((slip: any) => {
-        // Check if any payment is successful
         const hasPaidPayment = slip.payments?.some((p: any) => p.status === 'succeeded');
         
         if (hasPaidPayment) {
           paidSlips++;
-          // Sum up all successful payments for this slip
           slip.payments?.forEach((p: any) => {
             if (p.status === 'succeeded') {
               totalPaymentsReceived += p.amount_cents;
             }
           });
-        } else if (slip.status === 'signed') {
+        } else if (slip.status === 'signed' || slip.status === 'signed_pending_payment') {
           signedSlips++;
-        } else if (slip.status === 'pending') {
+        } else if (slip.status === 'pending' || slip.status === 'sent') {
           pendingSlips++;
         }
 

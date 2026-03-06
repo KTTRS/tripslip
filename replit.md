@@ -40,12 +40,13 @@ The landing page at `/` has an `/apps` hub page that links to all other portals.
 ### Teacher App Pages
 - `/` `/dashboard` — Dashboard with stats, quick actions, upcoming trips
 - `/trips` — Full trip list with filters (upcoming/past/all), status badges
-- `/trips/create` — Trip creation wizard (4 steps)
+- `/trips/create` — Trip creation wizard (4 steps: details+transportation, experience, students, review+forms+funding+addons)
 - `/trips/:tripId/roster` — Per-trip student roster with permission slip status
-- `/trips/:tripId/slips` — Permission slip tracking with send/remind
+- `/trips/:tripId/slips` — Permission slip tracking with send/remind/communication modal
+- `/trips/:tripId/manifest` — Printable trip manifest for day-of attendance (all signed slips, medical alerts, emergency contacts, CSV download)
 - `/students` — Full student management page (add, CSV import with parent info, edit, delete, send permission slip links)
 - `/profile` — Teacher profile editing + password change
-- `/venues/search` — Venue discovery
+- `/venues/search` — Venue discovery with search, filters, categories
 - `/venues/:venueId` — Venue detail
 
 ### Key Files
@@ -54,7 +55,9 @@ The landing page at `/` has an `/apps` hub page that links to all other portals.
 - `apps/teacher/src/components/roster/SendLinksModal.tsx` — Generate ONE link per trip for all parents (copy, SMS, Remind/ClassDojo)
 - `apps/teacher/src/components/roster/CSVImportModal.tsx` — CSV import with parent contact info columns
 - `apps/teacher/src/components/roster/AddStudentModal.tsx` — Add student with parent info
-- `apps/parent/src/pages/TripLookupPage.tsx` — Parent opens trip link, searches for child, routes to permission slip
+- `apps/parent/src/pages/TripLookupPage.tsx` — Self-service permission slip: parent opens trip link (`/parent/trip/:token`), fills in child info + contact + signature, creates slip in DB with form_data JSONB
+- `apps/parent/src/pages/PermissionSlipSuccessPage.tsx` — Success page with optional account creation
+- `apps/teacher/src/pages/TripManifestPage.tsx` — Printable trip manifest with all signed slips (handles both roster-linked and parent-submitted slips)
 
 ### Routing
 Each sub-app uses a `basename` on its `BrowserRouter` (e.g., `/venue`, `/teacher`) and a matching `base` in its Vite config. The proxy forwards requests by path prefix to the correct internal Vite dev server.
@@ -127,6 +130,24 @@ Trip creation drafts are stored in **localStorage** (not the `trip_drafts` DB ta
 The `ProtectedRoute` in the teacher app only requires `user` auth — it does not require a `teachers` table record, which allows demo login without DB seeding.
 
 The `signIn` flow wraps role-loading in try/catch and falls back to a default `teacher` role if no `role_assignments` records exist.
+
+## Permission Slip Flow
+1. Teacher generates ONE link per trip via `trips.direct_link_token` (SendLinksModal)
+2. Teacher shares link via SMS bulk send, copy-with-message, or Remind/ClassDojo
+3. Parent opens `/parent/trip/{token}` → TripLookupPage shows full form
+4. Parent fills in: child name/grade/allergies, parent contact, emergency contact, signature
+5. On submit: creates `permission_slips` record with `student_id = NULL`, data in `form_data` JSONB
+6. Status: `signed_pending_payment` (if payment needed) or `signed` (free/assistance)
+7. If payment needed: redirects to PaymentPage → Stripe checkout → PaymentSuccessPage
+8. If no payment: redirects to PermissionSlipSuccessPage with optional account creation
+9. Teacher sees slip appear in real-time on PermissionSlipTrackingPage
+10. Teacher views trip manifest for day-of attendance at `/trips/:tripId/manifest`
+
+### Status Values for permission_slips
+`pending` → `sent` → `signed` / `signed_pending_payment` → `paid` / `cancelled`
+
+### localStorage
+- `tripslip_parent_info` — Stores parent+child info for pre-filling on future trips
 
 ## Design System
 

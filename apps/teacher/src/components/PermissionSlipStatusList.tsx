@@ -126,11 +126,17 @@ export function PermissionSlipStatusList({ tripId }: PermissionSlipStatusListPro
 
       if (slipsError) throw slipsError;
 
-      // Transform data to handle single student object
-      const transformedSlips = (slipsData || []).map((slip: any) => ({
-        ...slip,
-        student: Array.isArray(slip.student) ? slip.student[0] : slip.student,
-      }));
+      const transformedSlips = (slipsData || []).map((slip: any) => {
+        const rosterStudent = Array.isArray(slip.student) ? slip.student[0] : slip.student;
+        const fd = (slip.form_data as Record<string, any>) || {};
+        const student = rosterStudent || (fd.studentFirstName ? {
+          id: slip.id,
+          first_name: fd.studentFirstName,
+          last_name: fd.studentLastName || '',
+          grade: fd.studentGrade || '',
+        } : null);
+        return { ...slip, student };
+      });
 
       setSlips(transformedSlips);
     } catch (err) {
@@ -270,15 +276,10 @@ export function PermissionSlipStatusList({ tripId }: PermissionSlipStatusListPro
   };
 
   const getDisplayStatus = (slip: PermissionSlipWithDetails): SlipStatus => {
-    // Check if any payment is successful
     const hasPaidPayment = slip.payments?.some((p) => p.status === 'succeeded');
-    
-    if (hasPaidPayment) {
-      return 'paid';
-    }
-    
-    // Otherwise use the slip status
-    return slip.status as SlipStatus;
+    if (hasPaidPayment) return 'paid';
+    if (slip.status === 'signed_pending_payment') return 'signed';
+    return (slip.status as SlipStatus) in STATUS_CONFIG ? (slip.status as SlipStatus) : 'pending';
   };
 
   const [sendingSlipId, setSendingSlipId] = useState<string | null>(null);
@@ -480,7 +481,7 @@ export function PermissionSlipStatusList({ tripId }: PermissionSlipStatusListPro
                               </span>
                             )}
                           </div>
-                        ) : slip.status === 'signed' ? (
+                        ) : slip.status === 'signed' || slip.status === 'signed_pending_payment' ? (
                           <span className="text-sm text-gray-600">Awaiting payment</span>
                         ) : (
                           <span className="text-sm text-gray-400">—</span>

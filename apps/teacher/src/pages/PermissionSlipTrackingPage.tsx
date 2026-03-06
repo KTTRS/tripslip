@@ -12,7 +12,8 @@ import {
   DollarSign,
   Send,
   MessageSquare,
-  Heart
+  Heart,
+  ClipboardList
 } from 'lucide-react';
 import { PermissionSlipStatusList } from '../components/PermissionSlipStatusList';
 import { TripStatistics } from '../components/TripStatistics';
@@ -112,7 +113,7 @@ export default function PermissionSlipTrackingPage() {
       const { data: slips } = await supabase
         .from('permission_slips')
         .select(`
-          id, status,
+          id, status, form_data,
           student:students (
             id, first_name, last_name, grade, roster_id
           )
@@ -120,7 +121,15 @@ export default function PermissionSlipTrackingPage() {
         .eq('trip_id', tripId);
 
       const mapped = (slips || []).map((slip: any) => {
-        const student = Array.isArray(slip.student) ? slip.student[0] : slip.student;
+        const rosterStudent = Array.isArray(slip.student) ? slip.student[0] : slip.student;
+        const fd = (slip.form_data as Record<string, any>) || {};
+        const student = rosterStudent || (fd.studentFirstName ? {
+          id: slip.id,
+          first_name: fd.studentFirstName,
+          last_name: fd.studentLastName || '',
+          grade: fd.studentGrade || '',
+          roster_id: null,
+        } : null);
         return {
           ...student,
           permission_slip: { id: slip.id, status: slip.status },
@@ -271,6 +280,15 @@ export default function PermissionSlipTrackingPage() {
                 </Button>
                 <Button
                   variant="outline"
+                  onClick={() => navigate(`/trips/${tripId}/manifest`)}
+                  className="border-2 border-black shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                >
+                  <ClipboardList className="h-4 w-4 mr-2" />
+                  View Manifest
+                </Button>
+                <Button
+                  variant="outline"
                   onClick={() => setShowCancellationDialog(true)}
                   className="border-2 border-red-500 text-red-700 hover:bg-red-50 shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
                   style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
@@ -331,9 +349,16 @@ export default function PermissionSlipTrackingPage() {
                     {trip.experience?.venue?.name}
                   </p>
                   <p className="text-gray-700 text-sm">
-                    {typeof trip.experience?.venue?.address === 'string' 
-                      ? trip.experience.venue.address 
-                      : 'Address not available'}
+                    {(() => {
+                      const addr = trip.experience?.venue?.address;
+                      if (!addr) return 'Address not available';
+                      if (typeof addr === 'string') return addr;
+                      if (typeof addr === 'object') {
+                        const a = addr as Record<string, any>;
+                        return [a.street, a.city, a.state, a.zipCode].filter(Boolean).join(', ');
+                      }
+                      return 'Address not available';
+                    })()}
                   </p>
                 </div>
               </div>

@@ -104,48 +104,10 @@ export function SendLinksModal({ students, onClose, onSuccess }: SendLinksModalP
         trip.direct_link_token = token;
       }
 
-      let slipsCreated = 0;
-      let slipErrors = 0;
-      for (const student of students) {
-        const { data: existing } = await supabase
-          .from('permission_slips')
-          .select('id')
-          .eq('student_id', student.id)
-          .eq('trip_id', selectedTrip)
-          .maybeSingle();
-
-        if (!existing) {
-          const magicToken = crypto.randomUUID();
-          const { error: insertError } = await supabase
-            .from('permission_slips')
-            .insert({
-              student_id: student.id,
-              trip_id: selectedTrip,
-              status: 'pending',
-              magic_link_token: magicToken,
-            });
-          if (insertError) {
-            console.error('Failed to create slip for', student.first_name, insertError);
-            slipErrors++;
-          } else {
-            slipsCreated++;
-          }
-        }
-      }
-
-      if (slipErrors > 0) {
-        toast.error(`${slipErrors} permission slip${slipErrors !== 1 ? 's' : ''} failed to create. The link will still work for other students.`);
-      }
-
       const baseUrl = window.location.origin;
       const link = `${baseUrl}/parent/trip/${token}`;
       setTripLink(link);
-
-      if (slipsCreated > 0) {
-        toast.success(`Link ready! Created ${slipsCreated} new permission slip${slipsCreated !== 1 ? 's' : ''}.`);
-      } else {
-        toast.success('Link ready!');
-      }
+      toast.success('Link ready!');
     } catch (err) {
       console.error('Error generating link:', err);
       toast.error('Failed to generate link');
