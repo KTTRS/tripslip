@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent } from '@tripslip/ui';
 
 interface Alert {
@@ -16,6 +17,8 @@ export default function TripAlerts({ alerts }: TripAlertsProps) {
   if (alerts.length === 0) {
     return null;
   }
+
+  const pendingCount = alerts.filter(a => a.id.endsWith('-pending-approval')).length;
 
   const getAlertStyles = (type: Alert['type']) => {
     switch (type) {
@@ -46,7 +49,17 @@ export default function TripAlerts({ alerts }: TripAlertsProps) {
   return (
     <Card className="border-2 border-black shadow-offset mb-6">
       <CardHeader>
-        <CardTitle>Alerts & Attention Required</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Alerts & Attention Required</CardTitle>
+          {pendingCount > 0 && (
+            <Link
+              to="/approvals"
+              className="px-4 py-2 bg-tripslip-yellow text-black text-sm font-semibold rounded-lg border-2 border-black shadow-offset hover:bg-yellow-400 transition-colors"
+            >
+              Review {pendingCount} Pending {pendingCount === 1 ? 'Approval' : 'Approvals'}
+            </Link>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -61,6 +74,14 @@ export default function TripAlerts({ alerts }: TripAlertsProps) {
                   <p className="font-semibold text-sm">{alert.tripName}</p>
                   <p className="text-sm mt-1">{alert.message}</p>
                 </div>
+                {alert.id.endsWith('-pending-approval') && (
+                  <Link
+                    to="/approvals"
+                    className="text-sm font-semibold text-blue-700 hover:underline whitespace-nowrap"
+                  >
+                    Review
+                  </Link>
+                )}
               </div>
             </div>
           ))}

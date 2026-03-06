@@ -43,7 +43,7 @@ export default function TripApprovalModal({
   onClose,
   onApprovalComplete,
 }: TripApprovalModalProps) {
-  const { user, schoolName } = useSchoolAuth();
+  const { user } = useSchoolAuth();
   const [decision, setDecision] = useState<'approve' | 'reject' | null>(null);
   const [comments, setComments] = useState('');
   const [reason, setReason] = useState('');
@@ -92,13 +92,14 @@ export default function TripApprovalModal({
     setError(null);
 
     try {
-      // Get current user info from auth context
-      if (!administratorId || !administratorName) {
+      const administratorId = user?.id;
+      const administratorName = user?.email || 'Unknown Administrator';
+
+      if (!administratorId) {
         throw new Error('Administrator information not available');
       }
 
-      // Update trip status
-      const newStatus = decision === 'approve' ? 'confirmed' : 'rejected';
+      const newStatus = decision === 'approve' ? 'approved' : 'rejected';
       const { error: tripError } = await supabase
         .from('trips')
         .update({ status: newStatus })

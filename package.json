@@ -46,6 +46,7 @@
     "globals": "17.4.0",
     "http-proxy": "1.18.1",
     "isomorphic-dompurify": "3.0.0",
+    "pg": "8.20.0",
     "rollup-plugin-visualizer": "6.0.11",
     "typescript-eslint": "8.56.1",
     "vite": "6.4.1",

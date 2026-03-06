@@ -34,6 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   
   // School Admin navigation
   { label: 'Dashboard', path: '/', roles: ['school_admin'] },
+  { label: 'Approvals', path: '/approvals', roles: ['school_admin'] },
   { label: 'Teachers', path: '/teachers', roles: ['school_admin'] },
   { label: 'Trips', path: '/trips', roles: ['school_admin'] },
   { label: 'Students', path: '/students', roles: ['school_admin'] },

@@ -284,12 +284,11 @@ export default function DashboardPage() {
           });
         }
 
-        // Alert for trips needing approval
-        if (trip.status === 'pending') {
+        if (trip.status === 'pending_approval') {
           generatedAlerts.push({
             id: `${trip.id}-pending-approval`,
             type: 'info',
-            message: 'Pending approval',
+            message: 'Pending approval — review required',
             tripId: trip.id,
             tripName: trip.experience?.title || 'Unknown Trip',
           });

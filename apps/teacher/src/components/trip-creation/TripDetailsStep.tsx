@@ -1,14 +1,36 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTripCreationStore } from '../../stores/tripCreationStore';
+import type { TransportationDetails } from '../../stores/tripCreationStore';
 import { Button } from '@tripslip/ui/components/button';
 import { Input } from '@tripslip/ui/components/input';
 import { Label } from '@tripslip/ui/components/label';
 import { Textarea } from '@tripslip/ui/components/textarea';
 import { toast } from 'sonner';
-import { MapPin, Phone, Mail, Globe, FileText, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, FileText, Calendar, Clock, AlertCircle, Bus } from 'lucide-react';
+
+const TRANSPORTATION_TYPES = [
+  { value: 'district_bus', label: 'District Bus' },
+  { value: 'charter_bus', label: 'Charter Bus' },
+  { value: 'parent_dropoff', label: 'Parent Drop-off' },
+  { value: 'walking', label: 'Walking' },
+  { value: 'public_transit', label: 'Public Transit' },
+  { value: 'other', label: 'Other' },
+] as const;
+
+const DEFAULT_TRANSPORTATION: TransportationDetails = {
+  type: '',
+  departureTime: '',
+  returnTime: '',
+  pickupLocation: '',
+  companyName: '',
+  companyPhone: '',
+  estimatedCostCents: 0,
+  notes: '',
+  estimatedBuses: 0,
+};
 
 export function TripDetailsStep() {
-  const { tripDetails, setTripDetails, nextStep, saveDraft, venueInfo, venueForms } = useTripCreationStore();
+  const { tripDetails, setTripDetails, nextStep, saveDraft, venueInfo, venueForms, selectedStudents } = useTripCreationStore();
   
   const [formData, setFormData] = useState({
     name: tripDetails?.name || '',
@@ -17,6 +39,10 @@ export function TripDetailsStep() {
     description: tripDetails?.description || '',
     specialRequirements: tripDetails?.specialRequirements || '',
   });
+
+  const [transportation, setTransportation] = useState<TransportationDetails>(
+    tripDetails?.transportation || { ...DEFAULT_TRANSPORTATION }
+  );
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -70,6 +96,30 @@ export function TripDetailsStep() {
       return Object.keys(newErrors).length === 0;
     };
   
+  const estimatedBuses = useMemo(() => {
+    const studentCount = selectedStudents.length;
+    if (studentCount === 0) return 0;
+    return Math.ceil(studentCount / 48);
+  }, [selectedStudents.length]);
+
+  const handleTransportationChange = (field: keyof TransportationDetails, value: string | number) => {
+    setTransportation((prev) => {
+      const updated = { ...prev, [field]: value };
+      if (field === 'type' && (value === 'district_bus' || value === 'charter_bus')) {
+        updated.estimatedBuses = estimatedBuses;
+      }
+      return updated;
+    });
+  };
+
+  const getFormDataWithTransportation = () => {
+    const hasTransportation = transportation.type !== '';
+    return {
+      ...formData,
+      transportation: hasTransportation ? { ...transportation, estimatedBuses: (transportation.type === 'district_bus' || transportation.type === 'charter_bus') ? estimatedBuses : 0 } : undefined,
+    };
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -78,12 +128,12 @@ export function TripDetailsStep() {
       return;
     }
     
-    setTripDetails(formData);
+    setTripDetails(getFormDataWithTransportation());
     nextStep();
   };
   
   const handleSaveDraft = async () => {
-    setTripDetails(formData);
+    setTripDetails(getFormDataWithTransportation());
     await saveDraft();
     toast.success('Draft saved successfully');
   };
@@ -352,6 +402,165 @@ export function TripDetailsStep() {
         </p>
       </div>
       
+      {/* Transportation */}
+      <div className="space-y-4 p-4 bg-gray-50 border-2 border-[#0A0A0A] rounded-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <Bus className="w-5 h-5 text-[#0A0A0A]" />
+          <h3 className="text-lg font-semibold text-[#0A0A0A]">Transportation</h3>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="transportationType" className="text-[#0A0A0A] font-semibold">
+            Transportation Type
+          </Label>
+          <select
+            id="transportationType"
+            value={transportation.type}
+            onChange={(e) => handleTransportationChange('type', e.target.value)}
+            className="w-full h-10 px-3 border-2 border-[#0A0A0A] rounded-md bg-white text-sm focus:border-[#F5C518] focus:outline-none"
+            aria-label="Transportation type"
+          >
+            <option value="">Select transportation type...</option>
+            {TRANSPORTATION_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {transportation.type && (
+          <div className="space-y-4 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="departureTime" className="text-[#0A0A0A] font-semibold">
+                  Departure Time
+                </Label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                  <Input
+                    id="departureTime"
+                    type="time"
+                    value={transportation.departureTime}
+                    onChange={(e) => handleTransportationChange('departureTime', e.target.value)}
+                    className="pl-10 border-2 border-[#0A0A0A] focus:border-[#F5C518]"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="returnTime" className="text-[#0A0A0A] font-semibold">
+                  Return Time
+                </Label>
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                  <Input
+                    id="returnTime"
+                    type="time"
+                    value={transportation.returnTime}
+                    onChange={(e) => handleTransportationChange('returnTime', e.target.value)}
+                    className="pl-10 border-2 border-[#0A0A0A] focus:border-[#F5C518]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="pickupLocation" className="text-[#0A0A0A] font-semibold">
+                Pickup Location
+              </Label>
+              <div className="relative">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                <Input
+                  id="pickupLocation"
+                  type="text"
+                  value={transportation.pickupLocation}
+                  onChange={(e) => handleTransportationChange('pickupLocation', e.target.value)}
+                  placeholder="e.g., School front entrance"
+                  className="pl-10 border-2 border-[#0A0A0A] focus:border-[#F5C518]"
+                />
+              </div>
+            </div>
+
+            {(transportation.type === 'charter_bus') && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="companyName" className="text-[#0A0A0A] font-semibold">
+                    Bus Company Name
+                  </Label>
+                  <Input
+                    id="companyName"
+                    type="text"
+                    value={transportation.companyName}
+                    onChange={(e) => handleTransportationChange('companyName', e.target.value)}
+                    placeholder="e.g., ABC Bus Lines"
+                    className="border-2 border-[#0A0A0A] focus:border-[#F5C518]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="companyPhone" className="text-[#0A0A0A] font-semibold">
+                    Company Phone
+                  </Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                    <Input
+                      id="companyPhone"
+                      type="tel"
+                      value={transportation.companyPhone}
+                      onChange={(e) => handleTransportationChange('companyPhone', e.target.value)}
+                      placeholder="(555) 123-4567"
+                      className="pl-10 border-2 border-[#0A0A0A] focus:border-[#F5C518]"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(transportation.type === 'district_bus' || transportation.type === 'charter_bus') && selectedStudents.length > 0 && (
+              <div className="p-3 bg-[#FFFDE7] border-2 border-[#F5C518] rounded-lg">
+                <p className="text-sm font-semibold text-[#0A0A0A]">
+                  <Bus className="w-4 h-4 inline mr-1" />
+                  Estimated buses needed: <span className="text-lg">{estimatedBuses}</span>
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  Based on {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} at 48 per bus
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="estimatedCost" className="text-[#0A0A0A] font-semibold">
+                Estimated Transportation Cost
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none font-medium">$</span>
+                <Input
+                  id="estimatedCost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={transportation.estimatedCostCents ? (transportation.estimatedCostCents / 100).toFixed(2) : ''}
+                  onChange={(e) => handleTransportationChange('estimatedCostCents', Math.round(parseFloat(e.target.value || '0') * 100))}
+                  placeholder="0.00"
+                  className="pl-8 border-2 border-[#0A0A0A] focus:border-[#F5C518]"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="transportationNotes" className="text-[#0A0A0A] font-semibold">
+                Notes <span className="text-gray-500 font-normal">(Optional)</span>
+              </Label>
+              <Textarea
+                id="transportationNotes"
+                value={transportation.notes}
+                onChange={(e) => handleTransportationChange('notes', e.target.value)}
+                placeholder="Any additional transportation details or instructions..."
+                rows={2}
+                className="border-2 border-[#0A0A0A] focus:border-[#F5C518]"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Action Buttons */}
       <div className="flex justify-between items-center pt-4 border-t-2 border-gray-200">
         <Button

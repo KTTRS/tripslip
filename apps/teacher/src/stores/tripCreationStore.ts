@@ -23,12 +23,25 @@ export interface VenueForm {
   required: boolean;
 }
 
+export interface TransportationDetails {
+  type: 'district_bus' | 'charter_bus' | 'parent_dropoff' | 'walking' | 'public_transit' | 'other' | '';
+  departureTime: string;
+  returnTime: string;
+  pickupLocation: string;
+  companyName: string;
+  companyPhone: string;
+  estimatedCostCents: number;
+  notes: string;
+  estimatedBuses: number;
+}
+
 export interface TripDetails {
   name: string;
   date: string;
   time: string;
   description: string;
   specialRequirements?: string;
+  transportation?: TransportationDetails;
 }
 
 export interface TripCreationState {

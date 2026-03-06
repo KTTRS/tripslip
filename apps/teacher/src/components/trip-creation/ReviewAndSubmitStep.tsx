@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@trip
 import { Badge } from '@tripslip/ui/components/badge';
 import { Alert, AlertDescription } from '@tripslip/ui/components/alert';
 import { toast } from 'sonner';
-import { Calendar, Clock, MapPin, Users, DollarSign, FileText, CheckCircle, Upload } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, DollarSign, FileText, CheckCircle, Upload, Bus, Phone } from 'lucide-react';
 import { logger } from '@tripslip/utils';
 
 interface PricingTier {
@@ -156,6 +156,7 @@ export function ReviewAndSubmitStep() {
               status: 'pending',
               direct_link_token: crypto.randomUUID(),
               special_requirements: tripDetails.specialRequirements || null,
+              transportation: tripDetails.transportation || null,
             })
             .select()
             .single();
@@ -276,6 +277,100 @@ export function ReviewAndSubmitStep() {
           )}
         </CardContent>
       </Card>
+
+      {tripDetails.transportation && tripDetails.transportation.type && (
+        <Card className="border-2 border-[#0A0A0A]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bus className="h-5 w-5 text-[#0A0A0A]" />
+              Transportation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Type</p>
+                <p className="font-semibold text-[#0A0A0A]">
+                  {tripDetails.transportation.type === 'district_bus' && 'District Bus'}
+                  {tripDetails.transportation.type === 'charter_bus' && 'Charter Bus'}
+                  {tripDetails.transportation.type === 'parent_dropoff' && 'Parent Drop-off'}
+                  {tripDetails.transportation.type === 'walking' && 'Walking'}
+                  {tripDetails.transportation.type === 'public_transit' && 'Public Transit'}
+                  {tripDetails.transportation.type === 'other' && 'Other'}
+                </p>
+              </div>
+              {tripDetails.transportation.pickupLocation && (
+                <div>
+                  <p className="text-sm text-gray-500">Pickup Location</p>
+                  <p className="font-semibold text-[#0A0A0A] flex items-center gap-1">
+                    <MapPin className="h-4 w-4" />
+                    {tripDetails.transportation.pickupLocation}
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {tripDetails.transportation.departureTime && (
+                <div>
+                  <p className="text-sm text-gray-500">Departure</p>
+                  <p className="font-semibold text-[#0A0A0A] flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    {tripDetails.transportation.departureTime}
+                  </p>
+                </div>
+              )}
+              {tripDetails.transportation.returnTime && (
+                <div>
+                  <p className="text-sm text-gray-500">Return</p>
+                  <p className="font-semibold text-[#0A0A0A] flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    {tripDetails.transportation.returnTime}
+                  </p>
+                </div>
+              )}
+            </div>
+            {tripDetails.transportation.companyName && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-500">Bus Company</p>
+                  <p className="font-semibold text-[#0A0A0A]">{tripDetails.transportation.companyName}</p>
+                </div>
+                {tripDetails.transportation.companyPhone && (
+                  <div>
+                    <p className="text-sm text-gray-500">Company Phone</p>
+                    <p className="font-semibold text-[#0A0A0A] flex items-center gap-1">
+                      <Phone className="h-4 w-4" />
+                      {tripDetails.transportation.companyPhone}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            {tripDetails.transportation.estimatedBuses > 0 && (
+              <div className="p-3 bg-[#FFFDE7] border-2 border-[#F5C518] rounded-lg">
+                <p className="text-sm font-semibold text-[#0A0A0A]">
+                  <Bus className="w-4 h-4 inline mr-1" />
+                  Estimated buses: {tripDetails.transportation.estimatedBuses}
+                </p>
+              </div>
+            )}
+            {tripDetails.transportation.estimatedCostCents > 0 && (
+              <div>
+                <p className="text-sm text-gray-500">Estimated Cost</p>
+                <p className="font-semibold text-[#0A0A0A]">
+                  {formatCurrency(tripDetails.transportation.estimatedCostCents)}
+                </p>
+              </div>
+            )}
+            {tripDetails.transportation.notes && (
+              <div>
+                <p className="text-sm text-gray-500">Notes</p>
+                <p className="text-gray-700">{tripDetails.transportation.notes}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-2 border-[#0A0A0A]">
         <CardHeader>
