@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@tripslip/ui';
+import { Card, CardContent, CardHeader, CardTitle, Button } from '@tripslip/ui';
 import { supabase } from '../lib/supabase';
 import type { Tables } from '@tripslip/database';
+import { toast } from 'sonner';
 import { 
   CheckCircle, 
   Clock, 
   DollarSign,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Send
 } from 'lucide-react';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -279,6 +281,29 @@ export function PermissionSlipStatusList({ tripId }: PermissionSlipStatusListPro
     return slip.status as SlipStatus;
   };
 
+  const [sendingSlipId, setSendingSlipId] = useState<string | null>(null);
+
+  const handleRemindSlip = async (slipId: string) => {
+    setSendingSlipId(slipId);
+    try {
+      const response = await fetch('/api/send-permission-slip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ permissionSlipId: slipId }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reminder');
+      }
+      toast.success('Reminder sent successfully');
+    } catch (err: any) {
+      console.error('Error sending reminder:', err);
+      toast.error(err.message || 'Failed to send reminder');
+    } finally {
+      setSendingSlipId(null);
+    }
+  };
+
   const getStatusCounts = () => {
     const counts = {
       pending: 0,
@@ -398,6 +423,9 @@ export function PermissionSlipStatusList({ tripId }: PermissionSlipStatusListPro
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider font-mono">
                     Payment Status
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider font-mono">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -456,6 +484,26 @@ export function PermissionSlipStatusList({ tripId }: PermissionSlipStatusListPro
                           <span className="text-sm text-gray-600">Awaiting payment</span>
                         ) : (
                           <span className="text-sm text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {(displayStatus === 'pending' || slip.status === 'sent') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleRemindSlip(slip.id)}
+                            disabled={sendingSlipId === slip.id}
+                            className="border-2 border-black text-xs shadow-[2px_2px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] transition-all duration-200"
+                          >
+                            {sendingSlipId === slip.id ? (
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-black" />
+                            ) : (
+                              <>
+                                <Send className="h-3 w-3 mr-1" />
+                                Remind
+                              </>
+                            )}
+                          </Button>
                         )}
                       </td>
                     </tr>

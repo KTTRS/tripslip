@@ -9,6 +9,11 @@ interface CSVRow {
   first_name: string;
   last_name: string;
   grade: string;
+  date_of_birth?: string;
+  parent_first_name?: string;
+  parent_last_name?: string;
+  parent_email?: string;
+  parent_phone?: string;
 }
 
 interface ValidationError {
@@ -24,7 +29,7 @@ interface ImportResult {
 }
 
 interface CSVImportModalProps {
-  tripId: string;
+  tripId?: string;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -33,11 +38,9 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
   const [file, setFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
-  
+
   const validateCSVRow = (row: CSVRow, index: number): ValidationError[] => {
     const errors: ValidationError[] = [];
-    
-    // Required fields
     if (!row.first_name || row.first_name.trim() === '') {
       errors.push({ row: index, field: 'first_name', message: 'First name is required' });
     }
@@ -47,10 +50,9 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
     if (!row.grade || row.grade.trim() === '') {
       errors.push({ row: index, field: 'grade', message: 'Grade is required' });
     }
-    
     return errors;
   };
-  
+
   const processCSV = async (file: File): Promise<ImportResult> => {
     return new Promise((resolve) => {
       Papa.parse<CSVRow>(file, {
@@ -60,18 +62,16 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
           const errors: ValidationError[] = [];
           const duplicates: string[] = [];
           const validRows: CSVRow[] = [];
-          
-          // Validate each row
+
           results.data.forEach((row, index) => {
-            const rowErrors = validateCSVRow(row, index + 2); // +2 for header and 0-index
+            const rowErrors = validateCSVRow(row, index + 2);
             if (rowErrors.length > 0) {
               errors.push(...rowErrors);
             } else {
               validRows.push(row);
             }
           });
-          
-          // Check for duplicates within CSV
+
           const nameMap = new Map<string, number>();
           validRows.forEach((row, index) => {
             const fullName = `${row.first_name.trim()} ${row.last_name.trim()}`.toLowerCase();
@@ -83,163 +83,173 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
               nameMap.set(fullName, index + 2);
             }
           });
-          
-          // Check for existing students in this trip (via permission slips)
-          const { data: existingSlips } = await supabase
-            .from('permission_slips')
-            .select(`
-              student:students (
-                first_name,
-                last_name
-              )
-            `)
-            .eq('trip_id', tripId);
-          
-          const existingNames = new Set(
-            (existingSlips || []).map((slip: any) => 
-              `${slip.student?.first_name} ${slip.student?.last_name}`.toLowerCase()
-            )
-          );
-          
-          validRows.forEach((row, index) => {
-            const fullName = `${row.first_name.trim()} ${row.last_name.trim()}`.toLowerCase();
-            if (existingNames.has(fullName)) {
-              duplicates.push(
-                `Row ${index + 2}: ${row.first_name} ${row.last_name} already exists in trip roster`
-              );
-            }
-          });
-          
-          // Insert valid rows if no errors or duplicates
+
           let successCount = 0;
           if (errors.length === 0 && duplicates.length === 0) {
-            for (const row of validRows) {
-              try {
-                // Get current user (teacher)
-                const { data: { user } } = await supabase.auth.getUser();
-                if (!user) throw new Error('Not authenticated');
-                
-                // Get teacher record
-                const { data: teacher, error: teacherError } = await supabase
-                  .from('teachers')
-                  .select('id')
-                  .eq('user_id', user.id)
-                  .single();
-                
-                if (teacherError) throw teacherError;
-                
-                // Get or create a default roster for this teacher
-                let { data: roster, error: rosterError } = await supabase
+            try {
+              const {
+                data: { user },
+              } = await supabase.auth.getUser();
+              if (!user) throw new Error('Not authenticated');
+
+              const { data: teacher, error: teacherError } = await supabase
+                .from('teachers')
+                .select('id')
+                .eq('user_id', user.id)
+                .single();
+              if (teacherError) throw teacherError;
+
+              let { data: roster, error: rosterError } = await supabase
+                .from('rosters')
+                .select('id')
+                .eq('teacher_id', teacher.id)
+                .eq('name', 'Default Roster')
+                .single();
+
+              if (rosterError && rosterError.code === 'PGRST116') {
+                const { data: newRoster, error: createRosterError } = await supabase
                   .from('rosters')
-                  .select('id')
-                  .eq('teacher_id', teacher.id)
-                  .eq('name', 'Default Roster')
-                  .single();
-                
-                if (rosterError && rosterError.code === 'PGRST116') {
-                  // Roster doesn't exist, create it
-                  const { data: newRoster, error: createRosterError } = await supabase
-                    .from('rosters')
-                    .insert({
-                      teacher_id: teacher.id,
-                      name: 'Default Roster',
-                      grade_level: row.grade.trim()
-                    })
-                    .select()
-                    .single();
-                  
-                  if (createRosterError) throw createRosterError;
-                  roster = newRoster;
-                } else if (rosterError) {
-                  throw rosterError;
-                }
-                
-                // Create student
-                const { data: student, error: studentError } = await supabase
-                  .from('students')
                   .insert({
-                    first_name: row.first_name.trim(),
-                    last_name: row.last_name.trim(),
-                    grade: row.grade.trim(),
-                    roster_id: roster!.id,
+                    teacher_id: teacher.id,
+                    name: 'Default Roster',
+                    grade_level: validRows[0]?.grade.trim() || 'Mixed',
                   })
                   .select()
                   .single();
-                
-                if (studentError) throw studentError;
-                
-                // Create permission slip for this trip
-                const { error: slipError } = await supabase
-                  .from('permission_slips')
-                  .insert({
-                    student_id: student.id,
-                    trip_id: tripId,
-                    status: 'pending',
-                    magic_link_token: crypto.randomUUID(),
-                  });
-                
-                if (slipError) throw slipError;
-                
-                successCount++;
-              } catch (err: any) {
-                errors.push({
-                  row: validRows.indexOf(row) + 2,
-                  field: 'general',
-                  message: err.message || 'Failed to create student'
-                });
+                if (createRosterError) throw createRosterError;
+                roster = newRoster;
+              } else if (rosterError) {
+                throw rosterError;
               }
+
+              const { data: existingStudents } = await supabase
+                .from('students')
+                .select('first_name, last_name')
+                .eq('roster_id', roster!.id);
+
+              const existingNames = new Set(
+                (existingStudents || []).map(
+                  (s) => `${s.first_name} ${s.last_name}`.toLowerCase()
+                )
+              );
+
+              for (const row of validRows) {
+                const fullName = `${row.first_name.trim()} ${row.last_name.trim()}`.toLowerCase();
+                if (existingNames.has(fullName)) {
+                  duplicates.push(`${row.first_name} ${row.last_name} already exists in your roster`);
+                  continue;
+                }
+
+                try {
+                  const { data: student, error: studentError } = await supabase
+                    .from('students')
+                    .insert({
+                      first_name: row.first_name.trim(),
+                      last_name: row.last_name.trim(),
+                      grade: row.grade.trim(),
+                      date_of_birth: row.date_of_birth?.trim() || null,
+                      roster_id: roster!.id,
+                    })
+                    .select()
+                    .single();
+
+                  if (studentError) throw studentError;
+
+                  if (row.parent_first_name?.trim() && row.parent_last_name?.trim()) {
+                    const { data: parent } = await supabase
+                      .from('parents')
+                      .insert({
+                        first_name: row.parent_first_name.trim(),
+                        last_name: row.parent_last_name.trim(),
+                        email: row.parent_email?.trim() || null,
+                        phone: row.parent_phone?.trim() || null,
+                      })
+                      .select()
+                      .single();
+
+                    if (parent) {
+                      await supabase.from('student_parents').insert({
+                        student_id: student.id,
+                        parent_id: parent.id,
+                        relationship: 'Parent',
+                        primary_contact: true,
+                      });
+                    }
+                  }
+
+                  if (tripId) {
+                    await supabase.from('permission_slips').insert({
+                      student_id: student.id,
+                      trip_id: tripId,
+                      status: 'pending',
+                      magic_link_token: crypto.randomUUID(),
+                    });
+                  }
+
+                  successCount++;
+                  existingNames.add(fullName);
+                } catch (err: any) {
+                  errors.push({
+                    row: validRows.indexOf(row) + 2,
+                    field: 'general',
+                    message: err.message || 'Failed to create student',
+                  });
+                }
+              }
+            } catch (err: any) {
+              errors.push({
+                row: 0,
+                field: 'general',
+                message: err.message || 'Authentication error',
+              });
             }
           }
-          
+
           resolve({ success: successCount, errors, duplicates });
         },
         error: (error) => {
           resolve({
             success: 0,
             errors: [{ row: 0, field: 'file', message: `CSV parsing error: ${error.message}` }],
-            duplicates: []
+            duplicates: [],
           });
-        }
+        },
       });
     });
   };
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
-      
-      // Validate file type
       if (!selectedFile.name.endsWith('.csv')) {
         toast.error('Please select a CSV file');
         return;
       }
-      
       setFile(selectedFile);
       setResult(null);
     }
   };
-  
+
   const handleImport = async () => {
     if (!file) {
       toast.error('Please select a file');
       return;
     }
-    
+
     setProcessing(true);
     try {
       const importResult = await processCSV(file);
       setResult(importResult);
-      
+
       if (importResult.success > 0) {
         toast.success(`Successfully imported ${importResult.success} students`);
         if (importResult.errors.length === 0 && importResult.duplicates.length === 0) {
-          // Auto-close if completely successful
           setTimeout(() => {
             onSuccess();
           }, 1500);
         }
       } else if (importResult.errors.length > 0 || importResult.duplicates.length > 0) {
-        toast.error('Import completed with errors. Please review below.');
+        toast.error('Import completed with issues. Please review below.');
       }
     } catch (error) {
       console.error('Error importing CSV:', error);
@@ -248,9 +258,10 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
       setProcessing(false);
     }
   };
-  
+
   const downloadTemplate = () => {
-    const csvContent = 'first_name,last_name,grade\nJohn,Doe,5th\nJane,Smith,6th';
+    const csvContent =
+      'first_name,last_name,grade,date_of_birth,parent_first_name,parent_last_name,parent_email,parent_phone\nJohn,Doe,5th,2015-03-15,Jane,Doe,jane.doe@email.com,(555) 123-4567\nEmma,Smith,5th,,Mike,Smith,mike.smith@email.com,(555) 987-6543';
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -259,35 +270,40 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
     a.click();
     window.URL.revokeObjectURL(url);
   };
-  
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg border-2 border-black shadow-offset max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b-2 border-black sticky top-0 bg-white">
-          <h2 className="text-xl font-bold">Import Students from CSV</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b-2 border-[#0A0A0A] sticky top-0 bg-white rounded-t-xl z-10">
+          <h2 className="text-xl font-bold text-[#0A0A0A]">Import Students from CSV</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
             <X className="h-5 w-5" />
           </button>
         </div>
-        
-        <div className="p-6 space-y-6">
-          {/* CSV Template Download */}
+
+        <div className="p-5 space-y-5">
           <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <Download className="h-5 w-5 text-blue-600 mt-0.5" />
+              <Download className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
                 <h3 className="font-semibold text-blue-900 mb-1">CSV Format</h3>
+                <p className="text-sm text-blue-800 mb-1">
+                  Required: <code className="bg-blue-100 px-1 rounded">first_name</code>,{' '}
+                  <code className="bg-blue-100 px-1 rounded">last_name</code>,{' '}
+                  <code className="bg-blue-100 px-1 rounded">grade</code>
+                </p>
                 <p className="text-sm text-blue-800 mb-3">
-                  Your CSV file must have these columns: first_name, last_name, grade
+                  Optional: <code className="bg-blue-100 px-1 rounded">date_of_birth</code>,{' '}
+                  <code className="bg-blue-100 px-1 rounded">parent_first_name</code>,{' '}
+                  <code className="bg-blue-100 px-1 rounded">parent_last_name</code>,{' '}
+                  <code className="bg-blue-100 px-1 rounded">parent_email</code>,{' '}
+                  <code className="bg-blue-100 px-1 rounded">parent_phone</code>
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={downloadTemplate}
-                  className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+                  className="border-2 border-blue-600 text-blue-600 hover:bg-blue-100"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download Template
@@ -295,31 +311,21 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
               </div>
             </div>
           </div>
-          
-          {/* File Upload */}
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select CSV File
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select CSV File</label>
             <div className="flex items-center gap-4">
               <input
                 type="file"
                 accept=".csv"
                 onChange={handleFileChange}
-                className="flex-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-2 file:border-black file:text-sm file:font-semibold file:bg-white hover:file:bg-gray-50"
+                className="flex-1 text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-2 file:border-[#0A0A0A] file:text-sm file:font-semibold file:bg-white hover:file:bg-gray-50"
               />
-              {file && (
-                <span className="text-sm text-gray-600">
-                  {file.name}
-                </span>
-              )}
             </div>
           </div>
-          
-          {/* Import Results */}
+
           {result && (
-            <div className="space-y-4">
-              {/* Success Message */}
+            <div className="space-y-3">
               {result.success > 0 && (
                 <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
                   <div className="flex items-center gap-2">
@@ -330,23 +336,19 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
                   </div>
                 </div>
               )}
-              
-              {/* Validation Errors */}
+
               {result.errors.length > 0 && (
                 <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-                  <div className="flex items-start gap-2 mb-3">
-                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
                       <h3 className="font-semibold text-red-900 mb-2">
-                        Validation Errors ({result.errors.length})
+                        Errors ({result.errors.length})
                       </h3>
                       <div className="space-y-1 max-h-40 overflow-y-auto">
                         {result.errors.map((error, index) => (
                           <div key={index} className="text-sm text-red-800">
-                            <span className="font-medium">Row {error.row}:</span>{' '}
-                            {error.field !== 'general' && (
-                              <span className="font-medium">{error.field} - </span>
-                            )}
+                            {error.row > 0 && <span className="font-medium">Row {error.row}: </span>}
                             {error.message}
                           </div>
                         ))}
@@ -355,20 +357,19 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
                   </div>
                 </div>
               )}
-              
-              {/* Duplicate Errors */}
+
               {result.duplicates.length > 0 && (
                 <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-start gap-2 mb-3">
-                    <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
                     <div className="flex-1">
                       <h3 className="font-semibold text-yellow-900 mb-2">
-                        Duplicate Students ({result.duplicates.length})
+                        Duplicates ({result.duplicates.length})
                       </h3>
                       <div className="space-y-1 max-h-40 overflow-y-auto">
-                        {result.duplicates.map((duplicate, index) => (
+                        {result.duplicates.map((dup, index) => (
                           <div key={index} className="text-sm text-yellow-800">
-                            {duplicate}
+                            {dup}
                           </div>
                         ))}
                       </div>
@@ -378,22 +379,16 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
               )}
             </div>
           )}
-          
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4 border-t-2 border-gray-200">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="border-2 border-black"
-            >
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-gray-200">
+            <Button type="button" variant="outline" onClick={onClose} className="border-2 border-[#0A0A0A]">
               {result && result.success > 0 ? 'Done' : 'Cancel'}
             </Button>
-            {(!result || (result.errors.length > 0 || result.duplicates.length > 0)) && (
+            {(!result || result.errors.length > 0 || result.duplicates.length > 0) && (
               <Button
                 onClick={handleImport}
                 disabled={!file || processing}
-                className="shadow-offset"
+                className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] font-semibold"
               >
                 <Upload className="h-4 w-4 mr-2" />
                 {processing ? 'Importing...' : 'Import Students'}

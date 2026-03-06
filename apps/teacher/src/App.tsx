@@ -4,6 +4,9 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import DashboardPage from './pages/DashboardPage'
+import TripsPage from './pages/TripsPage'
+import StudentsPage from './pages/StudentsPage'
+import ProfilePage from './pages/ProfilePage'
 import EmailVerificationPage from './pages/EmailVerificationPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
@@ -39,6 +42,14 @@ export default function App() {
           }
         />
         <Route
+          path="/trips"
+          element={
+            <ProtectedRoute>
+              <TripsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/trips/create"
           element={
             <ProtectedRoute>
@@ -59,6 +70,22 @@ export default function App() {
           element={
             <ProtectedRoute>
               <PermissionSlipTrackingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/students"
+          element={
+            <ProtectedRoute>
+              <StudentsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />

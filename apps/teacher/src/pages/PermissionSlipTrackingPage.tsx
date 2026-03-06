@@ -9,11 +9,15 @@ import {
   AlertTriangle,
   Calendar,
   MapPin,
-  DollarSign
+  DollarSign,
+  Send,
+  MessageSquare,
+  Heart
 } from 'lucide-react';
 import { PermissionSlipStatusList } from '../components/PermissionSlipStatusList';
 import { TripStatistics } from '../components/TripStatistics';
 import { TripCancellationDialog } from '../components/TripCancellationDialog';
+import CommunicationModal from '../components/communication/CommunicationModal';
 
 type Trip = Tables<'trips'>;
 
@@ -44,10 +48,14 @@ export default function PermissionSlipTrackingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCancellationDialog, setShowCancellationDialog] = useState(false);
+  const [showCommunicationModal, setShowCommunicationModal] = useState(false);
+  const [studentsWithSlips, setStudentsWithSlips] = useState<any[]>([]);
+  const [sendingAllSlips, setSendingAllSlips] = useState(false);
   
   useEffect(() => {
     if (tripId) {
       fetchTripDetails();
+      fetchStudentsWithSlips();
     }
   }, [tripId]);
   
@@ -98,8 +106,56 @@ export default function PermissionSlipTrackingPage() {
     }
   };
   
+  const fetchStudentsWithSlips = async () => {
+    if (!tripId) return;
+    try {
+      const { data: slips } = await supabase
+        .from('permission_slips')
+        .select(`
+          id, status,
+          student:students (
+            id, first_name, last_name, grade, roster_id
+          )
+        `)
+        .eq('trip_id', tripId);
+
+      const mapped = (slips || []).map((slip: any) => {
+        const student = Array.isArray(slip.student) ? slip.student[0] : slip.student;
+        return {
+          ...student,
+          permission_slip: { id: slip.id, status: slip.status },
+        };
+      });
+      setStudentsWithSlips(mapped);
+    } catch (err) {
+      console.error('Error fetching students with slips:', err);
+    }
+  };
+
+  const handleSendAllSlips = async () => {
+    if (!tripId) return;
+    setSendingAllSlips(true);
+    try {
+      const response = await fetch('/api/send-bulk-reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripId }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send permission slips');
+      }
+      toast.success(`Sent ${data.sent || 0} permission slip${data.sent !== 1 ? 's' : ''}`);
+      fetchStudentsWithSlips();
+    } catch (err: any) {
+      console.error('Error sending all slips:', err);
+      toast.error(err.message || 'Failed to send permission slips');
+    } finally {
+      setSendingAllSlips(false);
+    }
+  };
+
   const handleCancellationComplete = () => {
-    // Refresh trip data and navigate back to dashboard
     toast.success('Trip has been cancelled successfully');
     navigate('/');
   };
@@ -183,17 +239,48 @@ export default function PermissionSlipTrackingPage() {
             </div>
           </div>
           
-          {trip.status !== 'cancelled' && (
-            <Button
-              variant="outline"
-              onClick={() => setShowCancellationDialog(true)}
-              className="border-2 border-red-500 text-red-700 hover:bg-red-50 shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
-              style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-            >
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Cancel Trip
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {trip.status !== 'cancelled' && (
+              <>
+                <Button
+                  onClick={handleSendAllSlips}
+                  disabled={sendingAllSlips}
+                  className="bg-[#F5C518] text-black border-2 border-black shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                >
+                  {sendingAllSlips ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Send All Permission Slips
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCommunicationModal(true)}
+                  className="border-2 border-black shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Send Reminders
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCancellationDialog(true)}
+                  className="border-2 border-red-500 text-red-700 hover:bg-red-50 shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200"
+                  style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Cancel Trip
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </nav>
       
@@ -284,6 +371,30 @@ export default function PermissionSlipTrackingPage() {
           </CardContent>
         </Card>
         
+        {/* Assistance Fund Balance */}
+        {((trip as any).assistance_fund_cents ?? 0) > 0 && (
+          <Card className="border-2 border-black shadow-[8px_8px_0px_#0A0A0A] bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="bg-[#F5C518] p-3 rounded-lg border-2 border-black">
+                  <Heart className="h-6 w-6 text-black" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-700 uppercase tracking-wide font-mono">
+                    Pay-It-Forward Fund
+                  </p>
+                  <p className="font-bold text-2xl font-mono text-[#0A0A0A]">
+                    {formatCurrency((trip as any).assistance_fund_cents)}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Contributed by families to help cover costs for students who need financial assistance
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Trip Statistics */}
         <TripStatistics tripId={tripId!} />
         
@@ -299,6 +410,18 @@ export default function PermissionSlipTrackingPage() {
         onOpenChange={setShowCancellationDialog}
         onCancellationComplete={handleCancellationComplete}
       />
+
+      {showCommunicationModal && (
+        <CommunicationModal
+          tripId={tripId!}
+          tripTitle={trip.experience?.title || 'Field Trip'}
+          students={studentsWithSlips}
+          onClose={() => setShowCommunicationModal(false)}
+          onSuccess={() => {
+            fetchStudentsWithSlips();
+          }}
+        />
+      )}
     </div>
   );
 }

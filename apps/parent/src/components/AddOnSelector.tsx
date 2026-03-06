@@ -6,27 +6,52 @@ export interface AdditionalFee {
   name: string;
   amountCents: number;
   required: boolean;
+  description?: string;
+  category?: string;
+}
+
+export interface ConfiguredAddOnFromTrip {
+  id: string;
+  name: string;
+  description: string;
+  priceCents: number;
+  required: boolean;
+  category: string;
+}
+
+function normalizeAddOns(addOns: (AdditionalFee | ConfiguredAddOnFromTrip)[]): AdditionalFee[] {
+  return addOns.map((addon) => {
+    if ('priceCents' in addon) {
+      return {
+        name: addon.name,
+        amountCents: addon.priceCents,
+        required: addon.required,
+        description: addon.description,
+        category: addon.category,
+      };
+    }
+    return addon as AdditionalFee;
+  });
 }
 
 interface AddOnSelectorProps {
-  addOns: AdditionalFee[];
+  addOns: (AdditionalFee | ConfiguredAddOnFromTrip)[];
   basePriceCents: number;
   onTotalChange: (totalCents: number, selectedAddOns: AdditionalFee[]) => void;
 }
 
-export function AddOnSelector({ addOns, basePriceCents, onTotalChange }: AddOnSelectorProps) {
+export function AddOnSelector({ addOns: rawAddOns, basePriceCents, onTotalChange }: AddOnSelectorProps) {
   const { t, i18n } = useTranslation();
+  const addOns = normalizeAddOns(rawAddOns);
   const [selectedAddOns, setSelectedAddOns] = useState<Set<string>>(new Set());
 
-  // Initialize with required add-ons
   useEffect(() => {
     const requiredAddOns = new Set(
       addOns.filter(addon => addon.required).map(addon => addon.name)
     );
     setSelectedAddOns(requiredAddOns);
-  }, [addOns]);
+  }, [rawAddOns]);
 
-  // Calculate total whenever selection changes
   useEffect(() => {
     const addOnTotal = addOns
       .filter(addon => selectedAddOns.has(addon.name))
@@ -36,7 +61,7 @@ export function AddOnSelector({ addOns, basePriceCents, onTotalChange }: AddOnSe
     const selected = addOns.filter(addon => selectedAddOns.has(addon.name));
     
     onTotalChange(total, selected);
-  }, [selectedAddOns, addOns, basePriceCents, onTotalChange]);
+  }, [selectedAddOns, rawAddOns, basePriceCents, onTotalChange]);
 
   const handleToggleAddOn = (addOnName: string, required: boolean) => {
     if (required) return; // Can't deselect required add-ons
@@ -114,6 +139,9 @@ export function AddOnSelector({ addOns, basePriceCents, onTotalChange }: AddOnSe
                           </span>
                         )}
                       </p>
+                      {addon.description && (
+                        <p className="text-xs text-gray-500 mt-0.5">{addon.description}</p>
+                      )}
                     </div>
                     
                     <span className="text-sm font-bold text-[#0A0A0A] font-['Space_Mono'] whitespace-nowrap">

@@ -19,17 +19,14 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
     canvas.width = canvas.offsetWidth;
     canvas.height = 200;
 
-    // Set drawing style
-    ctx.strokeStyle = '#000';
+    ctx.strokeStyle = '#0A0A0A';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Load existing signature if provided
     if (value) {
       const img = new Image();
       img.onload = () => {
@@ -40,6 +37,24 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
     }
   }, [value]);
 
+  const getCoords = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if ('touches' in e) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY,
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
+  };
+
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -48,11 +63,7 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
     if (!ctx) return;
 
     setIsDrawing(true);
-    
-    const rect = canvas.getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-
+    const { x, y } = getCoords(e);
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
@@ -66,10 +77,7 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-
+    const { x, y } = getCoords(e);
     ctx.lineTo(x, y);
     ctx.stroke();
   };
@@ -83,7 +91,6 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Convert canvas to base64 and notify parent
     const signature = canvas.toDataURL('image/png');
     onSignatureChange(signature);
   };
@@ -107,7 +114,7 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
         <span className="text-red-500 ml-1">*</span>
       </label>
       
-      <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+      <div className="border-2 border-[#0A0A0A] rounded-lg overflow-hidden bg-white">
         <canvas
           ref={canvasRef}
           className="w-full cursor-crosshair touch-none"
@@ -119,6 +126,7 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
           onTouchStart={startDrawing}
           onTouchMove={draw}
           onTouchEnd={stopDrawing}
+          aria-label={t('permissionSlip.signature')}
         />
       </div>
 
@@ -130,7 +138,7 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
           <button
             type="button"
             onClick={clearSignature}
-            className="text-sm text-red-600 hover:text-red-700 font-medium"
+            className="text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1 rounded border border-red-300 hover:bg-red-50 transition-colors"
           >
             {t('permissionSlip.clearSignature')}
           </button>

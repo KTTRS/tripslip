@@ -42,13 +42,22 @@ export function PermissionSlipForm({
 }: PermissionSlipFormProps) {
   const { t } = useTranslation();
 
+  const inputClass = (hasError: boolean) => `
+    mt-1 block w-full rounded-lg border-2 px-3 py-2 text-sm
+    ${hasError
+      ? 'border-red-400 focus:border-red-500 focus:ring-red-500'
+      : 'border-gray-300 focus:border-[#F5C518] focus:ring-[#F5C518]'
+    }
+    disabled:bg-gray-100 disabled:cursor-not-allowed
+  `;
+
   return (
-    <form onSubmit={onSubmit} className="bg-white rounded-lg shadow-md p-6 space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">
+    <form onSubmit={onSubmit} className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 space-y-6">
+      <h2 className="text-2xl font-bold text-[#0A0A0A]">
         {t('permissionSlip.parentInformation')}
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="parentFirstName" className="block text-sm font-medium text-gray-700">
             {t('permissionSlip.parentFirstName')}
@@ -59,12 +68,9 @@ export function PermissionSlipForm({
             id="parentFirstName"
             value={formData.parentFirstName}
             onChange={(e) => onInputChange('parentFirstName', e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
-              formErrors.parentFirstName
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-            }`}
+            className={inputClass(!!formErrors.parentFirstName)}
             disabled={submitting}
+            autoComplete="given-name"
           />
           {formErrors.parentFirstName && (
             <p className="mt-1 text-sm text-red-600">{formErrors.parentFirstName}</p>
@@ -81,12 +87,9 @@ export function PermissionSlipForm({
             id="parentLastName"
             value={formData.parentLastName}
             onChange={(e) => onInputChange('parentLastName', e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
-              formErrors.parentLastName
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-            }`}
+            className={inputClass(!!formErrors.parentLastName)}
             disabled={submitting}
+            autoComplete="family-name"
           />
           {formErrors.parentLastName && (
             <p className="mt-1 text-sm text-red-600">{formErrors.parentLastName}</p>
@@ -103,12 +106,9 @@ export function PermissionSlipForm({
             id="parentEmail"
             value={formData.parentEmail}
             onChange={(e) => onInputChange('parentEmail', e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
-              formErrors.parentEmail
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-            }`}
+            className={inputClass(!!formErrors.parentEmail)}
             disabled={submitting}
+            autoComplete="email"
           />
           {formErrors.parentEmail && (
             <p className="mt-1 text-sm text-red-600">{formErrors.parentEmail}</p>
@@ -125,12 +125,9 @@ export function PermissionSlipForm({
             id="parentPhone"
             value={formData.parentPhone}
             onChange={(e) => onInputChange('parentPhone', e.target.value)}
-            className={`mt-1 block w-full rounded-md shadow-sm ${
-              formErrors.parentPhone
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-            }`}
+            className={inputClass(!!formErrors.parentPhone)}
             disabled={submitting}
+            autoComplete="tel"
           />
           {formErrors.parentPhone && (
             <p className="mt-1 text-sm text-red-600">{formErrors.parentPhone}</p>
@@ -138,12 +135,12 @@ export function PermissionSlipForm({
         </div>
       </div>
 
-      <div className="border-t pt-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="border-t border-gray-200 pt-6">
+        <h3 className="text-lg font-bold text-[#0A0A0A] mb-4">
           {t('permissionSlip.emergencyContact')}
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="emergencyContactName" className="block text-sm font-medium text-gray-700">
               {t('permissionSlip.emergencyContactName')}
@@ -154,12 +151,9 @@ export function PermissionSlipForm({
               id="emergencyContactName"
               value={formData.emergencyContactName}
               onChange={(e) => onInputChange('emergencyContactName', e.target.value)}
-              className={`mt-1 block w-full rounded-md shadow-sm ${
-                formErrors.emergencyContactName
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-              }`}
+              className={inputClass(!!formErrors.emergencyContactName)}
               disabled={submitting}
+              autoComplete="name"
             />
             {formErrors.emergencyContactName && (
               <p className="mt-1 text-sm text-red-600">{formErrors.emergencyContactName}</p>
@@ -176,12 +170,9 @@ export function PermissionSlipForm({
               id="emergencyContactPhone"
               value={formData.emergencyContactPhone}
               onChange={(e) => onInputChange('emergencyContactPhone', e.target.value)}
-              className={`mt-1 block w-full rounded-md shadow-sm ${
-                formErrors.emergencyContactPhone
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-              }`}
+              className={inputClass(!!formErrors.emergencyContactPhone)}
               disabled={submitting}
+              autoComplete="tel"
             />
             {formErrors.emergencyContactPhone && (
               <p className="mt-1 text-sm text-red-600">{formErrors.emergencyContactPhone}</p>
@@ -190,7 +181,7 @@ export function PermissionSlipForm({
         </div>
       </div>
 
-      <div className="border-t pt-6">
+      <div className="border-t border-gray-200 pt-6">
         <SignatureCapture
           onSignatureChange={onSignatureChange}
           value={formData.signature}
@@ -200,11 +191,11 @@ export function PermissionSlipForm({
         )}
       </div>
 
-      <div className="flex justify-end space-x-4 pt-6 border-t">
+      <div className="flex justify-end pt-6 border-t border-gray-200">
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+          className="w-full sm:w-auto px-8 py-3 bg-[#F5C518] text-[#0A0A0A] font-bold rounded-lg border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150"
         >
           {submitting
             ? t('permissionSlip.submitting')

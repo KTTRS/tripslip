@@ -265,24 +265,35 @@ export default function CommunicationModal({
 
             if (notificationError) throw notificationError;
 
-            // Call Edge Function to send notification
-            const { error: sendError } = await supabase.functions.invoke('send-notification', {
-              body: {
-                userId: parent.id,
-                userType: 'parent',
-                channel: channel,
-                templateName: 'custom',
-                language: 'en',
-                data: {
-                  subject: finalSubject,
-                  body: finalBody
-                },
-                isCritical: false
+            if (channel === 'sms' || channel === 'both') {
+              if (parent.phone) {
+                const smsRes = await fetch('/api/send-sms', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ to: parent.phone, message: finalBody }),
+                });
+                if (!smsRes.ok) {
+                  const smsErr = await smsRes.json();
+                  console.warn('SMS send failed:', smsErr.error);
+                }
               }
-            });
+            }
 
-            if (sendError) {
-              throw sendError;
+            if (channel === 'email' || channel === 'both') {
+              try {
+                const { error: sendError } = await supabase.functions.invoke('send-email', {
+                  body: {
+                    to: parent.email,
+                    subject: finalSubject,
+                    html: finalBody.replace(/\n/g, '<br/>'),
+                  }
+                });
+                if (sendError) {
+                  console.warn('Email send failed:', sendError);
+                }
+              } catch (emailErr: any) {
+                console.warn('Email send failed:', emailErr.message);
+              }
             }
 
             sentCount++;

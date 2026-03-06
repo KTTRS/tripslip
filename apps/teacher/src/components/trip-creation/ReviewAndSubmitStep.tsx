@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@trip
 import { Badge } from '@tripslip/ui/components/badge';
 import { Alert, AlertDescription } from '@tripslip/ui/components/alert';
 import { toast } from 'sonner';
-import { Calendar, Clock, MapPin, Users, DollarSign, FileText, CheckCircle, Upload, Bus, Phone } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, DollarSign, FileText, CheckCircle, Upload, Bus, Phone, Gift, School, Building2 } from 'lucide-react';
 import { logger } from '@tripslip/utils';
+import { AddOnConfigurator } from './AddOnConfigurator';
+import { FormUploadManager, type UploadedForm } from './FormUploadManager';
 
 interface PricingTier {
   price_cents: number;
@@ -25,6 +27,8 @@ export function ReviewAndSubmitStep() {
     selectedStudents,
     venueInfo,
     venueForms,
+    configuredAddons,
+    setConfiguredAddons,
     prevStep,
     reset,
     clearDraft,
@@ -32,10 +36,11 @@ export function ReviewAndSubmitStep() {
   } = useTripCreationStore();
 
   const [submitting, setSubmitting] = useState(false);
-  const [uploadedDocuments, setUploadedDocuments] = useState<File[]>([]);
+  const [pendingForms, setPendingForms] = useState<UploadedForm[]>([]);
   const [pricingTier, setPricingTier] = useState<PricingTier | null>(null);
   const [venueName, setVenueName] = useState<string | null>(null);
   const [venueAddress, setVenueAddress] = useState<any>(null);
+  const [experienceAdditionalFees, setExperienceAdditionalFees] = useState<Array<{ name: string; amountCents: number; required: boolean }>>([]);
 
   useEffect(() => {
     if (selectedExperience) {
@@ -66,15 +71,23 @@ export function ReviewAndSubmitStep() {
       if (expWithDetails.pricing_tiers?.length > 0) {
         const applicable = findApplicableTier(expWithDetails.pricing_tiers, selectedStudents.length);
         setPricingTier(applicable);
+        const firstTier = expWithDetails.pricing_tiers[0];
+        if (firstTier?.additional_fees && Array.isArray(firstTier.additional_fees)) {
+          setExperienceAdditionalFees(firstTier.additional_fees);
+        }
       } else {
         const { data: tiers } = await supabase
           .from('pricing_tiers')
-          .select('price_cents, min_students, max_students, free_chaperones')
+          .select('price_cents, min_students, max_students, free_chaperones, additional_fees')
           .eq('experience_id', selectedExperience.id)
           .order('min_students', { ascending: true });
         if (tiers && tiers.length > 0) {
           const applicable = findApplicableTier(tiers, selectedStudents.length);
           setPricingTier(applicable);
+          const firstTier = tiers[0] as any;
+          if (firstTier?.additional_fees && Array.isArray(firstTier.additional_fees)) {
+            setExperienceAdditionalFees(firstTier.additional_fees);
+          }
         }
       }
     } catch (error) {
@@ -89,7 +102,8 @@ export function ReviewAndSubmitStep() {
     return applicable || tiers[0] || null;
   };
 
-  const totalCost = pricingTier ? selectedStudents.length * pricingTier.price_cents : 0;
+  const isFreeFunding = tripDetails?.isFree || tripDetails?.fundingModel === 'school_funded' || tripDetails?.fundingModel === 'sponsored';
+  const totalCost = isFreeFunding ? 0 : (pricingTier ? selectedStudents.length * pricingTier.price_cents : 0);
 
   const formatCurrency = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -108,15 +122,6 @@ export function ReviewAndSubmitStep() {
     if (hours === 0) return `${mins} minutes`;
     if (mins === 0) return `${hours} hour${hours > 1 ? 's' : ''}`;
     return `${hours}hr ${mins}min`;
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setUploadedDocuments((prev) => [...prev, ...files]);
-  };
-
-  const removeDocument = (index: number) => {
-    setUploadedDocuments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -157,6 +162,9 @@ export function ReviewAndSubmitStep() {
               direct_link_token: crypto.randomUUID(),
               special_requirements: tripDetails.specialRequirements || null,
               transportation: tripDetails.transportation || null,
+              is_free: tripDetails.isFree || false,
+              funding_model: tripDetails.isFree ? 'school_funded' : (tripDetails.fundingModel || 'parents_pay'),
+              configured_addons: configuredAddons.length > 0 ? configuredAddons : [],
             })
             .select()
             .single();
@@ -164,6 +172,36 @@ export function ReviewAndSubmitStep() {
           if (!tripError && trip) {
             tripCreated = true;
             logger.info('Trip created in database', { tripId: trip.id });
+
+            if (pendingForms.length > 0) {
+              let uploadedCount = 0;
+              for (const form of pendingForms) {
+                try {
+                  const formData = new FormData();
+                  formData.append('file', form.file);
+                  formData.append('trip_id', trip.id);
+                  formData.append('title', form.title);
+                  formData.append('form_type', form.formType);
+                  formData.append('required', String(form.required));
+
+                  const resp = await fetch('/api/upload-form', {
+                    method: 'POST',
+                    body: formData,
+                  });
+
+                  if (resp.ok) {
+                    uploadedCount++;
+                  } else {
+                    logger.warn('Form upload failed', { title: form.title });
+                  }
+                } catch (uploadErr) {
+                  logger.warn('Form upload error', { title: form.title, error: uploadErr });
+                }
+              }
+              if (uploadedCount > 0) {
+                logger.info(`${uploadedCount} form(s) uploaded for trip`, { tripId: trip.id });
+              }
+            }
           }
         }
       } catch (dbError) {
@@ -372,6 +410,48 @@ export function ReviewAndSubmitStep() {
         </Card>
       )}
 
+      {tripDetails && (tripDetails.isFree || tripDetails.fundingModel) && (
+        <Card className="border-2 border-[#0A0A0A]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-[#0A0A0A]" />
+              Funding
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {tripDetails.isFree ? (
+              <div className="flex items-center gap-2">
+                <Badge className="bg-green-100 text-green-800 border-green-300 text-sm px-3 py-1">Free Trip</Badge>
+                <span className="text-gray-600 text-sm">No payment will be collected from parents</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div>
+                  <p className="text-sm text-gray-500">Funding Model</p>
+                  <p className="font-semibold text-[#0A0A0A] flex items-center gap-2">
+                    {tripDetails.fundingModel === 'parents_pay' && <><DollarSign className="h-4 w-4" /> Parents Pay Individually</>}
+                    {tripDetails.fundingModel === 'school_funded' && <><School className="h-4 w-4" /> School Funded</>}
+                    {tripDetails.fundingModel === 'school_upfront' && <><Building2 className="h-4 w-4" /> School Pays Upfront</>}
+                    {tripDetails.fundingModel === 'sponsored' && <><Gift className="h-4 w-4" /> Sponsored</>}
+                  </p>
+                </div>
+                {tripDetails.fundingModel === 'sponsored' && tripDetails.sponsorName && (
+                  <div>
+                    <p className="text-sm text-gray-500">Sponsor</p>
+                    <p className="font-semibold text-[#0A0A0A]">{tripDetails.sponsorName}</p>
+                  </div>
+                )}
+                {(tripDetails.fundingModel === 'school_funded' || tripDetails.fundingModel === 'sponsored') && (
+                  <p className="text-sm text-green-700 bg-green-50 p-2 rounded border border-green-200">
+                    Parents will only need to sign — no payment required
+                  </p>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="border-2 border-[#0A0A0A]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -438,74 +518,89 @@ export function ReviewAndSubmitStep() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="flex justify-between text-gray-700">
-              <span>Cost per student:</span>
-              <span className="font-semibold">
-                {pricingTier ? formatCurrency(pricingTier.price_cents) : 'TBD'}
-              </span>
+          {isFreeFunding ? (
+            <div className="text-center py-2">
+              <Badge className="bg-green-100 text-green-800 border-green-300 text-base px-4 py-2">
+                Free — No Cost to Parents
+              </Badge>
+              <p className="text-sm text-gray-600 mt-2">
+                {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} selected
+              </p>
             </div>
-            <div className="flex justify-between text-gray-700">
-              <span>Number of students:</span>
-              <span className="font-semibold">{selectedStudents.length}</span>
-            </div>
-            {pricingTier && pricingTier.free_chaperones > 0 && (
+          ) : (
+            <div className="space-y-2">
               <div className="flex justify-between text-gray-700">
-                <span>Free chaperones included:</span>
-                <span className="font-semibold">{pricingTier.free_chaperones}</span>
+                <span>Cost per student:</span>
+                <span className="font-semibold">
+                  {pricingTier ? formatCurrency(pricingTier.price_cents) : 'TBD'}
+                </span>
               </div>
-            )}
-            <div className="border-t-2 border-[#0A0A0A] pt-3 flex justify-between text-lg font-bold text-[#0A0A0A]">
-              <span>Total Cost:</span>
-              <span>{totalCost > 0 ? formatCurrency(totalCost) : 'TBD'}</span>
+              <div className="flex justify-between text-gray-700">
+                <span>Number of students:</span>
+                <span className="font-semibold">{selectedStudents.length}</span>
+              </div>
+              {pricingTier && pricingTier.free_chaperones > 0 && (
+                <div className="flex justify-between text-gray-700">
+                  <span>Free chaperones included:</span>
+                  <span className="font-semibold">{pricingTier.free_chaperones}</span>
+                </div>
+              )}
+              <div className="border-t-2 border-[#0A0A0A] pt-3 flex justify-between text-lg font-bold text-[#0A0A0A]">
+                <span>Total Cost:</span>
+                <span>{totalCost > 0 ? formatCurrency(totalCost) : 'TBD'}</span>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
+
+      {!isFreeFunding && (
+        <AddOnConfigurator
+          addOns={configuredAddons}
+          onChange={setConfiguredAddons}
+          experienceAdditionalFees={experienceAdditionalFees}
+        />
+      )}
+
+      {configuredAddons.length > 0 && !isFreeFunding && (
+        <Card className="border-2 border-[#0A0A0A] bg-[#FFFDE7]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Gift className="h-5 w-5 text-[#0A0A0A]" />
+              Configured Add-Ons Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {configuredAddons.map((addon) => (
+                <div key={addon.id} className="flex justify-between text-sm">
+                  <span>
+                    {addon.name}
+                    {addon.required && <span className="text-red-600 ml-1">(Required)</span>}
+                  </span>
+                  <span className="font-semibold">{formatCurrency(addon.priceCents)}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="border-2 border-[#0A0A0A]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Supporting Documents (Optional)
+            Supporting Documents
           </CardTitle>
           <CardDescription>
-            Upload any additional documents related to this trip
+            Upload permission forms, waivers, or other documents. Files will be uploaded when the trip is created.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <input
-              type="file"
-              multiple
-              onChange={handleFileUpload}
-              className="hidden"
-              id="document-upload"
-            />
-            <label htmlFor="document-upload">
-              <Button type="button" variant="outline" asChild className="border-2 border-[#0A0A0A]">
-                <span>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Choose Files
-                </span>
-              </Button>
-            </label>
-          </div>
-          {uploadedDocuments.length > 0 && (
-            <div className="space-y-2">
-              {uploadedDocuments.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200"
-                >
-                  <span className="text-sm">{file.name}</span>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => removeDocument(index)}>
-                    Remove
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
+        <CardContent>
+          <FormUploadManager
+            venueForms={venueForms}
+            onFormsChange={setPendingForms}
+          />
         </CardContent>
       </Card>
 

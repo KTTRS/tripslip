@@ -37,11 +37,24 @@ The workflow runs `bash start-dev.sh` which:
 
 The landing page at `/` has an `/apps` hub page that links to all other portals.
 
+### Teacher App Pages
+- `/` `/dashboard` — Dashboard with stats, quick actions, upcoming trips
+- `/trips` — Full trip list with filters (upcoming/past/all), status badges
+- `/trips/create` — Trip creation wizard (4 steps)
+- `/trips/:tripId/roster` — Per-trip student roster with permission slip status
+- `/trips/:tripId/slips` — Permission slip tracking with send/remind
+- `/students` — Full student management page (add, CSV import with parent info, edit, delete, send permission slip links)
+- `/profile` — Teacher profile editing + password change
+- `/venues/search` — Venue discovery
+- `/venues/:venueId` — Venue detail
+
 ### Key Files
-- `proxy-server.mjs` — Reverse proxy routing requests to the correct app
+- `proxy-server.mjs` — Reverse proxy + API routes (SMS, email, permission slips, file upload)
 - `start-dev.sh` — Startup script for turbo + proxy
-- `apps/landing/src/utils/appUrls.ts` — URL helper for cross-app navigation
-- `apps/landing/src/pages/AppsPage.tsx` — Apps hub page
+- `apps/teacher/src/components/roster/SendLinksModal.tsx` — Generate ONE link per trip for all parents (copy, SMS, Remind/ClassDojo)
+- `apps/teacher/src/components/roster/CSVImportModal.tsx` — CSV import with parent contact info columns
+- `apps/teacher/src/components/roster/AddStudentModal.tsx` — Add student with parent info
+- `apps/parent/src/pages/TripLookupPage.tsx` — Parent opens trip link, searches for child, routes to permission slip
 
 ### Routing
 Each sub-app uses a `basename` on its `BrowserRouter` (e.g., `/venue`, `/teacher`) and a matching `base` in its Vite config. The proxy forwards requests by path prefix to the correct internal Vite dev server.

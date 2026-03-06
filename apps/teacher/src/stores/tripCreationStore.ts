@@ -35,6 +35,17 @@ export interface TransportationDetails {
   estimatedBuses: number;
 }
 
+export interface ConfiguredAddOn {
+  id: string;
+  name: string;
+  description: string;
+  priceCents: number;
+  required: boolean;
+  category: 'gift_shop' | 'food_snacks' | 'souvenirs' | 'activity_upgrade' | 'other';
+}
+
+export type FundingModel = 'parents_pay' | 'school_funded' | 'school_upfront' | 'sponsored';
+
 export interface TripDetails {
   name: string;
   date: string;
@@ -42,6 +53,9 @@ export interface TripDetails {
   description: string;
   specialRequirements?: string;
   transportation?: TransportationDetails;
+  isFree?: boolean;
+  fundingModel?: FundingModel;
+  sponsorName?: string;
 }
 
 export interface TripCreationState {
@@ -61,6 +75,9 @@ export interface TripCreationState {
   venueInfo: VenueInfo | null;
   venueForms: VenueForm[];
   
+  // Add-on configuration
+  configuredAddons: ConfiguredAddOn[];
+  
   // Draft management
   isDraft: boolean;
   draftId: string | null;
@@ -78,6 +95,7 @@ export interface TripCreationState {
   setSelectedStudents: (students: Student[]) => void;
   setVenueInfo: (venue: VenueInfo | null) => void;
   setVenueForms: (forms: VenueForm[]) => void;
+  setConfiguredAddons: (addons: ConfiguredAddOn[]) => void;
   
   // Pre-populate from venue/experience
   prePopulateFromVenue: (venue: VenueInfo, experience: Experience, forms: VenueForm[]) => void;
@@ -96,6 +114,7 @@ export const useTripCreationStore = create<TripCreationState>((set, get) => ({
   selectedStudents: [],
   venueInfo: null,
   venueForms: [],
+  configuredAddons: [],
   isDraft: false,
   draftId: null,
   lastSaved: null,
@@ -122,6 +141,8 @@ export const useTripCreationStore = create<TripCreationState>((set, get) => ({
   setVenueInfo: (venue) => set({ venueInfo: venue }),
   
   setVenueForms: (forms) => set({ venueForms: forms }),
+  
+  setConfiguredAddons: (addons) => set({ configuredAddons: addons }),
   
   prePopulateFromVenue: (venue, experience, forms) => set({
     venueInfo: venue,
@@ -153,6 +174,7 @@ export const useTripCreationStore = create<TripCreationState>((set, get) => ({
         selectedStudents: state.selectedStudents,
         venueInfo: state.venueInfo,
         venueForms: state.venueForms,
+        configuredAddons: state.configuredAddons,
       };
 
       const draftKey = `tripslip_draft_${teacherId}`;
@@ -189,6 +211,7 @@ export const useTripCreationStore = create<TripCreationState>((set, get) => ({
         selectedStudents: draft.selectedStudents || [],
         venueInfo: draft.venueInfo || null,
         venueForms: draft.venueForms || [],
+        configuredAddons: draft.configuredAddons || [],
         isDraft: true,
         draftId: draftKey,
         lastSaved: new Date(),
@@ -225,6 +248,7 @@ export const useTripCreationStore = create<TripCreationState>((set, get) => ({
     selectedStudents: [],
     venueInfo: null,
     venueForms: [],
+    configuredAddons: [],
     isDraft: false,
     draftId: null,
     lastSaved: null,

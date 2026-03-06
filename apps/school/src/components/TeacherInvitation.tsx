@@ -18,6 +18,7 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
   const [department, setDepartment] = useState('');
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(false);
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
@@ -80,28 +81,17 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
 
       if (error) throw error;
 
-      // Send invitation email via Edge Function
+      const signupLink = `${window.location.origin}/teacher/signup?email=${encodeURIComponent(email)}`;
+
       try {
-        await supabase.functions.invoke('send-email', {
-          body: {
-            to: email,
-            subject: 'Invitation to Join TripSlip',
-            template: 'teacher-invitation',
-            data: {
-              teacherName: `${firstName} ${lastName}`,
-              schoolId: schoolId,
-              signupLink: `${window.location.origin}/teacher/signup?email=${encodeURIComponent(email)}`,
-            },
-          },
-        });
-      } catch (emailError) {
-        console.error('Error sending invitation email:', emailError);
-        // Don't fail the whole operation if email fails
+        await navigator.clipboard.writeText(signupLink);
+      } catch (clipErr) {
+        // clipboard may not be available
       }
 
       setMessage({
         type: 'success',
-        text: 'Teacher added successfully! An invitation email has been sent.',
+        text: `Teacher added! Share this signup link with them: ${signupLink}`,
       });
       
       // Reset form
@@ -123,33 +113,24 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
     }
   };
 
-  const handleResendInvitation = async (teacherId: string) => {
+  const getSignupLink = (teacherEmail: string) => {
+    return `${window.location.origin}/teacher/signup?email=${encodeURIComponent(teacherEmail)}`;
+  };
+
+  const handleCopyLink = async (teacherId: string, teacherEmail: string) => {
+    const link = getSignupLink(teacherEmail);
     try {
-      const teacher = teachers.find((t) => t.id === teacherId);
-      if (!teacher) return;
-
-      await supabase.functions.invoke('send-email', {
-        body: {
-          to: teacher.email,
-          subject: 'Reminder: Invitation to Join TripSlip',
-          template: 'teacher-invitation',
-          data: {
-            teacherName: `${teacher.first_name} ${teacher.last_name}`,
-            schoolId: schoolId,
-            signupLink: `${window.location.origin}/teacher/signup?email=${encodeURIComponent(teacher.email)}`,
-          },
-        },
-      });
-
+      await navigator.clipboard.writeText(link);
+      setCopiedLinkId(teacherId);
+      setTimeout(() => setCopiedLinkId(null), 2000);
       setMessage({
         type: 'success',
-        text: 'Invitation resent successfully!',
+        text: 'Signup link copied to clipboard!',
       });
-    } catch (error) {
-      console.error('Error resending invitation:', error);
+    } catch {
       setMessage({
-        type: 'error',
-        text: 'Failed to resend invitation.',
+        type: 'success',
+        text: `Signup link: ${link}`,
       });
     }
   };
@@ -348,10 +329,10 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
                   </span>
                   {!teacher.user_id && (
                     <button
-                      onClick={() => handleResendInvitation(teacher.id)}
-                      className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                      onClick={() => handleCopyLink(teacher.id, teacher.email)}
+                      className="px-3 py-1 text-sm bg-[#F5C518] text-[#0A0A0A] rounded hover:bg-yellow-400 transition-colors font-medium"
                     >
-                      Resend Invite
+                      {copiedLinkId === teacher.id ? 'Copied!' : 'Copy Signup Link'}
                     </button>
                   )}
                   <button

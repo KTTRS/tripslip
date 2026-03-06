@@ -372,8 +372,32 @@ async function handleUploadForm(req, res) {
   }
 }
 
+async function handleSendEmail(req, res) {
+  try {
+    const { to, subject, html, text } = await parseBody(req);
+    if (!to || (!html && !text)) {
+      return sendJSON(res, 400, { error: 'Missing required fields: to, and html or text' });
+    }
+
+    const supabase = getSupabase();
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: { to, subject, html, text },
+    });
+
+    if (error) {
+      throw new Error(error.message || 'Email send failed');
+    }
+
+    sendJSON(res, 200, { success: true, data });
+  } catch (err) {
+    console.error('Email send error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 const apiHandlers = {
   'POST /api/send-sms': handleSendSMS,
+  'POST /api/send-email': handleSendEmail,
   'POST /api/send-permission-slip': handleSendPermissionSlip,
   'POST /api/send-bulk-reminders': handleSendBulkReminders,
   'POST /api/upload-form': handleUploadForm,
@@ -424,6 +448,7 @@ server.listen(5000, '0.0.0.0', () => {
   console.log('TripSlip API + Proxy running on http://0.0.0.0:5000');
   console.log('API Routes:');
   console.log('  POST /api/send-sms');
+  console.log('  POST /api/send-email');
   console.log('  POST /api/send-permission-slip');
   console.log('  POST /api/send-bulk-reminders');
   console.log('  POST /api/upload-form');

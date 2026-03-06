@@ -59,15 +59,14 @@ export default function TripRosterPage() {
     try {
       setLoading(true);
       
-      // Fetch trip details
       const { data: tripData, error: tripError } = await supabase
-        .from('invitations')
+        .from('trips')
         .select(`
           *,
           experience:experiences (
             title,
-            cost_cents,
-            venue:venues (name)
+            venue:venues (name),
+            pricing_tiers (price_cents)
           )
         `)
         .eq('id', tripId)
@@ -76,33 +75,45 @@ export default function TripRosterPage() {
       if (tripError) throw tripError;
       setTrip(tripData);
       
-      // Fetch students with permission slips
-      const { data: studentsData, error: studentsError } = await supabase
-        .from('students')
+      const { data: slipsData, error: slipsError } = await supabase
+        .from('permission_slips')
         .select(`
-          *,
-          permission_slip:permission_slips (
-            id,
+          id,
+          status,
+          signed_at,
+          student_id,
+          payments (
             status,
-            signed_at,
-            payments (
-              status,
-              amount_cents
-            )
+            amount_cents
+          ),
+          students (
+            id,
+            first_name,
+            last_name,
+            grade,
+            medical_info,
+            roster_id,
+            created_at,
+            updated_at
           )
         `)
-        .eq('invitation_id', tripId)
-        .order('last_name', { ascending: true });
+        .eq('trip_id', tripId);
       
-      if (studentsError) throw studentsError;
+      if (slipsError) throw slipsError;
       
-      // Transform data to handle single permission slip
-      const transformedStudents = (studentsData || []).map((student: any) => ({
-        ...student,
-        permission_slip: Array.isArray(student.permission_slip) 
-          ? student.permission_slip[0] 
-          : student.permission_slip
-      }));
+      const transformedStudents: StudentWithSlip[] = (slipsData || [])
+        .filter((slip: any) => slip.students)
+        .map((slip: any) => ({
+          ...slip.students,
+          permission_slip: {
+            id: slip.id,
+            status: slip.status,
+            signed_at: slip.signed_at,
+            payments: slip.payments,
+          }
+        }));
+      
+      transformedStudents.sort((a, b) => a.last_name.localeCompare(b.last_name));
       
       setStudents(transformedStudents);
       setFilteredStudents(transformedStudents);
@@ -159,21 +170,13 @@ export default function TripRosterPage() {
     }
     
     try {
-      // Mark permission slip as cancelled
       const { error: slipError } = await supabase
         .from('permission_slips')
         .update({ status: 'cancelled' })
-        .eq('student_id', studentId);
+        .eq('student_id', studentId)
+        .eq('trip_id', tripId!);
       
       if (slipError) throw slipError;
-      
-      // Remove student from trip
-      const { error: studentError } = await supabase
-        .from('students')
-        .update({ invitation_id: null })
-        .eq('id', studentId);
-      
-      if (studentError) throw studentError;
       
       toast.success('Student removed from trip');
       fetchTripAndStudents();
@@ -193,6 +196,8 @@ export default function TripRosterPage() {
     a.click();
     window.URL.revokeObjectURL(url);
   };
+  
+  const costCents = trip?.experience?.pricing_tiers?.[0]?.price_cents || 0;
   
   if (loading) {
     return (
@@ -237,10 +242,9 @@ export default function TripRosterPage() {
       </nav>
       
       <main className="max-w-7xl mx-auto p-8">
-        {/* Trip Info */}
-        <Card className="border-2 border-black shadow-offset mb-6">
+        <Card className="border-2 border-black shadow-[4px_4px_0px_#0A0A0A] mb-6">
           <CardHeader>
-            <CardTitle>{trip.experience?.title}</CardTitle>
+            <CardTitle>{trip.experience?.title || 'Field Trip'}</CardTitle>
             <p className="text-sm text-gray-600">{trip.experience?.venue?.name}</p>
           </CardHeader>
           <CardContent>
@@ -250,15 +254,14 @@ export default function TripRosterPage() {
                 <span className="font-semibold">{students.length} Students</span>
               </div>
               <div className="text-sm text-gray-600">
-                Cost per student: ${((trip.experience?.cost_cents || 0) / 100).toFixed(2)}
+                Cost per student: ${(costCents / 100).toFixed(2)}
               </div>
             </div>
           </CardContent>
         </Card>
         
-        {/* Actions Bar */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+          <div className="relative flex-1 max-w-md w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               type="text"
@@ -269,7 +272,7 @@ export default function TripRosterPage() {
             />
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               onClick={() => navigate(`/trips/${tripId}/slips`)}
@@ -295,7 +298,7 @@ export default function TripRosterPage() {
             </Button>
             <Button
               onClick={() => setShowAddModal(true)}
-              className="shadow-offset"
+              className="shadow-[4px_4px_0px_#0A0A0A]"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Student
@@ -303,8 +306,7 @@ export default function TripRosterPage() {
           </div>
         </div>
         
-        {/* Student List */}
-        <Card className="border-2 border-black shadow-offset">
+        <Card className="border-2 border-black shadow-[4px_4px_0px_#0A0A0A]">
           <CardContent className="p-0">
             {filteredStudents.length === 0 ? (
               <div className="text-center py-12">
@@ -312,13 +314,25 @@ export default function TripRosterPage() {
                 <p className="text-gray-600">
                   {searchQuery ? 'No students found matching your search' : 'No students in this trip yet'}
                 </p>
-                <Button
-                  onClick={() => setShowAddModal(true)}
-                  className="mt-4"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add First Student
-                </Button>
+                <p className="text-sm text-gray-500 mt-1 mb-4">
+                  {!searchQuery && 'Add students individually or import from a CSV file'}
+                </p>
+                <div className="flex justify-center gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCSVModal(true)}
+                    className="border-2 border-black"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import CSV
+                  </Button>
+                  <Button
+                    onClick={() => setShowAddModal(true)}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Student
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -356,8 +370,18 @@ export default function TripRosterPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
-                              <StatusIcon className={`h-4 w-4 text-${status.color}-600`} />
-                              <span className={`text-sm font-medium text-${status.color}-600`}>
+                              <StatusIcon className={`h-4 w-4 ${
+                                status.color === 'green' ? 'text-green-600' :
+                                status.color === 'blue' ? 'text-blue-600' :
+                                status.color === 'red' ? 'text-red-600' :
+                                'text-gray-600'
+                              }`} />
+                              <span className={`text-sm font-medium ${
+                                status.color === 'green' ? 'text-green-600' :
+                                status.color === 'blue' ? 'text-blue-600' :
+                                status.color === 'red' ? 'text-red-600' :
+                                'text-gray-600'
+                              }`}>
                                 {status.label}
                               </span>
                             </div>
@@ -393,7 +417,6 @@ export default function TripRosterPage() {
         </Card>
       </main>
       
-      {/* Add/Edit Student Modal */}
       {showAddModal && (
         <AddStudentModal
           tripId={tripId!}

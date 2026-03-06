@@ -7,7 +7,8 @@ import { Label } from '@tripslip/ui/components/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tripslip/ui/components/card';
 import { Badge } from '@tripslip/ui/components/badge';
 import { toast } from 'sonner';
-import { Search, MapPin, Clock, DollarSign, Check, Users, GraduationCap } from 'lucide-react';
+import { Search, MapPin, Clock, Check, Users, GraduationCap, Plus } from 'lucide-react';
+import { CustomVenueForm } from './CustomVenueForm';
 
 interface ExperienceWithDetails {
   id: string;
@@ -35,6 +36,7 @@ export function ExperienceSelectionStep() {
   const [filteredExperiences, setFilteredExperiences] = useState<ExperienceWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showCustomForm, setShowCustomForm] = useState(false);
   const [selectedExp, setSelectedExp] = useState<ExperienceWithDetails | null>(
     selectedExperience as ExperienceWithDetails | null
   );
@@ -93,6 +95,14 @@ export function ExperienceSelectionStep() {
     setSelectedExp(experience);
   };
 
+  const handleCustomCreated = (experience: ExperienceWithDetails) => {
+    setExperiences((prev) => [experience, ...prev]);
+    setSelectedExp(experience);
+    setShowCustomForm(false);
+    setSelectedExperience(experience as any);
+    nextStep();
+  };
+
   const handleSubmit = () => {
     if (!selectedExp) {
       toast.error('Please select an experience');
@@ -135,6 +145,15 @@ export function ExperienceSelectionStep() {
           <p className="text-gray-600">Loading experiences...</p>
         </div>
       </div>
+    );
+  }
+
+  if (showCustomForm) {
+    return (
+      <CustomVenueForm
+        onCreated={handleCustomCreated}
+        onCancel={() => setShowCustomForm(false)}
+      />
     );
   }
 
@@ -246,6 +265,19 @@ export function ExperienceSelectionStep() {
             );
           })
         )}
+      </div>
+
+      <div className="text-center py-4">
+        <p className="text-sm text-gray-500 mb-2">Don't see your destination?</p>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => setShowCustomForm(true)}
+          className="border-2 border-dashed border-[#F5C518] text-[#0A0A0A] hover:bg-[#FFFDE7] hover:border-solid font-semibold"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add a Custom Destination
+        </Button>
       </div>
 
       <div className="flex justify-between pt-4 border-t border-gray-200">

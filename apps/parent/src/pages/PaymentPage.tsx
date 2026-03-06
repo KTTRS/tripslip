@@ -47,6 +47,8 @@ export function PaymentPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSplitPayment, setIsSplitPayment] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [payItForwardAmount, setPayItForwardAmount] = useState(0);
+  const [customPayItForward, setCustomPayItForward] = useState('');
 
   useEffect(() => {
     if (!slipId || !token) {
@@ -115,12 +117,57 @@ export function PaymentPage() {
     setTotalAmount(totalCents);
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePayItForwardSelect = (amount: number) => {
+    if (payItForwardAmount === amount) {
+      setPayItForwardAmount(0);
+      setCustomPayItForward('');
+    } else {
+      setPayItForwardAmount(amount);
+      setCustomPayItForward('');
+    }
+  };
+
+  const handleCustomPayItForward = (value: string) => {
+    setCustomPayItForward(value);
+    const cents = Math.round(parseFloat(value || '0') * 100);
+    setPayItForwardAmount(isNaN(cents) || cents < 0 ? 0 : cents);
+  };
+
+  const finalTotal = totalAmount + payItForwardAmount;
+
+  const updateAssistanceFund = async () => {
+    if (!slip || payItForwardAmount <= 0) return;
+    try {
+      await supabase.rpc('increment_assistance_fund', {
+        p_trip_id: slip.trip_id,
+        p_amount: payItForwardAmount,
+      });
+    } catch {
+      try {
+        const { data: tripData } = await supabase
+          .from('trips')
+          .select('assistance_fund_cents')
+          .eq('id', slip.trip_id)
+          .single();
+        const current = (tripData as any)?.assistance_fund_cents || 0;
+        await supabase
+          .from('trips')
+          .update({ assistance_fund_cents: current + payItForwardAmount })
+          .eq('id', slip.trip_id);
+      } catch {
+        logger.warn('Could not update assistance fund', { tripId: slip.trip_id });
+      }
+    }
+  };
+
+  const handlePaymentSuccess = async () => {
     logger.info('Payment completed successfully', {
       slipId: slip?.id,
-      amount: totalAmount,
+      amount: finalTotal,
+      payItForward: payItForwardAmount,
     });
 
+    await updateAssistanceFund();
     navigate(`/payment/success?slip=${slipId}&token=${token}`);
   };
 
@@ -223,6 +270,66 @@ export function PaymentPage() {
           />
         )}
 
+        {/* Pay-It-Forward Section */}
+        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-[#F5C518]">
+          <div className="flex items-start gap-3 mb-4">
+            <span className="text-2xl" role="img" aria-label="heart">💛</span>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Help Another Family
+              </h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Contribute a little extra to help cover costs for families who need financial assistance. No child should miss out on a field trip.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3 mb-4">
+            {[500, 1000, 2500].map((amount) => (
+              <button
+                key={amount}
+                type="button"
+                onClick={() => handlePayItForwardSelect(amount)}
+                className={`px-5 py-2.5 rounded-lg border-2 font-semibold text-sm transition-all duration-200 ${
+                  payItForwardAmount === amount && customPayItForward === ''
+                    ? 'bg-[#F5C518] border-[#0A0A0A] text-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A]'
+                    : 'bg-white border-gray-300 text-gray-700 hover:border-[#F5C518] hover:bg-yellow-50'
+                }`}
+              >
+                +${(amount / 100).toFixed(0)}
+              </button>
+            ))}
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-semibold text-sm">$</span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Other"
+                value={customPayItForward}
+                onChange={(e) => handleCustomPayItForward(e.target.value)}
+                className={`w-24 pl-7 pr-3 py-2.5 rounded-lg border-2 text-sm font-semibold transition-all duration-200 ${
+                  customPayItForward !== ''
+                    ? 'border-[#0A0A0A] bg-[#F5C518] shadow-[3px_3px_0px_#0A0A0A]'
+                    : 'border-gray-300 hover:border-[#F5C518]'
+                }`}
+                aria-label="Custom contribution amount"
+              />
+            </div>
+          </div>
+
+          {payItForwardAmount > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-center justify-between">
+              <span className="text-sm text-gray-700">
+                Your contribution to the assistance fund:
+              </span>
+              <span className="font-bold text-[#0A0A0A]">
+                +${(payItForwardAmount / 100).toFixed(2)}
+              </span>
+            </div>
+          )}
+        </div>
+
         {/* Split Payment Option */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
@@ -242,17 +349,34 @@ export function PaymentPage() {
             </label>
           </div>
 
+          {payItForwardAmount > 0 && (
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Trip cost</span>
+                <span className="font-medium">${(totalAmount / 100).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm mt-1">
+                <span className="text-gray-600">Pay-it-forward 💛</span>
+                <span className="font-medium">+${(payItForwardAmount / 100).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm mt-2 pt-2 border-t border-gray-300 font-bold">
+                <span>Total</span>
+                <span>${(finalTotal / 100).toFixed(2)}</span>
+              </div>
+            </div>
+          )}
+
           {isSplitPayment ? (
             <SplitPaymentForm
               permissionSlipId={slip.id}
-              totalAmountCents={totalAmount}
+              totalAmountCents={finalTotal}
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
             />
           ) : (
             <PaymentForm
               permissionSlipId={slip.id}
-              amountCents={totalAmount}
+              amountCents={finalTotal}
               onSuccess={handlePaymentSuccess}
               onError={handlePaymentError}
             />

@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useTripCreationStore } from '../../stores/tripCreationStore';
-import type { TransportationDetails } from '../../stores/tripCreationStore';
+import type { TransportationDetails, FundingModel } from '../../stores/tripCreationStore';
 import { Button } from '@tripslip/ui/components/button';
 import { Input } from '@tripslip/ui/components/input';
 import { Label } from '@tripslip/ui/components/label';
 import { Textarea } from '@tripslip/ui/components/textarea';
 import { toast } from 'sonner';
-import { MapPin, Phone, Mail, Globe, FileText, Calendar, Clock, AlertCircle, Bus } from 'lucide-react';
+import { MapPin, Phone, Mail, Globe, FileText, Calendar, Clock, AlertCircle, Bus, DollarSign, Gift, School, Building2 } from 'lucide-react';
 
 const TRANSPORTATION_TYPES = [
   { value: 'district_bus', label: 'District Bus' },
@@ -29,6 +29,13 @@ const DEFAULT_TRANSPORTATION: TransportationDetails = {
   estimatedBuses: 0,
 };
 
+const FUNDING_MODELS: { value: FundingModel; label: string; description: string; icon: typeof DollarSign }[] = [
+  { value: 'parents_pay', label: 'Parents Pay Individually', description: 'Each parent pays for their child', icon: DollarSign },
+  { value: 'school_funded', label: 'School Funded', description: 'School covers all costs — no payment from parents', icon: School },
+  { value: 'school_upfront', label: 'School Pays Upfront', description: 'School pays first, then collects from parents', icon: Building2 },
+  { value: 'sponsored', label: 'Sponsored', description: 'A sponsor covers the trip costs', icon: Gift },
+];
+
 export function TripDetailsStep() {
   const { tripDetails, setTripDetails, nextStep, saveDraft, venueInfo, venueForms, selectedStudents } = useTripCreationStore();
   
@@ -43,6 +50,10 @@ export function TripDetailsStep() {
   const [transportation, setTransportation] = useState<TransportationDetails>(
     tripDetails?.transportation || { ...DEFAULT_TRANSPORTATION }
   );
+
+  const [isFree, setIsFree] = useState(tripDetails?.isFree ?? false);
+  const [fundingModel, setFundingModel] = useState<FundingModel>(tripDetails?.fundingModel || 'parents_pay');
+  const [sponsorName, setSponsorName] = useState(tripDetails?.sponsorName || '');
   
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
@@ -117,6 +128,9 @@ export function TripDetailsStep() {
     return {
       ...formData,
       transportation: hasTransportation ? { ...transportation, estimatedBuses: (transportation.type === 'district_bus' || transportation.type === 'charter_bus') ? estimatedBuses : 0 } : undefined,
+      isFree,
+      fundingModel: isFree ? 'school_funded' as FundingModel : fundingModel,
+      sponsorName: fundingModel === 'sponsored' && !isFree ? sponsorName : undefined,
     };
   };
 
@@ -402,6 +416,96 @@ export function TripDetailsStep() {
         </p>
       </div>
       
+      {/* Funding Model */}
+      <div className="space-y-4 p-4 bg-gray-50 border-2 border-[#0A0A0A] rounded-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <DollarSign className="w-5 h-5 text-[#0A0A0A]" />
+          <h3 className="text-lg font-semibold text-[#0A0A0A]">How is this trip funded?</h3>
+        </div>
+
+        <div className="flex items-center gap-3 p-3 bg-white border-2 border-[#0A0A0A] rounded-lg">
+          <input
+            type="checkbox"
+            id="isFree"
+            checked={isFree}
+            onChange={(e) => setIsFree(e.target.checked)}
+            className="w-5 h-5 accent-[#F5C518] cursor-pointer"
+            aria-label="Free trip toggle"
+          />
+          <Label htmlFor="isFree" className="text-[#0A0A0A] font-semibold cursor-pointer flex-1">
+            This is a free trip
+            <span className="block text-sm font-normal text-gray-600">
+              No cost to parents — skip all payment steps
+            </span>
+          </Label>
+        </div>
+
+        {!isFree && (
+          <div className="space-y-3 pt-2">
+            <Label className="text-[#0A0A0A] font-semibold">Funding Model</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {FUNDING_MODELS.map((model) => {
+                const Icon = model.icon;
+                const isSelected = fundingModel === model.value;
+                return (
+                  <button
+                    key={model.value}
+                    type="button"
+                    onClick={() => setFundingModel(model.value)}
+                    className={`flex items-start gap-3 p-3 rounded-lg border-2 text-left transition-all duration-200 ${
+                      isSelected
+                        ? 'border-[#F5C518] bg-[#FFFDE7] shadow-[3px_3px_0px_#0A0A0A]'
+                        : 'border-[#0A0A0A] bg-white hover:bg-gray-50'
+                    }`}
+                    aria-pressed={isSelected}
+                  >
+                    <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${isSelected ? 'text-[#0A0A0A]' : 'text-gray-500'}`} />
+                    <div>
+                      <p className={`text-sm font-semibold ${isSelected ? 'text-[#0A0A0A]' : 'text-gray-800'}`}>
+                        {model.label}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-0.5">{model.description}</p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {fundingModel === 'sponsored' && (
+              <div className="space-y-2 pt-2">
+                <Label htmlFor="sponsorName" className="text-[#0A0A0A] font-semibold">
+                  Sponsor Name <span className="text-red-600">*</span>
+                </Label>
+                <Input
+                  id="sponsorName"
+                  type="text"
+                  value={sponsorName}
+                  onChange={(e) => setSponsorName(e.target.value)}
+                  placeholder="e.g., PTA, Local Business Name"
+                  className="border-2 border-[#0A0A0A] focus:border-[#F5C518]"
+                />
+              </div>
+            )}
+
+            {(fundingModel === 'school_funded' || fundingModel === 'sponsored') && (
+              <div className="p-3 bg-[#FFFDE7] border-2 border-[#F5C518] rounded-lg">
+                <p className="text-sm text-[#0A0A0A]">
+                  <strong>Note:</strong> Parents will only need to sign the permission slip — no payment will be collected from them.
+                </p>
+              </div>
+            )}
+
+            {fundingModel === 'school_upfront' && (
+              <div className="p-3 bg-[#FFFDE7] border-2 border-[#F5C518] rounded-lg">
+                <p className="text-sm text-[#0A0A0A]">
+                  <strong>Note:</strong> The school pays the venue upfront. Parents will be billed individually to reimburse the school.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Transportation */}
       <div className="space-y-4 p-4 bg-gray-50 border-2 border-[#0A0A0A] rounded-lg">
         <div className="flex items-center gap-2 mb-2">
