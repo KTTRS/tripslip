@@ -1,6 +1,7 @@
 import http from 'node:http';
 import httpProxy from 'http-proxy';
 import { createClient } from '@supabase/supabase-js';
+import { runDiscoveryForSchool, geocodeAddress, discoverNearbyVenues, deduplicateVenues, normalizeToVenueRecord, rankVenues, storeDiscoveredVenues } from './services/venue-discovery.mjs';
 
 const proxy = httpProxy.createProxyServer({ ws: true });
 
@@ -395,12 +396,94 @@ async function handleSendEmail(req, res) {
   }
 }
 
+async function handleDiscoveryRun(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { school_id, radius_miles } = body;
+
+    if (!school_id) {
+      return sendJSON(res, 400, { error: 'school_id is required' });
+    }
+
+    const apiKey = process.env.GEOAPIFY_API_KEY;
+    if (!apiKey) {
+      return sendJSON(res, 500, { error: 'GEOAPIFY_API_KEY not configured' });
+    }
+
+    const result = await runDiscoveryForSchool(school_id, apiKey, {
+      radiusMiles: radius_miles || 25,
+    });
+
+    sendJSON(res, 200, result);
+  } catch (err) {
+    console.error('Discovery error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleDiscoveryNearby(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { lat, lon, radius_miles, categories } = body;
+
+    if (!lat || !lon) {
+      return sendJSON(res, 400, { error: 'lat and lon are required' });
+    }
+
+    const apiKey = process.env.GEOAPIFY_API_KEY;
+    if (!apiKey) {
+      return sendJSON(res, 500, { error: 'GEOAPIFY_API_KEY not configured' });
+    }
+
+    const rawResults = await discoverNearbyVenues(lat, lon, radius_miles || 25, apiKey);
+    const deduplicated = deduplicateVenues(rawResults);
+    const normalized = deduplicated.map(r => normalizeToVenueRecord(r, lat, lon));
+    const ranked = rankVenues(normalized);
+
+    sendJSON(res, 200, {
+      center: { lat, lon },
+      radius_miles: radius_miles || 25,
+      total_raw: rawResults.length,
+      total_results: ranked.length,
+      venues: ranked,
+    });
+  } catch (err) {
+    console.error('Nearby discovery error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleDiscoveryGeocode(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { address } = body;
+
+    if (!address) {
+      return sendJSON(res, 400, { error: 'address is required' });
+    }
+
+    const apiKey = process.env.GEOAPIFY_API_KEY;
+    if (!apiKey) {
+      return sendJSON(res, 500, { error: 'GEOAPIFY_API_KEY not configured' });
+    }
+
+    const result = await geocodeAddress(address, apiKey);
+    sendJSON(res, 200, result);
+  } catch (err) {
+    console.error('Geocode error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 const apiHandlers = {
   'POST /api/send-sms': handleSendSMS,
   'POST /api/send-email': handleSendEmail,
   'POST /api/send-permission-slip': handleSendPermissionSlip,
   'POST /api/send-bulk-reminders': handleSendBulkReminders,
   'POST /api/upload-form': handleUploadForm,
+  'POST /api/discovery/run': handleDiscoveryRun,
+  'POST /api/discovery/nearby': handleDiscoveryNearby,
+  'POST /api/discovery/geocode': handleDiscoveryGeocode,
 };
 
 const server = http.createServer(async (req, res) => {
@@ -452,6 +535,9 @@ server.listen(5000, '0.0.0.0', () => {
   console.log('  POST /api/send-permission-slip');
   console.log('  POST /api/send-bulk-reminders');
   console.log('  POST /api/upload-form');
+  console.log('  POST /api/discovery/run');
+  console.log('  POST /api/discovery/nearby');
+  console.log('  POST /api/discovery/geocode');
   console.log('App Routes:');
   console.log('  /          -> landing  (port 3000)');
   console.log('  /venue/*   -> venue    (port 3001)');
