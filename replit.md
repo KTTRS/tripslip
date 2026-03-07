@@ -202,11 +202,16 @@ The venue search uses Geoapify Places API for live discovery. The `GEOAPIFY_API_
 
 NOTE: Categories like `tourism.museum`, `tourism.zoo`, `tourism.aquarium` do NOT exist in the Geoapify API — they return 400 errors.
 
+### Discovery + Growing Database
+Every search ALWAYS runs both DB lookup AND Geoapify discovery in parallel. New venues not yet in our database get enriched with Wikipedia images/descriptions and stored automatically. The database grows with every teacher search — eventually becoming the primary source with ratings, reviews, and experiences that Geoapify doesn't have.
+
+Response includes `db_count` (venues from our DB) and `new_discovered` (freshly found venues being stored). DB venues get priority in ranking (they have richer data, experiences, reviews). Discovered venues stored with: name, description (from Wikipedia or generated), address JSON with lat/lon, website, phone, primary_photo_url (Wikipedia or Unsplash stock by type), source='geoapify'.
+
 ### API Endpoints
-- `POST /api/discovery/search` — Live Geoapify search: `{address, radiusMiles, venueTypes?, searchText?}` → geocodes address, discovers venues, deduplicates, ranks, returns results
-- `POST /api/discovery/nearby` — Discover from lat/lon: `{lat, lon, radiusMiles}` → raw discovery + dedup + rank
+- `POST /api/discovery/search` — DB-cached Geoapify search: `{address, radiusMiles, venueTypes?, searchText?}` → checks DB first, falls back to Geoapify, enriches with Wikipedia, stores in DB, returns ranked results with photos/descriptions
+- `POST /api/discovery/nearby` — Same as search but accepts lat/lon directly: `{lat, lon, radius_miles}`
 - `POST /api/discovery/geocode` — Geocode only: `{address}` → `{lat, lon, formatted}`
-- `POST /api/discovery/run` — Full pipeline: `{school_id}` → discover + store in DB
+- `POST /api/discovery/run` — Full pipeline for a school: `{school_id}` → discover + store in DB
 
 ## Critical DB Facts (for querying)
 

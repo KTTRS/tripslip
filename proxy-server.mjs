@@ -1,7 +1,7 @@
 import http from 'node:http';
 import httpProxy from 'http-proxy';
 import { createClient } from '@supabase/supabase-js';
-import { runDiscoveryForSchool, geocodeAddress, discoverNearbyVenues, deduplicateVenues, normalizeToVenueRecord, rankVenues, storeDiscoveredVenues, searchVenuesLive } from './services/venue-discovery.mjs';
+import { geocodeAddress, searchVenuesLive, discoverNearbyVenues, deduplicateVenues, runDiscoveryForSchool } from './services/venue-discovery.mjs';
 
 const proxy = httpProxy.createProxyServer({ ws: true });
 
@@ -424,7 +424,7 @@ async function handleDiscoveryRun(req, res) {
 async function handleDiscoveryNearby(req, res) {
   try {
     const body = await parseBody(req);
-    const { lat, lon, radius_miles, categories } = body;
+    const { lat, lon, radius_miles } = body;
 
     if (!lat || !lon) {
       return sendJSON(res, 400, { error: 'lat and lon are required' });
@@ -435,18 +435,12 @@ async function handleDiscoveryNearby(req, res) {
       return sendJSON(res, 500, { error: 'GEOAPIFY_API_KEY not configured' });
     }
 
-    const rawResults = await discoverNearbyVenues(lat, lon, radius_miles || 25, apiKey);
-    const deduplicated = deduplicateVenues(rawResults);
-    const normalized = deduplicated.map(r => normalizeToVenueRecord(r, lat, lon));
-    const ranked = rankVenues(normalized);
+    const result = await searchVenuesLive(
+      { lat, lon, radiusMiles: radius_miles || 25 },
+      apiKey
+    );
 
-    sendJSON(res, 200, {
-      center: { lat, lon },
-      radius_miles: radius_miles || 25,
-      total_raw: rawResults.length,
-      total_results: ranked.length,
-      venues: ranked,
-    });
+    sendJSON(res, 200, result);
   } catch (err) {
     console.error('Nearby discovery error:', err.message);
     sendJSON(res, 500, { error: err.message });
