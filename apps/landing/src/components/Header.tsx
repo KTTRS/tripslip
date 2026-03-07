@@ -1,7 +1,21 @@
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@tripslip/ui'
 import { getAppUrl } from '../utils/appUrls'
 
 export default function Header() {
+  const [showSignIn, setShowSignIn] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowSignIn(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <header className="border-b-2 border-black bg-white">
       <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
@@ -23,9 +37,24 @@ export default function Header() {
           </a>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => window.location.href = getAppUrl('teacher')}>
-            Sign In
-          </Button>
+          <div className="relative" ref={dropdownRef}>
+            <Button variant="ghost" onClick={() => setShowSignIn(!showSignIn)}>
+              Sign In
+            </Button>
+            {showSignIn && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_#0A0A0A] z-50 overflow-hidden">
+                <a href={getAppUrl('teacher')} className="block px-4 py-3 text-sm font-medium hover:bg-[#F5C518]/20 transition-colors border-b border-gray-100">
+                  Teacher Login
+                </a>
+                <a href={getAppUrl('school')} className="block px-4 py-3 text-sm font-medium hover:bg-[#F5C518]/20 transition-colors border-b border-gray-100">
+                  School Admin
+                </a>
+                <a href={getAppUrl('venue')} className="block px-4 py-3 text-sm font-medium hover:bg-[#F5C518]/20 transition-colors">
+                  Venue Admin
+                </a>
+              </div>
+            )}
+          </div>
           <Button 
             className="shadow-offset hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
             onClick={() => window.location.href = '/pricing'}

@@ -29,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   // Teacher navigation
   { label: 'Dashboard', path: '/', roles: ['teacher'] },
   { label: 'Trips', path: '/trips', roles: ['teacher'] },
+  { label: 'Venues', path: '/venues/search', roles: ['teacher'] },
   { label: 'Students', path: '/students', roles: ['teacher'] },
   { label: 'Profile', path: '/profile', roles: ['teacher'] },
   
@@ -36,29 +37,21 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', path: '/', roles: ['school_admin'] },
   { label: 'Approvals', path: '/approvals', roles: ['school_admin'] },
   { label: 'Teachers', path: '/teachers', roles: ['school_admin'] },
-  { label: 'Trips', path: '/trips', roles: ['school_admin'] },
-  { label: 'Students', path: '/students', roles: ['school_admin'] },
-  { label: 'Settings', path: '/settings', roles: ['school_admin'] },
   
   // District Admin navigation
   { label: 'Dashboard', path: '/', roles: ['district_admin'] },
-  { label: 'Schools', path: '/schools', roles: ['district_admin'] },
-  { label: 'Reports', path: '/reports', roles: ['district_admin'] },
-  { label: 'Settings', path: '/settings', roles: ['district_admin'] },
+  { label: 'District Overview', path: '/district-admin', roles: ['district_admin'] },
   
   // TripSlip Admin navigation
   { label: 'Dashboard', path: '/', roles: ['tripslip_admin'] },
-  { label: 'Districts', path: '/districts', roles: ['tripslip_admin'] },
-  { label: 'Schools', path: '/schools', roles: ['tripslip_admin'] },
-  { label: 'Venues', path: '/venues', roles: ['tripslip_admin'] },
-  { label: 'Users', path: '/users', roles: ['tripslip_admin'] },
-  { label: 'Settings', path: '/settings', roles: ['tripslip_admin'] },
+  { label: 'Admin Panel', path: '/tripslip-admin', roles: ['tripslip_admin'] },
   
   // Venue Admin navigation
   { label: 'Dashboard', path: '/dashboard', roles: ['venue_admin'] },
   { label: 'Experiences', path: '/experiences', roles: ['venue_admin'] },
-  { label: 'Bookings', path: '/trips', roles: ['venue_admin'] },
-  { label: 'Settings', path: '/settings', roles: ['venue_admin'] },
+  { label: 'Bookings', path: '/bookings', roles: ['venue_admin'] },
+  { label: 'Financials', path: '/financials', roles: ['venue_admin'] },
+  { label: 'Team', path: '/employees', roles: ['venue_admin'] },
 ];
 
 /**
@@ -90,7 +83,9 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = item.path === '/' || item.path === '/dashboard'
+                ? location.pathname === item.path || location.pathname === '/dashboard'
+                : location.pathname.startsWith(item.path);
               return (
                 <Link
                   key={item.path}
@@ -124,7 +119,9 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
         {/* Mobile Navigation */}
         <div className="md:hidden pb-3 space-y-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = item.path === '/' || item.path === '/dashboard'
+              ? location.pathname === item.path || location.pathname === '/dashboard'
+              : location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.path}

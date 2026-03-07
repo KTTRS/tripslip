@@ -158,3 +158,30 @@ TripSlip uses a neo-brutalist design language:
 - Drop shadows: `shadow-[4px_4px_0px_#0A0A0A]`
 - Hover effect: `hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px]`
 - Accent background: `bg-[#FFFDE7]`
+
+## Navigation Structure
+
+Navigation is defined in `packages/auth/src/components/Navigation.tsx`:
+- **Teacher**: Dashboard, Trips, Venues, Students, Profile
+- **School Admin**: Dashboard, Approvals, Teachers
+- **District Admin**: Dashboard, District Overview
+- **TripSlip Admin**: Dashboard, Admin Panel
+- **Venue Admin**: Uses its own `VenueNavigation` component in `apps/venue/src/components/VenueNavigation.tsx` (Dashboard, Experiences, Bookings, Trips, Financials, Employees)
+
+Active nav state uses `startsWith()` for sub-paths (except Dashboard which is exact match).
+
+## Critical DB Facts (for querying)
+
+- `trips` has NO `title`, NO `school_id` — use experience title; filter by teacher_id
+- `teachers` has `first_name` + `last_name`, NOT `name`; has `school_id`
+- `venues.address` is JSON: `{city, state, street, zipCode}`
+- FK patterns: trips → `experience:experiences(...)`, experiences → `venue:venues(...)`; NO direct trips→venues FK
+- `venue_users` table (NOT `venue_employees`): columns are id, venue_id, user_id, role
+- `pricing_tiers` has NO `tier_name`; belongs to experience via `experience_id`
+- `experiences` has NO `pricing_per_student`
+- Trip statuses: `draft`, `pending`, `pending_approval`, `approved`, `confirmed`, `rejected`, `cancelled`, `completed`
+- Slip statuses: `pending` → `sent` → `signed` / `signed_pending_payment` → `paid` / `cancelled`
+
+## Pilot Users
+
+Four demo accounts exist for testing. Credentials are stored in the team's password manager (not in source control).

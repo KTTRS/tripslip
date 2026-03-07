@@ -36,16 +36,16 @@ export default function Hero() {
             </div>
             <div className="mt-10 flex items-center gap-8">
               <div>
-                <p className="text-3xl font-bold text-black">10K+</p>
-                <p className="text-sm text-gray-600">Permission slips sent</p>
+                <p className="text-3xl font-bold text-black">100%</p>
+                <p className="text-sm text-gray-600">Digital — no paper</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-black">500+</p>
-                <p className="text-sm text-gray-600">Schools using TripSlip</p>
+                <p className="text-3xl font-bold text-black">40+</p>
+                <p className="text-sm text-gray-600">Partner venues</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-black">98%</p>
-                <p className="text-sm text-gray-600">Parent satisfaction</p>
+                <p className="text-3xl font-bold text-black">Free</p>
+                <p className="text-sm text-gray-600">For teachers</p>
               </div>
             </div>
           </div>

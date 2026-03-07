@@ -102,8 +102,7 @@ export default function DashboardPage() {
             last_name
           ),
           experience:experiences (
-            title,
-            pricing_per_student
+            title
           ),
           permission_slips (
             id,

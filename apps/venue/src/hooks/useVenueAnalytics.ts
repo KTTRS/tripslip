@@ -45,9 +45,15 @@ export function useVenueAnalytics(dateRange?: DateRange, experienceId?: string) 
       setLoading(true)
       setError(null)
 
-      // Build query for trips
-      // Note: RLS policies on experiences table automatically filter to only show
-      // experiences for this venue admin's venue, so trips are filtered accordingly
+      const { data: venueUser, error: venueError } = await supabase
+        .from('venue_users')
+        .select('venue_id')
+        .eq('user_id', user!.id)
+        .single()
+
+      if (venueError) throw venueError
+      if (!venueUser) throw new Error('Venue not found for user')
+
       let query = supabase
         .from('trips')
         .select(`
@@ -71,6 +77,7 @@ export function useVenueAnalytics(dateRange?: DateRange, experienceId?: string) 
             )
           )
         `)
+        .eq('experiences.venue_id', venueUser.venue_id)
 
       // Apply date range filter if provided
       if (dateRange) {

@@ -41,9 +41,15 @@ export function useUpcomingBookings(limit: number = 10) {
       setLoading(true)
       setError(null)
 
-      // Fetch upcoming trips
-      // Note: RLS policies on experiences table automatically filter to only show
-      // experiences for this venue admin's venue, so trips are filtered accordingly
+      const { data: venueUser, error: venueError } = await supabase
+        .from('venue_users')
+        .select('venue_id')
+        .eq('user_id', user!.id)
+        .single()
+
+      if (venueError) throw venueError
+      if (!venueUser) throw new Error('Venue not found for user')
+
       const today = new Date().toISOString().split('T')[0]
       
       const { data: trips, error: tripsError } = await supabase
@@ -67,6 +73,7 @@ export function useUpcomingBookings(limit: number = 10) {
             )
           )
         `)
+        .eq('experiences.venue_id', venueUser.venue_id)
         .gte('trip_date', today)
         .order('trip_date', { ascending: true })
         .order('trip_time', { ascending: true })

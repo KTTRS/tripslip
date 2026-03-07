@@ -18,19 +18,18 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Company</h4>
+            <h4 className="font-semibold mb-4">Get Started</h4>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li><a href="/apps" className="hover:text-black">About</a></li>
-              <li><a href="/apps" className="hover:text-black">Contact</a></li>
-              <li><a href="/pricing" className="hover:text-black">Careers</a></li>
+              <li><a href="/teacher/" className="hover:text-black">For Teachers</a></li>
+              <li><a href="/venue/" className="hover:text-black">For Venues</a></li>
+              <li><a href="/school/" className="hover:text-black">For Schools</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
+            <h4 className="font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-gray-600">
-              <li><a href="/pricing" className="hover:text-black">Privacy</a></li>
-              <li><a href="/pricing" className="hover:text-black">Terms</a></li>
-              <li><a href="/pricing" className="hover:text-black">Security</a></li>
+              <li><a href="mailto:hello@tripslip.com" className="hover:text-black">Contact Us</a></li>
+              <li><a href="/apps" className="hover:text-black">Help Center</a></li>
             </ul>
           </div>
         </div>
