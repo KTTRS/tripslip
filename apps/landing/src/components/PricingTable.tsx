@@ -15,7 +15,10 @@ const plans = [
     cta: 'Start Free',
     highlighted: false,
     icon: '/images/icon-permission.png',
-    gradient: 'from-blue-50 to-blue-100/50'
+    gradient: 'from-blue-50 to-blue-100/50',
+    iconBg: 'bg-blue-100',
+    iconBorder: 'border-blue-300',
+    accentColor: 'bg-blue-500'
   },
   {
     name: 'School',
@@ -33,7 +36,10 @@ const plans = [
     cta: 'Start Trial',
     highlighted: true,
     icon: '/images/icon-tracking.png',
-    gradient: 'from-primary/5 to-primary/15'
+    gradient: 'from-primary/10 to-primary/20',
+    iconBg: 'bg-primary/20',
+    iconBorder: 'border-primary',
+    accentColor: 'bg-primary'
   },
   {
     name: 'Venue',
@@ -51,7 +57,10 @@ const plans = [
     cta: 'Contact Sales',
     highlighted: false,
     icon: '/images/icon-venue.png',
-    gradient: 'from-green-50 to-green-100/50'
+    gradient: 'from-green-50 to-green-100/50',
+    iconBg: 'bg-green-100',
+    iconBorder: 'border-green-300',
+    accentColor: 'bg-green-500'
   }
 ]
 
@@ -72,10 +81,10 @@ export default function PricingTable() {
           <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-primary/50 rounded-full px-4 py-1.5 mb-4">
             <span className="text-sm font-semibold text-black">Pricing</span>
           </div>
-          <h2 className="text-4xl font-bold text-black sm:text-5xl">
+          <h2 className="font-display text-4xl font-bold text-black sm:text-5xl">
             Simple, <span className="text-primary">transparent</span> pricing
           </h2>
-          <p className="mt-4 text-lg text-gray-600">
+          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
             Choose the plan that works for you. Always free for teachers.
           </p>
         </div>
@@ -83,54 +92,59 @@ export default function PricingTable() {
           {plans.map((plan) => (
             <Card
               key={plan.name}
-              className={`border-2 border-black relative ${
+              className={`border-3 border-black relative overflow-visible bg-gradient-to-b ${plan.gradient} transition-all duration-300 cursor-pointer group ${
                 plan.highlighted
-                  ? 'shadow-offset-lg bg-gradient-to-b ' + plan.gradient + ' scale-105 z-10'
-                  : 'shadow-offset bg-gradient-to-b ' + plan.gradient
+                  ? 'animate-glow-pulse scale-105 z-10'
+                  : 'shadow-offset hover:-translate-x-1 hover:-translate-y-1 hover:shadow-offset-lg'
               }`}
             >
               {plan.highlighted && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <span className="bg-primary border-2 border-black rounded-full px-4 py-1 text-sm font-bold text-black shadow-[2px_2px_0px_#0A0A0A]">
-                    Most Popular
+                <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-20">
+                  <span className="bg-primary border-3 border-black rounded-full px-6 py-1.5 text-sm font-bold text-black shadow-[3px_3px_0px_#0A0A0A] whitespace-nowrap">
+                    ⭐ Most Popular
                   </span>
                 </div>
               )}
-              <CardHeader className="pb-2">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-white border-2 border-black p-1.5 flex items-center justify-center">
-                    <img src={plan.icon} alt="" className="w-6 h-6 object-contain" />
+
+              <div className={`absolute top-0 left-0 right-0 h-2 ${plan.accentColor} rounded-t-lg`} />
+
+              <CardHeader className="pb-2 pt-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className={`w-16 h-16 rounded-2xl ${plan.iconBg} border-3 ${plan.iconBorder} p-2.5 flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(10,10,10,0.15)] group-hover:shadow-[4px_4px_0px_0px_rgba(10,10,10,0.2)] transition-shadow duration-300`}>
+                    <img src={plan.icon} alt="" className="w-10 h-10 object-contain" />
                   </div>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <div>
+                    <CardTitle className="font-display text-2xl font-bold">{plan.name}</CardTitle>
+                    <CardDescription className="text-sm mt-0.5">
+                      {plan.description}
+                    </CardDescription>
+                  </div>
                 </div>
-                <CardDescription className="text-base">
-                  {plan.description}
-                </CardDescription>
-                <div className="mt-4">
-                  <span className="text-5xl font-bold text-black">{plan.price}</span>
+                <div className="mt-4 pb-4 border-b-2 border-black/10">
+                  <span className="font-display text-6xl font-bold text-black tracking-tight">{plan.price}</span>
                   {plan.period && (
-                    <span className="text-gray-600 text-lg">{plan.period}</span>
+                    <span className="text-gray-500 text-lg font-medium ml-1">{plan.period}</span>
                   )}
                 </div>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 mb-8">
+              <CardContent className="pt-6">
+                <ul className="space-y-4 mb-8">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full bg-primary/30 border border-primary flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <svg className="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className={`w-6 h-6 rounded-lg ${plan.iconBg} border-2 ${plan.iconBorder} flex items-center justify-center flex-shrink-0 mt-0.5`}>
+                        <svg className="w-3.5 h-3.5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
-                      <span className="text-gray-700">{feature}</span>
+                      <span className="text-gray-700 font-medium">{feature}</span>
                     </li>
                   ))}
                 </ul>
                 <Button
-                  className={`w-full border-2 border-black shadow-[2px_2px_0px_#0A0A0A] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all ${
+                  className={`w-full border-3 border-black font-bold text-base py-6 transition-all duration-200 ${
                     plan.highlighted
-                      ? 'bg-black text-white hover:bg-gray-800'
-                      : ''
+                      ? 'bg-black text-white hover:bg-gray-800 shadow-[4px_4px_0px_#0A0A0A] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#0A0A0A]'
+                      : 'shadow-[3px_3px_0px_#0A0A0A] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0px_#0A0A0A]'
                   }`}
                   variant={plan.highlighted ? 'default' : 'outline'}
                   onClick={() => window.location.href = getAppLink(plan.name)}

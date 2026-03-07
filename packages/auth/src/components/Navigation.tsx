@@ -1,9 +1,4 @@
-/**
- * Role-Based Navigation Component
- * Displays navigation menu items based on the user's active role
- */
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Button } from '@tripslip/ui';
 import { RoleSwitcher } from './RoleSwitcher';
@@ -20,69 +15,77 @@ interface NavItem {
   label: string;
   path: string;
   roles: UserRole[];
+  icon: string;
+  iconBg: string;
 }
 
-/**
- * Navigation menu items for each role
- */
 const NAV_ITEMS: NavItem[] = [
-  // Teacher navigation
-  { label: 'Dashboard', path: '/', roles: ['teacher'] },
-  { label: 'Trips', path: '/trips', roles: ['teacher'] },
-  { label: 'Venues', path: '/venues/search', roles: ['teacher'] },
-  { label: 'Students', path: '/students', roles: ['teacher'] },
-  { label: 'Profile', path: '/profile', roles: ['teacher'] },
-  
-  // School Admin navigation
-  { label: 'Dashboard', path: '/', roles: ['school_admin'] },
-  { label: 'Approvals', path: '/approvals', roles: ['school_admin'] },
-  { label: 'Teachers', path: '/teachers', roles: ['school_admin'] },
-  
-  // District Admin navigation
-  { label: 'Dashboard', path: '/', roles: ['district_admin'] },
-  { label: 'District Overview', path: '/district-admin', roles: ['district_admin'] },
-  
-  // TripSlip Admin navigation
-  { label: 'Dashboard', path: '/', roles: ['tripslip_admin'] },
-  { label: 'Admin Panel', path: '/tripslip-admin', roles: ['tripslip_admin'] },
-  
-  // Venue Admin navigation
-  { label: 'Dashboard', path: '/dashboard', roles: ['venue_admin'] },
-  { label: 'Experiences', path: '/experiences', roles: ['venue_admin'] },
-  { label: 'Bookings', path: '/bookings', roles: ['venue_admin'] },
-  { label: 'Financials', path: '/financials', roles: ['venue_admin'] },
-  { label: 'Team', path: '/employees', roles: ['venue_admin'] },
+  { label: 'Dashboard', path: '/', roles: ['teacher'], icon: '/images/icon-tracking.png', iconBg: 'bg-blue-100' },
+  { label: 'Trips', path: '/trips', roles: ['teacher'], icon: '/images/icon-bus.png', iconBg: 'bg-yellow-100' },
+  { label: 'Venues', path: '/venues/search', roles: ['teacher'], icon: '/images/icon-venue.png', iconBg: 'bg-green-100' },
+  { label: 'Students', path: '/students', roles: ['teacher'], icon: '/images/icon-team.png', iconBg: 'bg-purple-100' },
+  { label: 'Profile', path: '/profile', roles: ['teacher'], icon: '/images/icon-pencil.png', iconBg: 'bg-pink-100' },
+
+  { label: 'Dashboard', path: '/', roles: ['school_admin'], icon: '/images/icon-tracking.png', iconBg: 'bg-blue-100' },
+  { label: 'Approvals', path: '/approvals', roles: ['school_admin'], icon: '/images/icon-shield.png', iconBg: 'bg-green-100' },
+  { label: 'Teachers', path: '/teachers', roles: ['school_admin'], icon: '/images/icon-team.png', iconBg: 'bg-purple-100' },
+
+  { label: 'Dashboard', path: '/', roles: ['district_admin'], icon: '/images/icon-tracking.png', iconBg: 'bg-blue-100' },
+  { label: 'District Overview', path: '/district-admin', roles: ['district_admin'], icon: '/images/icon-graduation.png', iconBg: 'bg-yellow-100' },
+
+  { label: 'Dashboard', path: '/', roles: ['tripslip_admin'], icon: '/images/icon-tracking.png', iconBg: 'bg-blue-100' },
+  { label: 'Admin Panel', path: '/tripslip-admin', roles: ['tripslip_admin'], icon: '/images/icon-shield.png', iconBg: 'bg-red-100' },
+
+  { label: 'Dashboard', path: '/dashboard', roles: ['venue_admin'], icon: '/images/icon-tracking.png', iconBg: 'bg-blue-100' },
+  { label: 'Experiences', path: '/experiences', roles: ['venue_admin'], icon: '/images/icon-magic.png', iconBg: 'bg-purple-100' },
+  { label: 'Bookings', path: '/bookings', roles: ['venue_admin'], icon: '/images/icon-calendar.png', iconBg: 'bg-green-100' },
+  { label: 'Financials', path: '/financials', roles: ['venue_admin'], icon: '/images/icon-payment.png', iconBg: 'bg-yellow-100' },
+  { label: 'Team', path: '/employees', roles: ['venue_admin'], icon: '/images/icon-team.png', iconBg: 'bg-pink-100' },
 ];
 
-/**
- * Get navigation items for a specific role
- */
+const ROLE_CHARACTERS: Record<string, { image: string; name: string }> = {
+  teacher: { image: '/images/char-blue-square.png', name: 'Buddy' },
+  school_admin: { image: '/images/char-purple-diamond.png', name: 'Gem' },
+  district_admin: { image: '/images/char-purple-diamond.png', name: 'Gem' },
+  tripslip_admin: { image: '/images/char-yellow-star.png', name: 'Sunny' },
+  venue_admin: { image: '/images/char-green-octagon.png', name: 'Scout' },
+};
+
 function getNavItemsForRole(role: UserRole | undefined): NavItem[] {
   if (!role) return [];
   return NAV_ITEMS.filter(item => item.roles.includes(role));
 }
 
-/**
- * Navigation component
- */
 export function Navigation({ activeRole, userName, onSignOut, appName }: NavigationProps) {
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navItems = getNavItemsForRole(activeRole?.role_name);
+  const character = activeRole?.role_name ? ROLE_CHARACTERS[activeRole.role_name] : null;
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b-2 border-black">
+    <nav className="sticky top-0 z-50 bg-white border-b-3 border-black shadow-[0_4px_0px_#0A0A0A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-primary rounded-lg border-2 border-black shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center">
-              <span className="text-black font-black text-lg leading-none">T</span>
+            <div className="w-10 h-10 bg-primary rounded-xl border-2 border-black shadow-[3px_3px_0px_#0A0A0A] flex items-center justify-center hover:shadow-[4px_4px_0px_#0A0A0A] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-200">
+              <span className="text-black font-black text-xl leading-none">T</span>
             </div>
-            <h1 className="text-xl font-bold font-display">
+            <h1 className="text-xl font-bold font-display tracking-tight">
               {appName || 'TripSlip'}
             </h1>
+            {character && (
+              <div className="hidden lg:block relative ml-1">
+                <img
+                  src={character.image}
+                  alt={character.name}
+                  className="w-8 h-8 object-contain drop-shadow-md"
+                  style={{ animation: 'navCharBounce 3s ease-in-out infinite' }}
+                />
+              </div>
+            )}
           </div>
 
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-1.5">
             {navItems.map((item) => {
               const isActive = item.path === '/' || item.path === '/dashboard'
                 ? location.pathname === item.path || location.pathname === '/dashboard'
@@ -91,52 +94,93 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  className={`group flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary text-black border-2 border-black shadow-[2px_2px_0px_#0A0A0A]'
-                      : 'text-gray-700 hover:bg-primary/10 hover:text-black hover:-translate-y-0.5 border-2 border-transparent'
+                      ? 'bg-primary text-black border-2 border-black shadow-[3px_3px_0px_#0A0A0A] -translate-x-0.5 -translate-y-0.5'
+                      : 'text-gray-700 hover:text-black hover:-translate-x-0.5 hover:-translate-y-0.5 border-2 border-transparent hover:border-black hover:bg-primary/10 hover:shadow-[3px_3px_0px_#0A0A0A]'
                   }`}
                 >
+                  <span className={`w-6 h-6 rounded-lg ${item.iconBg} border border-black/20 flex items-center justify-center flex-shrink-0 shadow-[1px_1px_0px_rgba(0,0,0,0.15)] ${isActive ? 'border-black shadow-[1px_1px_0px_#0A0A0A]' : 'group-hover:border-black group-hover:shadow-[1px_1px_0px_#0A0A0A]'} transition-all duration-200`}>
+                    <img src={item.icon} alt="" className="w-4 h-4 object-contain" />
+                  </span>
                   {item.label}
                 </Link>
               );
             })}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <RoleSwitcher />
             {userName && (
-              <span className="text-sm text-gray-600 hidden sm:inline font-medium">
+              <span className="text-sm text-gray-600 hidden sm:inline font-semibold">
                 {userName}
               </span>
             )}
-            <Button onClick={onSignOut} variant="outline" size="sm" className="rounded-lg border-2 border-black font-semibold hover:bg-gray-100 transition-all duration-200">
+            <Button onClick={onSignOut} variant="outline" size="sm" className="rounded-xl border-2 border-black font-bold hover:bg-gray-100 hover:shadow-[3px_3px_0px_#0A0A0A] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-200 shadow-[2px_2px_0px_#0A0A0A]">
               Sign Out
             </Button>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden w-10 h-10 rounded-xl border-2 border-black bg-primary/10 flex items-center justify-center shadow-[2px_2px_0px_#0A0A0A] hover:shadow-[3px_3px_0px_#0A0A0A] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-200"
+              aria-label="Toggle menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
           </div>
         </div>
 
-        <div className="md:hidden pb-3 space-y-1">
-          {navItems.map((item) => {
-            const isActive = item.path === '/' || item.path === '/dashboard'
-              ? location.pathname === item.path || location.pathname === '/dashboard'
-              : location.pathname.startsWith(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`block px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                  isActive
-                    ? 'bg-primary text-black border-2 border-black shadow-[2px_2px_0px_#0A0A0A]'
-                    : 'text-gray-700 hover:bg-primary/10 border-2 border-transparent'
-                }`}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden pb-4 pt-2 space-y-1.5 border-t-2 border-black/10">
+            {character && (
+              <div className="flex items-center gap-2 px-3 py-2 mb-2">
+                <img
+                  src={character.image}
+                  alt={character.name}
+                  className="w-8 h-8 object-contain drop-shadow-md"
+                  style={{ animation: 'navCharBounce 3s ease-in-out infinite' }}
+                />
+                <span className="text-xs font-bold text-gray-500">Hi there! 👋</span>
+              </div>
+            )}
+            {navItems.map((item) => {
+              const isActive = item.path === '/' || item.path === '/dashboard'
+                ? location.pathname === item.path || location.pathname === '/dashboard'
+                : location.pathname.startsWith(item.path);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
+                    isActive
+                      ? 'bg-primary text-black border-2 border-black shadow-[3px_3px_0px_#0A0A0A] -translate-x-0.5'
+                      : 'text-gray-700 hover:bg-primary/10 border-2 border-transparent hover:border-black active:shadow-[2px_2px_0px_#0A0A0A]'
+                  }`}
+                >
+                  <span className={`w-8 h-8 rounded-lg ${item.iconBg} border-2 ${isActive ? 'border-black shadow-[2px_2px_0px_#0A0A0A]' : 'border-black/20'} flex items-center justify-center flex-shrink-0 transition-all duration-200`}>
+                    <img src={item.icon} alt="" className="w-5 h-5 object-contain" />
+                  </span>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
+
+      <style>{`
+        @keyframes navCharBounce {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-3px) rotate(-5deg); }
+          75% { transform: translateY(-1px) rotate(3deg); }
+        }
+      `}</style>
     </nav>
   );
 }

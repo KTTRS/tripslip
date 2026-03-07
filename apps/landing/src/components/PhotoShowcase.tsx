@@ -34,7 +34,7 @@ export default function PhotoShowcase() {
           <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-primary/50 rounded-full px-4 py-1.5 mb-4">
             <span className="text-sm font-semibold text-black">Real Experiences</span>
           </div>
-          <h2 className="text-4xl font-bold text-black sm:text-5xl">
+          <h2 className="font-display text-4xl font-bold text-black sm:text-5xl">
             Where <span className="text-primary">learning</span> comes alive
           </h2>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
@@ -46,7 +46,7 @@ export default function PhotoShowcase() {
           {showcaseItems.map((item, index) => (
             <div
               key={item.label}
-              className={`group relative rounded-2xl overflow-hidden border-3 border-black shadow-offset hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all cursor-pointer ${
+              className={`group relative rounded-2xl overflow-hidden border-3 border-black shadow-offset hover:-translate-x-1 hover:-translate-y-1 hover:shadow-offset-lg transition-all cursor-pointer ${
                 index === 0 ? 'col-span-2 row-span-2 md:col-span-2 md:row-span-2' : 'aspect-square'
               }`}
             >

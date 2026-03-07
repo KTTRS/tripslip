@@ -737,7 +737,7 @@ export function TripLookupPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full px-8 py-4 bg-[#F5C518] text-[#0A0A0A] font-bold text-lg rounded-lg border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150"
+                className="w-full px-8 py-4 bg-[#F5C518] text-[#0A0A0A] font-bold text-lg rounded-lg border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 active:shadow-none active:translate-x-[4px] active:translate-y-[4px] disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150"
               >
                 {submitting ? (
                   <span className="inline-flex items-center gap-2">

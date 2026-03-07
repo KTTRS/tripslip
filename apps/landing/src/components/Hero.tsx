@@ -21,7 +21,7 @@ export default function Hero() {
               <span className="text-sm font-semibold text-black">Now in pilot — join 50+ schools</span>
             </div>
 
-            <h1 className="text-5xl font-bold tracking-tight text-black sm:text-6xl lg:text-7xl leading-[1.1]">
+            <h1 className="font-display text-5xl font-bold tracking-tight text-black sm:text-6xl lg:text-7xl leading-[1.1]">
               Field trips{' '}
               <span className="relative">
                 <span className="relative z-10 text-primary">without</span>
@@ -40,7 +40,7 @@ export default function Hero() {
             <div className="mt-10 flex items-center gap-4">
               <Button
                 size="lg"
-                className="shadow-offset hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-lg px-8 py-6"
+                className="shadow-offset hover:-translate-x-1 hover:-translate-y-1 hover:shadow-offset-lg transition-all text-lg px-8 py-6"
                 onClick={() => window.location.href = '/pricing'}
               >
                 Start Free
@@ -60,17 +60,17 @@ export default function Hero() {
 
             <div className="mt-12 flex items-center gap-10">
               <div className="flex flex-col items-center">
-                <p className="text-4xl font-bold text-black">100%</p>
+                <p className="text-4xl font-bold font-display text-black">100%</p>
                 <p className="text-sm text-gray-500 font-medium">Paperless</p>
               </div>
               <div className="w-px h-10 bg-gray-200" />
               <div className="flex flex-col items-center">
-                <p className="text-4xl font-bold text-black">40+</p>
+                <p className="text-4xl font-bold font-display text-black">40+</p>
                 <p className="text-sm text-gray-500 font-medium">Partner Venues</p>
               </div>
               <div className="w-px h-10 bg-gray-200" />
               <div className="flex flex-col items-center">
-                <p className="text-4xl font-bold text-primary">Free</p>
+                <p className="text-4xl font-bold font-display text-primary">Free</p>
                 <p className="text-sm text-gray-500 font-medium">For Teachers</p>
               </div>
             </div>

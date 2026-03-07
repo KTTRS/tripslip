@@ -94,174 +94,145 @@ export default function DashboardPage() {
     );
   }
 
+  const statCards = [
+    { label: 'Total Trips', value: stats.trips, icon: '/images/icon-compass.png', bg: 'bg-[#F5C518]/20', nav: '/trips' },
+    { label: 'Upcoming', value: stats.upcoming, icon: '/images/icon-calendar.png', bg: 'bg-green-100', nav: '/trips' },
+    { label: 'Students', value: stats.students, icon: '/images/icon-team.png', bg: 'bg-blue-100', nav: '/students' },
+    { label: 'Pending Slips', value: stats.pendingSlips, icon: '/images/icon-permission.png', bg: 'bg-orange-100', nav: '/trips' },
+  ];
+
+  const quickActions = [
+    { title: 'Create a Trip', desc: 'Plan a new field trip', icon: '/images/icon-pencil.png', bg: 'bg-[#F5C518]/20', nav: '/trips/create' },
+    { title: 'Manage Students', desc: 'Add students or upload a CSV', icon: '/images/icon-team.png', bg: 'bg-blue-100', nav: '/students' },
+    { title: 'Browse Venues', desc: 'Find field trip destinations', icon: '/images/icon-venue.png', bg: 'bg-green-100', nav: '/venues/search' },
+  ];
+
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="relative rounded-2xl bg-gradient-to-r from-[#F5C518]/10 via-[#F5C518]/5 to-transparent p-6 md:p-8 overflow-hidden">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex items-center gap-5">
-              <img
-                src="/images/char-pink-heart.png"
-                alt="TripSlip character"
-                className="w-20 h-20 md:w-24 md:h-24 object-contain animate-float drop-shadow-lg hidden sm:block"
-              />
+        <div className="relative rounded-2xl bg-gradient-to-br from-[#F5C518]/15 via-[#F5C518]/5 to-blue-50/30 p-8 md:p-10 overflow-hidden border-2 border-[#0A0A0A] shadow-[6px_6px_0px_#0A0A0A]">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div className="flex items-center gap-6">
+              <div className="relative hidden sm:block">
+                <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-white/80 border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] flex items-center justify-center p-2">
+                  <img
+                    src="/images/char-pink-heart.png"
+                    alt="Buddy the TripSlip character"
+                    className="w-full h-full object-contain animate-float drop-shadow-lg"
+                  />
+                </div>
+                <img
+                  src="/images/icon-pencil.png"
+                  alt=""
+                  className="absolute -bottom-2 -right-2 w-10 h-10 animate-wiggle"
+                />
+              </div>
               <div>
-                <h2 className="text-3xl font-bold text-[#0A0A0A]">Welcome back, {displayName}</h2>
-                <p className="text-gray-500 mt-1">Here's what's happening with your field trips</p>
+                <h2 className="font-display text-3xl md:text-4xl font-bold text-[#0A0A0A] tracking-tight">
+                  Welcome back, {displayName}
+                </h2>
+                <p className="text-gray-500 mt-2 text-base">Here's what's happening with your field trips</p>
               </div>
             </div>
             <Button
               onClick={() => navigate('/trips/create')}
-              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold px-6"
+              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all font-bold px-8 py-3 text-base"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-5 w-5 mr-2" />
               Create New Trip
             </Button>
           </div>
           <img
             src="/images/icon-bus.png"
             alt=""
-            className="absolute -top-2 right-4 w-12 h-12 opacity-20 animate-float hidden md:block"
+            className="absolute -top-1 right-6 w-16 h-16 opacity-20 animate-float hidden md:block"
           />
           <img
             src="/images/icon-backpack.png"
             alt=""
-            className="absolute bottom-2 right-20 w-10 h-10 opacity-15 animate-bounce-slow hidden md:block"
+            className="absolute bottom-3 right-24 w-12 h-12 opacity-15 animate-bounce-slow hidden md:block"
+          />
+          <img
+            src="/images/char-yellow-star.png"
+            alt=""
+            className="absolute top-4 right-48 w-14 h-14 opacity-10 animate-float-delayed hidden lg:block"
           />
         </div>
 
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-          <Card
-            className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] cursor-pointer hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            onClick={() => navigate('/trips')}
-          >
-            <CardContent className="pt-5 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-compass.png" alt="Total Trips" className="w-full h-full object-contain" />
+          {statCards.map((card) => (
+            <Card
+              key={card.label}
+              className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] cursor-pointer hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all bg-white group"
+              onClick={() => navigate(card.nav)}
+            >
+              <CardContent className="pt-5 pb-4 px-4">
+                <div className="flex flex-col items-center text-center gap-3 sm:flex-row sm:text-left">
+                  <div className={`w-16 h-16 rounded-xl ${card.bg} border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] flex items-center justify-center p-2 group-hover:animate-wiggle flex-shrink-0`}>
+                    <img src={card.icon} alt={card.label} className="w-full h-full object-contain" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">{card.label}</p>
+                    <p className="font-display text-3xl font-bold text-[#0A0A0A]">{card.value}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Total Trips</p>
-                  <p className="text-2xl font-bold text-[#0A0A0A]">{stats.trips}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] cursor-pointer hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            onClick={() => navigate('/trips')}
-          >
-            <CardContent className="pt-5 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-calendar.png" alt="Upcoming" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Upcoming</p>
-                  <p className="text-2xl font-bold text-[#0A0A0A]">{stats.upcoming}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] cursor-pointer hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            onClick={() => navigate('/students')}
-          >
-            <CardContent className="pt-5 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-blue-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-team.png" alt="Students" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Students</p>
-                  <p className="text-2xl font-bold text-[#0A0A0A]">{stats.students}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card
-            className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] cursor-pointer hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-            onClick={() => navigate('/trips')}
-          >
-            <CardContent className="pt-5 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-orange-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-permission.png" alt="Pending Slips" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 font-medium">Pending Slips</p>
-                  <p className="text-2xl font-bold text-[#0A0A0A]">{stats.pendingSlips}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-[#0A0A0A]">Quick Actions</h3>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-8 h-8 rounded-lg bg-[#F5C518]/30 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
+                <img src="/images/icon-magic.png" alt="" className="w-full h-full object-contain" />
+              </div>
+              <h3 className="font-display text-xl font-bold text-[#0A0A0A]">Quick Actions</h3>
             </div>
             <div className="grid gap-3">
-              <button
-                onClick={() => navigate('/trips/create')}
-                className="flex items-center gap-3 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-left"
-              >
-                <div className="w-12 h-12 rounded-lg bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-pencil.png" alt="Create Trip" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <div className="font-semibold text-[#0A0A0A]">Create a Trip</div>
-                  <div className="text-xs text-gray-500">Plan a new field trip</div>
-                </div>
-              </button>
-              <button
-                onClick={() => navigate('/students')}
-                className="flex items-center gap-3 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-left"
-              >
-                <div className="w-12 h-12 rounded-lg bg-blue-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-team.png" alt="Manage Students" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <div className="font-semibold text-[#0A0A0A]">Manage Students</div>
-                  <div className="text-xs text-gray-500">Add students or upload a CSV</div>
-                </div>
-              </button>
-              <button
-                onClick={() => navigate('/venues/search')}
-                className="flex items-center gap-3 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-left"
-              >
-                <div className="w-12 h-12 rounded-lg bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-venue.png" alt="Browse Venues" className="w-full h-full object-contain" />
-                </div>
-                <div>
-                  <div className="font-semibold text-[#0A0A0A]">Browse Venues</div>
-                  <div className="text-xs text-gray-500">Find field trip destinations</div>
-                </div>
-              </button>
+              {quickActions.map((action) => (
+                <button
+                  key={action.title}
+                  onClick={() => navigate(action.nav)}
+                  className="flex items-center gap-4 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all text-left group"
+                >
+                  <div className={`w-14 h-14 rounded-xl ${action.bg} border-2 border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center p-2 group-hover:animate-wiggle flex-shrink-0`}>
+                    <img src={action.icon} alt={action.title} className="w-full h-full object-contain" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-bold text-[#0A0A0A] text-base">{action.title}</div>
+                    <div className="text-sm text-gray-500">{action.desc}</div>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-[#0A0A0A] group-hover:translate-x-1 transition-all" />
+                </button>
+              ))}
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-[#0A0A0A]">Upcoming Trips</h3>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
+                  <img src="/images/icon-calendar.png" alt="" className="w-full h-full object-contain" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-[#0A0A0A]">Upcoming Trips</h3>
+              </div>
               {recentTrips.length > 0 && (
                 <button
                   onClick={() => navigate('/trips')}
-                  className="text-sm text-gray-500 hover:text-[#0A0A0A] font-medium flex items-center gap-1"
+                  className="text-sm text-gray-500 hover:text-[#0A0A0A] font-semibold flex items-center gap-1 transition-colors"
                 >
                   View all <ArrowRight className="h-3 w-3" />
                 </button>
               )}
             </div>
             {recentTrips.length === 0 ? (
-              <Card className="border-2 border-dashed border-gray-300">
-                <CardContent className="py-10 text-center">
-                  <img src="/images/icon-calendar.png" alt="" className="w-10 h-10 mx-auto mb-3 opacity-40" />
-                  <p className="text-gray-500 font-medium">No upcoming trips</p>
+              <Card className="border-2 border-dashed border-gray-300 bg-gray-50/50">
+                <CardContent className="py-12 text-center">
+                  <div className="w-16 h-16 rounded-xl bg-gray-100 border-2 border-gray-200 flex items-center justify-center mx-auto mb-4 p-2">
+                    <img src="/images/icon-calendar.png" alt="" className="w-full h-full object-contain opacity-40" />
+                  </div>
+                  <p className="text-gray-500 font-bold text-base">No upcoming trips</p>
                   <p className="text-sm text-gray-400 mt-1">Create a trip to get started</p>
                 </CardContent>
               </Card>
@@ -270,23 +241,23 @@ export default function DashboardPage() {
                 {recentTrips.map((trip: any) => (
                   <Card
                     key={trip.id}
-                    className="border-2 border-[#0A0A0A] hover:shadow-[3px_3px_0px_#0A0A0A] transition-all cursor-pointer"
+                    className="border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[6px_6px_0px_#0A0A0A] hover:-translate-x-[2px] hover:-translate-y-[2px] transition-all cursor-pointer bg-white group"
                     onClick={() => navigate(`/trips/${trip.id}/roster`)}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-[#0A0A0A] truncate">
+                          <h4 className="font-bold text-[#0A0A0A] truncate text-base">
                             {trip.experience?.title || 'Untitled'}
                           </h4>
                           {trip.experience?.venue?.name && (
-                            <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                              <MapPin className="h-3 w-3" />
+                            <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                              <MapPin className="h-3.5 w-3.5" />
                               {trip.experience.venue.name}
                             </p>
                           )}
-                          <p className="text-xs text-gray-400 mt-1">
-                            <Calendar className="h-3 w-3 inline mr-1" />
+                          <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
                             {new Date(trip.trip_date).toLocaleDateString('en-US', {
                               weekday: 'short',
                               month: 'short',
@@ -294,7 +265,7 @@ export default function DashboardPage() {
                             })}
                           </p>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-gray-400 mt-1" />
+                        <ArrowRight className="h-5 w-5 text-gray-400 mt-1 group-hover:text-[#0A0A0A] group-hover:translate-x-1 transition-all" />
                       </div>
                     </CardContent>
                   </Card>

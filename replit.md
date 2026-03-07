@@ -23,11 +23,21 @@ Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared pack
 ## Tech Stack
 - **Framework**: Vite + React 19
 - **Routing**: React Router 7
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS with neo-brutalist design system
 - **Auth/DB**: Supabase
 - **Payments**: Stripe
 - **Monorepo**: Turborepo + npm workspaces
 - **Runtime**: Node.js 20
+
+## Design System (Neo-Brutalist)
+- **Colors**: 60% White / 20% Black (#0A0A0A) / 20% Yellow (#F5C518)
+- **Fonts**: Fraunces (display headings, `font-display`), Plus Jakarta Sans (body, `font-sans`), Space Mono (labels, `font-mono`)
+- **Hover**: Cards/buttons lift UP (`translate(-4px,-4px)`) with shadow GROWING to 8px. NEVER shrink shadow on hover.
+- **Shadows**: Default `shadow-offset` (4px), hover `shadow-offset-lg` (8px), active = 2px
+- **Icons**: Claymorphic layered shadows: `0 2px, 0 4px, 0 8px`
+- **Borders**: 2px bold borders, `border-3` available for emphasis
+- **All app Tailwind configs** scan `packages/auth/src/` and `packages/ui/src/` and include `borderWidth: { '3': '3px' }`
+- **Characters**: Buddy (blue, Planner), Gem (purple, Organizer), Scout (green, Navigator), Sparkle (pink, Explorer), Sunny (yellow, Leader), Dash (red, Adventurer)
 
 ## Running the Project
 

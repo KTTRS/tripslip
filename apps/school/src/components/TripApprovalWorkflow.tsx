@@ -219,7 +219,7 @@ export const TripApprovalWorkflow: React.FC<TripApprovalWorkflowProps> = ({ scho
       ) : (
         <div className="space-y-4">
           {pendingTrips.map(trip => (
-            <div key={trip.id} className="bg-white border-2 border-[#0A0A0A] rounded-xl p-6 shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] transition-all">
+            <div key={trip.id} className="bg-white border-2 border-[#0A0A0A] rounded-xl p-6 shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all">
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-xl font-bold text-[#0A0A0A]">{trip.experience.title}</h3>

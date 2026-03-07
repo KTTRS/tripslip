@@ -234,7 +234,7 @@ export function AddOnConfigurator({ addOns, onChange, experienceAdditionalFees }
                 type="button"
                 onClick={handleSave}
                 disabled={!name.trim()}
-                className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all duration-200 font-semibold"
+                className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all duration-200 font-semibold"
               >
                 {editingId ? 'Update Add-On' : 'Add'}
               </Button>

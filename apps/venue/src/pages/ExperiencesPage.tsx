@@ -145,7 +145,7 @@ export default function ExperiencesPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {experiences.map((experience) => (
-              <Card key={experience.id} className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] transition-all">
+              <Card key={experience.id} className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">

@@ -72,7 +72,7 @@ export default function Header() {
             )}
           </div>
           <Button
-            className="shadow-offset hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all font-semibold"
+            className="shadow-offset hover:-translate-x-1 hover:-translate-y-1 hover:shadow-offset-lg transition-all font-semibold"
             onClick={() => window.location.href = '/pricing'}
           >
             Get Started

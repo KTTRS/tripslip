@@ -137,7 +137,7 @@ export const SchoolTripList: React.FC<SchoolTripListProps> = ({ schoolId }) => {
           {filteredTrips.map((trip) => (
             <div
               key={trip.id}
-              className="bg-white border-2 border-black rounded-lg p-6 shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] hover:shadow-[2px_2px_0px_0px_rgba(10,10,10,1)] transition-shadow"
+              className="bg-white border-2 border-black rounded-lg p-6 shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] hover:shadow-[8px_8px_0px_0px_rgba(10,10,10,1)] hover:-translate-x-1 hover:-translate-y-1 transition-all"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">

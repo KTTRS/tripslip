@@ -322,7 +322,7 @@ export function AvailabilityManager({
             <Button
               onClick={addAvailabilityDate}
               disabled={isSaving || !newDate}
-              className="bg-[#F5C518] text-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] hover:shadow-[2px_2px_0px_0px_rgba(10,10,10,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-jakarta font-semibold"
+              className="bg-[#F5C518] text-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] hover:shadow-[8px_8px_0px_0px_rgba(10,10,10,1)] hover:-translate-x-1 hover:-translate-y-1 transition-all font-jakarta font-semibold"
             >
               <Plus className="h-4 w-4 mr-2" />
               {newCapacity === 0 ? 'Block Date' : 'Add Available Date'}

@@ -133,7 +133,7 @@ export default function TripsPage() {
           </div>
           <Button
             onClick={() => navigate('/trips/create')}
-            className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold"
+            className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all font-semibold"
           >
             <Plus className="h-4 w-4 mr-2" />
             Create Trip
@@ -189,7 +189,7 @@ export default function TripsPage() {
               return (
                 <Card
                   key={trip.id}
-                  className="border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
+                  className="border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all cursor-pointer"
                   onClick={() => navigate(`/trips/${trip.id}/roster`)}
                 >
                   <CardContent className="p-4 sm:p-5">

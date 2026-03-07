@@ -17,7 +17,7 @@ export default function CTASection() {
       </div>
 
       <div className="relative mx-auto max-w-4xl text-center z-10">
-        <h2 className="text-4xl font-bold text-black sm:text-5xl lg:text-6xl">
+        <h2 className="font-display text-4xl font-bold text-black sm:text-5xl lg:text-6xl">
           Ready to ditch
           <br />the permission slip pile?
         </h2>
@@ -28,7 +28,7 @@ export default function CTASection() {
         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
           <Button
             size="lg"
-            className="bg-black text-white hover:bg-gray-800 shadow-offset hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-lg px-8 py-6 border-2 border-black"
+            className="bg-black text-white hover:bg-gray-900 shadow-offset hover:-translate-x-1 hover:-translate-y-1 hover:shadow-offset-lg transition-all text-lg px-8 py-6 border-2 border-black"
             onClick={() => window.location.href = '/pricing'}
           >
             Get Started Free

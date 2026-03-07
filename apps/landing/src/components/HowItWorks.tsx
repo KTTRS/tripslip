@@ -37,7 +37,7 @@ export default function HowItWorks() {
           <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-primary/50 rounded-full px-4 py-1.5 mb-4">
             <span className="text-sm font-semibold text-black">How It Works</span>
           </div>
-          <h2 className="text-4xl font-bold text-black sm:text-5xl">
+          <h2 className="font-display text-4xl font-bold text-black sm:text-5xl">
             From plan to <span className="text-primary">adventure</span>
             <br />in four simple steps
           </h2>
@@ -49,14 +49,14 @@ export default function HowItWorks() {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, index) => (
               <div key={step.number} className="relative">
-                <div className={`${step.color} rounded-2xl border-2 border-black p-6 shadow-offset hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all`}>
+                <div className={`${step.color} rounded-2xl border-2 border-black p-6 shadow-offset hover:-translate-x-1 hover:-translate-y-1 hover:shadow-offset-lg transition-all`}>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-4xl font-bold text-black/10">{step.number}</span>
                     <div className="w-14 h-14 rounded-xl bg-white border-2 border-black p-2 flex items-center justify-center shadow-sm relative z-10">
                       <img src={step.icon} alt="" className="w-8 h-8 object-contain" />
                     </div>
                   </div>
-                  <h3 className="text-lg font-bold text-black mb-2">{step.title}</h3>
+                  <h3 className="text-lg font-bold font-display text-black mb-2">{step.title}</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>
                 </div>
                 {index < steps.length - 1 && (

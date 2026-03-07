@@ -362,7 +362,7 @@ export default function TripRosterPage() {
                 <button
                   onClick={copyLink}
                   disabled={generatingLink}
-                  className="w-full flex items-center justify-center gap-2 bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] rounded-xl px-4 py-3 font-bold shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] rounded-xl px-4 py-3 font-bold shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all disabled:opacity-50"
                 >
                   <img src="/images/icon-magic.png" alt="" className="w-5 h-5" />
                   {generatingLink ? 'Generating...' : 'Generate Permission Slip Link'}
@@ -488,7 +488,7 @@ export default function TripRosterPage() {
             </Button>
             <Button
               onClick={() => setShowAddModal(true)}
-              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold rounded-xl"
+              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all font-semibold rounded-xl"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Student

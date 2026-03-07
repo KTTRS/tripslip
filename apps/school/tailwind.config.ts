@@ -4,7 +4,8 @@ export default {
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
-    '../../packages/ui/src/**/*.{js,ts,jsx,tsx}'
+    '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
+    '../../packages/auth/src/**/*.{js,ts,jsx,tsx}'
   ],
   theme: {
     extend: {
@@ -33,6 +34,9 @@ export default {
       boxShadow: {
         'offset': '4px 4px 0px 0px rgba(10, 10, 10, 1)',
         'offset-lg': '8px 8px 0px 0px rgba(10, 10, 10, 1)'
+      },
+      borderWidth: {
+        '3': '3px'
       }
     }
   },

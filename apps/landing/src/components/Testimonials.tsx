@@ -35,7 +35,7 @@ export default function Testimonials() {
           <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-primary/50 rounded-full px-4 py-1.5 mb-4">
             <span className="text-sm font-semibold text-black">Testimonials</span>
           </div>
-          <h2 className="text-4xl font-bold text-black sm:text-5xl">
+          <h2 className="font-display text-4xl font-bold text-black sm:text-5xl">
             Loved by <span className="text-primary">teachers</span> and parents
           </h2>
           <p className="mt-4 text-lg text-gray-600">
@@ -46,7 +46,7 @@ export default function Testimonials() {
           {testimonials.map((testimonial, index) => (
             <Card
               key={index}
-              className="border-2 border-black shadow-offset bg-white hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_#0A0A0A] transition-all"
+              className="border-2 border-black shadow-offset bg-white hover:-translate-x-1 hover:-translate-y-1 hover:shadow-offset-lg transition-all"
             >
               <CardContent className="pt-6">
                 <div className="flex gap-1 mb-4">
