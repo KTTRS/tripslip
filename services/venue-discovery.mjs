@@ -14,36 +14,48 @@ const VENUE_TYPES = [
 
 const CATEGORY_BUNDLES = {
   museums: {
-    categories: ['tourism.museum'],
+    categories: ['entertainment.museum'],
     venueType: 'museum',
   },
   zoos_aquariums: {
-    categories: ['tourism.zoo', 'tourism.aquarium'],
+    categories: ['entertainment.zoo', 'entertainment.aquarium'],
+    venueType: null,
+  },
+  science_planetarium: {
+    categories: ['entertainment.planetarium', 'entertainment.culture.arts_centre'],
     venueType: null,
   },
   nature: {
-    categories: ['leisure.park', 'leisure.nature_reserve'],
+    categories: ['leisure.park.nature_reserve', 'national_park', 'natural.protected_area', 'leisure.park.garden'],
     venueType: 'nature_area',
   },
   historic: {
-    categories: ['historic', 'tourism.attraction'],
+    categories: ['heritage', 'tourism.attraction'],
     venueType: 'historic_site',
   },
   farms: {
-    categories: ['agriculture'],
+    categories: ['commercial.food_and_drink.farm'],
     venueType: 'farm',
   },
 };
 
 const CATEGORY_MAP = {
-  'tourism.museum': 'museum',
-  'tourism.aquarium': 'aquarium',
-  'tourism.zoo': 'zoo',
+  'entertainment.museum': 'museum',
+  'entertainment.aquarium': 'aquarium',
+  'entertainment.zoo': 'zoo',
+  'entertainment.planetarium': 'planetarium',
+  'entertainment.culture.arts_centre': 'science_center',
+  'entertainment.culture': 'museum',
+  'heritage': 'historic_site',
+  'heritage.unesco': 'historic_site',
   'tourism.attraction': 'historic_site',
-  'historic': 'historic_site',
+  'tourism.sights': 'historic_site',
   'leisure.park': 'nature_area',
-  'leisure.nature_reserve': 'nature_area',
-  'agriculture': 'farm',
+  'leisure.park.nature_reserve': 'nature_area',
+  'leisure.park.garden': 'botanical_garden',
+  'national_park': 'nature_area',
+  'natural.protected_area': 'nature_area',
+  'commercial.food_and_drink.farm': 'farm',
 };
 
 const NAME_INDICATORS = {
@@ -73,7 +85,7 @@ function classifyVenueType(name, categories) {
   if (categories && Array.isArray(categories)) {
     for (const cat of categories) {
       for (const [prefix, type] of Object.entries(CATEGORY_MAP)) {
-        if (cat.startsWith(prefix)) return type;
+        if (cat === prefix || cat.startsWith(prefix + '.')) return type;
       }
     }
   }
@@ -143,11 +155,14 @@ export async function geocodeAddress(address, apiKey) {
   return { lat: result.lat, lon: result.lon, formatted: result.formatted };
 }
 
-export async function discoverNearbyVenues(lat, lon, radiusMiles, apiKey) {
+export async function discoverNearbyVenues(lat, lon, radiusMiles, apiKey, options = {}) {
   const radiusMeters = milesToMeters(radiusMiles);
   const allResults = [];
+  const selectedBundles = options.categories
+    ? Object.entries(CATEGORY_BUNDLES).filter(([name]) => options.categories.includes(name))
+    : Object.entries(CATEGORY_BUNDLES);
 
-  for (const [bundleName, bundle] of Object.entries(CATEGORY_BUNDLES)) {
+  for (const [bundleName, bundle] of selectedBundles) {
     try {
       const url = new URL('https://api.geoapify.com/v2/places');
       url.searchParams.set('categories', bundle.categories.join(','));
@@ -157,7 +172,8 @@ export async function discoverNearbyVenues(lat, lon, radiusMiles, apiKey) {
 
       const res = await fetch(url.toString());
       if (!res.ok) {
-        console.error(`Geoapify error for ${bundleName}: ${res.status}`);
+        const errBody = await res.text().catch(() => '');
+        console.error(`Geoapify error for ${bundleName}: ${res.status}`, errBody.substring(0, 200));
         continue;
       }
 
@@ -169,6 +185,8 @@ export async function discoverNearbyVenues(lat, lon, radiusMiles, apiKey) {
         const props = f.properties || {};
         const geom = f.geometry || {};
         const coords = geom.coordinates || [];
+
+        if (!props.name) continue;
 
         allResults.push({
           provider: 'geoapify',
@@ -185,13 +203,14 @@ export async function discoverNearbyVenues(lat, lon, radiusMiles, apiKey) {
           categories: props.categories || [],
           website: props.website,
           phone: props.contact?.phone,
+          opening_hours: props.opening_hours,
           distance_meters: haversineDistance(lat, lon, coords[1], coords[0]),
           raw: props,
           bundle: bundleName,
         });
       }
 
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, 150));
     } catch (err) {
       console.error(`Error discovering ${bundleName}:`, err.message);
     }
@@ -209,9 +228,9 @@ export function deduplicateVenues(venues) {
     let isDuplicate = false;
     for (const existing of unique) {
       const nameSim = stringSimilarity(venue.name, existing.name);
-      const closeEnough = venue.distance_meters !== undefined && existing.distance_meters !== undefined
-        ? Math.abs(venue.distance_meters - existing.distance_meters) < 500
-        : haversineDistance(venue.lat, venue.lon, existing.lat, existing.lon) < 200;
+      const closeEnough = venue.lat && existing.lat
+        ? haversineDistance(venue.lat, venue.lon, existing.lat, existing.lon) < 200
+        : false;
 
       if (nameSim > 85 && closeEnough) {
         isDuplicate = true;
@@ -258,6 +277,8 @@ export function normalizeToVenueRecord(raw, schoolLat, schoolLon) {
     claimed: false,
     rating: null,
     review_count: 0,
+    categories: raw.categories || [],
+    opening_hours: raw.opening_hours || null,
   };
 }
 
@@ -310,10 +331,11 @@ export async function storeDiscoveredVenues(venues, schoolId) {
         name: venue.name,
         description: venue.description,
         address: venue.address,
-        contact_email: venue.contact_email,
+        contact_email: venue.contact_email || `info@${(venue.name || 'venue').toLowerCase().replace(/[^a-z0-9]/g, '')}.com`,
         website: venue.website,
         verified: false,
         claimed: false,
+        source: 'geoapify',
       })
       .select('id')
       .single();
@@ -327,6 +349,50 @@ export async function storeDiscoveredVenues(venues, schoolId) {
   }
 
   return stored;
+}
+
+export async function searchVenuesLive(query, apiKey) {
+  const { address, lat, lon, radiusMiles = 25, venueTypes, searchText } = query;
+
+  let centerLat = lat;
+  let centerLon = lon;
+
+  if (!centerLat && address) {
+    const geo = await geocodeAddress(address, apiKey);
+    centerLat = geo.lat;
+    centerLon = geo.lon;
+  }
+
+  if (!centerLat || !centerLon) {
+    throw new Error('Location is required — provide address or lat/lon');
+  }
+
+  const rawResults = await discoverNearbyVenues(centerLat, centerLon, radiusMiles, apiKey);
+  const deduplicated = deduplicateVenues(rawResults);
+  const normalized = deduplicated.map(r => normalizeToVenueRecord(r, centerLat, centerLon));
+
+  let filtered = normalized;
+  if (venueTypes && venueTypes.length > 0) {
+    filtered = filtered.filter(v => venueTypes.includes(v.venue_type));
+  }
+  if (searchText) {
+    const q = searchText.toLowerCase();
+    filtered = filtered.filter(v =>
+      v.name.toLowerCase().includes(q) ||
+      (v.venue_type || '').toLowerCase().includes(q) ||
+      (v.address?.city || '').toLowerCase().includes(q)
+    );
+  }
+
+  const ranked = rankVenues(filtered);
+
+  return {
+    center: { lat: centerLat, lon: centerLon },
+    radius_miles: radiusMiles,
+    total_raw: rawResults.length,
+    total_results: ranked.length,
+    venues: ranked,
+  };
 }
 
 export async function runDiscoveryForSchool(schoolId, apiKey, options = {}) {
@@ -343,7 +409,15 @@ export async function runDiscoveryForSchool(schoolId, apiKey, options = {}) {
 
   console.log(`Running discovery for: ${school.name}`);
 
-  const { lat, lon } = await geocodeAddress(school.address, apiKey);
+  let lat, lon;
+  if (school.address) {
+    const addr = typeof school.address === 'string' ? school.address : school.address;
+    const geo = await geocodeAddress(addr, apiKey);
+    lat = geo.lat;
+    lon = geo.lon;
+  } else {
+    throw new Error('School has no address');
+  }
   console.log(`Geocoded to: ${lat}, ${lon}`);
 
   console.log(`Searching within ${radiusMiles} miles...`);

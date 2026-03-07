@@ -5,7 +5,7 @@ import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } fro
 import { Badge } from '@tripslip/ui/components/badge';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { Plus, Edit, Eye, Clock, Users } from 'lucide-react';
+import { Plus, Edit, Eye } from 'lucide-react';
 
 interface Experience {
   id: string;
@@ -33,7 +33,6 @@ export default function ExperiencesPage() {
     try {
       setLoading(true);
       
-      // Get current user's venue
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast.error('You must be logged in');
@@ -41,7 +40,6 @@ export default function ExperiencesPage() {
         return;
       }
       
-      // Get venue_id from venue_users
       const { data: venueUser, error: venueError } = await supabase
         .from('venue_users')
         .select('venue_id')
@@ -53,7 +51,6 @@ export default function ExperiencesPage() {
         return;
       }
       
-      // Load experiences for this venue
       const { data, error } = await supabase
         .from('experiences')
         .select('*')
@@ -86,8 +83,9 @@ export default function ExperiencesPage() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-600">Loading experiences...</p>
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5C518]"></div>
+          <p className="text-gray-600 font-medium">Loading experiences...</p>
         </div>
       </Layout>
     );
@@ -96,25 +94,49 @@ export default function ExperiencesPage() {
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-3xl font-bold">Experiences</h2>
-            <p className="text-gray-600 mt-2">Manage your educational experiences</p>
+        <div className="relative bg-gradient-to-r from-[#F5C518]/20 via-white to-[#4ECDC4]/20 border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 overflow-hidden">
+          <div className="absolute top-2 right-4 w-16 h-16 animate-bounce" style={{ animationDuration: '3s' }}>
+            <img src="/images/char-green-octagon.png" alt="" className="w-full h-full object-contain" />
           </div>
-          <Button
-            className="shadow-offset"
-            onClick={() => navigate('/experiences/new')}
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create Experience
-          </Button>
+          <div className="absolute top-1 right-24 w-8 h-8 opacity-40 animate-pulse">
+            <img src="/images/icon-magic.png" alt="" className="w-full h-full object-contain" />
+          </div>
+          <div className="absolute bottom-1 right-40 w-7 h-7 opacity-30 animate-pulse" style={{ animationDelay: '1s' }}>
+            <img src="/images/icon-venue.png" alt="" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-2">
+                <img src="/images/icon-venue.png" alt="" className="w-full h-full object-contain" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold text-[#0A0A0A]">Experiences</h2>
+                <p className="text-gray-600 mt-1">Manage your educational experiences</p>
+              </div>
+            </div>
+            <Button
+              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold"
+              onClick={() => navigate('/experiences/new')}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Experience
+            </Button>
+          </div>
         </div>
 
         {experiences.length === 0 ? (
-          <Card className="border-2 border-black shadow-offset">
+          <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="py-12 text-center">
-              <p className="text-gray-600 mb-4">No experiences yet</p>
-              <Button onClick={() => navigate('/experiences/new')}>
+              <div className="flex justify-center mb-4">
+                <div className="w-20 h-20 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-3">
+                  <img src="/images/icon-magic.png" alt="" className="w-full h-full object-contain" />
+                </div>
+              </div>
+              <p className="text-gray-600 mb-4 font-medium">No experiences yet</p>
+              <Button
+                className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold"
+                onClick={() => navigate('/experiences/new')}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Experience
               </Button>
@@ -123,7 +145,7 @@ export default function ExperiencesPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {experiences.map((experience) => (
-              <Card key={experience.id} className="border-2 border-black shadow-offset">
+              <Card key={experience.id} className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px] transition-all">
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
@@ -140,11 +162,15 @@ export default function ExperiencesPage() {
                 <CardContent>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-gray-700">
-                      <Clock className="h-4 w-4" />
+                      <div className="w-6 h-6 flex-shrink-0">
+                        <img src="/images/icon-calendar.png" alt="" className="w-full h-full object-contain" />
+                      </div>
                       <span>{formatDuration(experience.duration_minutes)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-700">
-                      <Users className="h-4 w-4" />
+                      <div className="w-6 h-6 flex-shrink-0">
+                        <img src="/images/icon-team.png" alt="" className="w-full h-full object-contain" />
+                      </div>
                       <span>
                         {experience.min_students && experience.max_students
                           ? `${experience.min_students}-${experience.max_students} students`
@@ -170,7 +196,7 @@ export default function ExperiencesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
+                      className="flex-1 border-2 border-[#0A0A0A] rounded-xl hover:bg-[#F5C518]/10 transition-all"
                       onClick={() => navigate(`/experiences/${experience.id}/edit`)}
                     >
                       <Edit className="h-3 w-3 mr-1" />
@@ -179,7 +205,7 @@ export default function ExperiencesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex-1"
+                      className="flex-1 border-2 border-[#0A0A0A] rounded-xl hover:bg-[#F5C518]/10 transition-all"
                       onClick={() => navigate(`/experiences/${experience.id}`)}
                     >
                       <Eye className="h-3 w-3 mr-1" />

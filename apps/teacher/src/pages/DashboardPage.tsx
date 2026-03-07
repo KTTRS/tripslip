@@ -7,14 +7,8 @@ import { supabase } from '../lib/supabase';
 import {
   MapPin,
   Calendar,
-  Users,
   Plus,
-  Clock,
   ArrowRight,
-  Compass,
-  FileText,
-  UserPlus,
-  Send,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -103,18 +97,37 @@ export default function DashboardPage() {
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-[#0A0A0A]">Welcome back, {displayName}</h2>
-            <p className="text-gray-500 mt-1">Here's what's happening with your field trips</p>
+        <div className="relative rounded-2xl bg-gradient-to-r from-[#F5C518]/10 via-[#F5C518]/5 to-transparent p-6 md:p-8 overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex items-center gap-5">
+              <img
+                src="/images/char-pink-heart.png"
+                alt="TripSlip character"
+                className="w-20 h-20 md:w-24 md:h-24 object-contain animate-float drop-shadow-lg hidden sm:block"
+              />
+              <div>
+                <h2 className="text-3xl font-bold text-[#0A0A0A]">Welcome back, {displayName}</h2>
+                <p className="text-gray-500 mt-1">Here's what's happening with your field trips</p>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate('/trips/create')}
+              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold px-6"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create New Trip
+            </Button>
           </div>
-          <Button
-            onClick={() => navigate('/trips/create')}
-            className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold px-6"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create New Trip
-          </Button>
+          <img
+            src="/images/icon-bus.png"
+            alt=""
+            className="absolute -top-2 right-4 w-12 h-12 opacity-20 animate-float hidden md:block"
+          />
+          <img
+            src="/images/icon-backpack.png"
+            alt=""
+            className="absolute bottom-2 right-20 w-10 h-10 opacity-15 animate-bounce-slow hidden md:block"
+          />
         </div>
 
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
@@ -124,8 +137,8 @@ export default function DashboardPage() {
           >
             <CardContent className="pt-5 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#F5C518] border-2 border-[#0A0A0A] flex items-center justify-center">
-                  <Compass className="h-5 w-5 text-[#0A0A0A]" />
+                <div className="w-12 h-12 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
+                  <img src="/images/icon-compass.png" alt="Total Trips" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">Total Trips</p>
@@ -141,8 +154,8 @@ export default function DashboardPage() {
           >
             <CardContent className="pt-5 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center">
-                  <Calendar className="h-5 w-5 text-green-700" />
+                <div className="w-12 h-12 rounded-xl bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
+                  <img src="/images/icon-calendar.png" alt="Upcoming" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">Upcoming</p>
@@ -158,8 +171,8 @@ export default function DashboardPage() {
           >
             <CardContent className="pt-5 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-[#0A0A0A] flex items-center justify-center">
-                  <Users className="h-5 w-5 text-blue-700" />
+                <div className="w-12 h-12 rounded-xl bg-blue-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
+                  <img src="/images/icon-team.png" alt="Students" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">Students</p>
@@ -175,8 +188,8 @@ export default function DashboardPage() {
           >
             <CardContent className="pt-5 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-orange-100 border-2 border-[#0A0A0A] flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-orange-700" />
+                <div className="w-12 h-12 rounded-xl bg-orange-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
+                  <img src="/images/icon-permission.png" alt="Pending Slips" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 font-medium">Pending Slips</p>
@@ -197,8 +210,8 @@ export default function DashboardPage() {
                 onClick={() => navigate('/trips/create')}
                 className="flex items-center gap-3 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-left"
               >
-                <div className="w-10 h-10 rounded-lg bg-[#F5C518] flex items-center justify-center">
-                  <Plus className="h-5 w-5 text-[#0A0A0A]" />
+                <div className="w-12 h-12 rounded-lg bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
+                  <img src="/images/icon-pencil.png" alt="Create Trip" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <div className="font-semibold text-[#0A0A0A]">Create a Trip</div>
@@ -209,8 +222,8 @@ export default function DashboardPage() {
                 onClick={() => navigate('/students')}
                 className="flex items-center gap-3 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-left"
               >
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <UserPlus className="h-5 w-5 text-blue-700" />
+                <div className="w-12 h-12 rounded-lg bg-blue-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
+                  <img src="/images/icon-team.png" alt="Manage Students" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <div className="font-semibold text-[#0A0A0A]">Manage Students</div>
@@ -221,8 +234,8 @@ export default function DashboardPage() {
                 onClick={() => navigate('/venues/search')}
                 className="flex items-center gap-3 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all text-left"
               >
-                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                  <MapPin className="h-5 w-5 text-green-700" />
+                <div className="w-12 h-12 rounded-lg bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
+                  <img src="/images/icon-venue.png" alt="Browse Venues" className="w-full h-full object-contain" />
                 </div>
                 <div>
                   <div className="font-semibold text-[#0A0A0A]">Browse Venues</div>
@@ -247,7 +260,7 @@ export default function DashboardPage() {
             {recentTrips.length === 0 ? (
               <Card className="border-2 border-dashed border-gray-300">
                 <CardContent className="py-10 text-center">
-                  <Calendar className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                  <img src="/images/icon-calendar.png" alt="" className="w-10 h-10 mx-auto mb-3 opacity-40" />
                   <p className="text-gray-500 font-medium">No upcoming trips</p>
                   <p className="text-sm text-gray-400 mt-1">Create a trip to get started</p>
                 </CardContent>

@@ -49,7 +49,6 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
     setMessage(null);
 
     try {
-      // Check if teacher already exists
       const { data: existing } = await supabase
         .from('teachers')
         .select('*')
@@ -66,7 +65,6 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
         return;
       }
 
-      // Create new teacher record
       const { error } = await supabase.from('teachers').insert({
         school_id: schoolId,
         email,
@@ -94,7 +92,6 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
         text: `Teacher added! Share this signup link with them: ${signupLink}`,
       });
       
-      // Reset form
       setEmail('');
       setFirstName('');
       setLastName('');
@@ -164,21 +161,35 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-fraunces font-semibold">
-        Add Teachers
-      </h2>
+      <div className="relative bg-gradient-to-r from-[#F5C518]/20 via-white to-[#4ECDC4]/20 border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 overflow-hidden">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
+            <img src="/images/icon-team.png" alt="" className="w-full h-full object-contain" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-[#0A0A0A]">
+              Add Teachers
+            </h2>
+            <p className="text-sm text-gray-600">Invite teachers to join your school</p>
+          </div>
+        </div>
+        <img
+          src="/images/char-blue-square.png"
+          alt=""
+          className="absolute -right-2 -bottom-2 w-16 h-16 opacity-20 animate-bounce"
+        />
+      </div>
 
-      {/* Teacher Form */}
       <form
         onSubmit={handleAddTeacher}
-        className="bg-white border border-gray-200 rounded-lg p-6 shadow-offset"
+        className="bg-white border-2 border-[#0A0A0A] rounded-xl p-6 shadow-[4px_4px_0px_#0A0A0A]"
       >
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label
                 htmlFor="firstName"
-                className="block text-sm font-jakarta font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
                 First Name
               </label>
@@ -188,14 +199,14 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tripslip-blue focus:border-transparent"
+                className="w-full px-4 py-2 border-2 border-[#0A0A0A] rounded-xl focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518]"
                 placeholder="John"
               />
             </div>
             <div>
               <label
                 htmlFor="lastName"
-                className="block text-sm font-jakarta font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Last Name
               </label>
@@ -205,7 +216,7 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tripslip-blue focus:border-transparent"
+                className="w-full px-4 py-2 border-2 border-[#0A0A0A] rounded-xl focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518]"
                 placeholder="Smith"
               />
             </div>
@@ -214,7 +225,7 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-jakarta font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 mb-2"
             >
               Email Address
             </label>
@@ -224,7 +235,7 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tripslip-blue focus:border-transparent"
+              className="w-full px-4 py-2 border-2 border-[#0A0A0A] rounded-xl focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518]"
               placeholder="teacher@school.edu"
             />
           </div>
@@ -233,7 +244,7 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
             <div>
               <label
                 htmlFor="phone"
-                className="block text-sm font-jakarta font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Phone Number (Optional)
               </label>
@@ -242,14 +253,14 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
                 id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tripslip-blue focus:border-transparent"
+                className="w-full px-4 py-2 border-2 border-[#0A0A0A] rounded-xl focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518]"
                 placeholder="(555) 123-4567"
               />
             </div>
             <div>
               <label
                 htmlFor="department"
-                className="block text-sm font-jakarta font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Department (Optional)
               </label>
@@ -258,7 +269,7 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
                 id="department"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-tripslip-blue focus:border-transparent"
+                className="w-full px-4 py-2 border-2 border-[#0A0A0A] rounded-xl focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518]"
                 placeholder="Science, Math, etc."
               />
             </div>
@@ -266,10 +277,10 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
 
           {message && (
             <div
-              className={`p-4 rounded-lg ${
+              className={`p-4 rounded-xl border-2 ${
                 message.type === 'success'
-                  ? 'bg-green-50 text-green-800'
-                  : 'bg-red-50 text-red-800'
+                  ? 'bg-green-50 text-green-800 border-green-400'
+                  : 'bg-red-50 text-red-800 border-red-400'
               }`}
             >
               {message.text}
@@ -279,16 +290,15 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 bg-tripslip-yellow text-black rounded-lg hover:bg-yellow-400 transition-colors shadow-offset disabled:opacity-50 disabled:cursor-not-allowed font-jakarta font-semibold"
+            className="w-full px-6 py-3 bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] rounded-xl shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Adding Teacher...' : 'Add Teacher'}
           </button>
         </div>
       </form>
 
-      {/* Teachers List */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-offset">
-        <h3 className="text-lg font-jakarta font-semibold mb-4">
+      <div className="bg-white border-2 border-[#0A0A0A] rounded-xl p-6 shadow-[4px_4px_0px_#0A0A0A]">
+        <h3 className="text-lg font-semibold mb-4">
           School Teachers ({teachers.length})
         </h3>
 
@@ -301,10 +311,10 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
             {teachers.map((teacher) => (
               <div
                 key={teacher.id}
-                className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+                className="flex items-center justify-between border-2 border-gray-200 rounded-xl p-4"
               >
                 <div className="flex-1">
-                  <p className="font-jakarta font-medium">
+                  <p className="font-medium">
                     {teacher.first_name} {teacher.last_name}
                   </p>
                   <p className="text-sm text-gray-500">{teacher.email}</p>
@@ -330,14 +340,14 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
                   {!teacher.user_id && (
                     <button
                       onClick={() => handleCopyLink(teacher.id, teacher.email)}
-                      className="px-3 py-1 text-sm bg-[#F5C518] text-[#0A0A0A] rounded hover:bg-yellow-400 transition-colors font-medium"
+                      className="px-3 py-1 text-sm bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] rounded-lg hover:bg-yellow-400 transition-colors font-medium"
                     >
                       {copiedLinkId === teacher.id ? 'Copied!' : 'Copy Signup Link'}
                     </button>
                   )}
                   <button
                     onClick={() => handleRemoveTeacher(teacher.id)}
-                    className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                    className="px-3 py-1 text-sm text-red-700 border-2 border-red-400 rounded-lg hover:bg-red-50 transition-colors"
                   >
                     Remove
                   </button>

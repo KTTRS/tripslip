@@ -22,8 +22,9 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-64">
-          <p className="text-gray-600">Loading analytics...</p>
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5C518]"></div>
+          <p className="text-gray-600 font-semibold">Loading analytics...</p>
         </div>
       </Layout>
     )
@@ -59,17 +60,26 @@ export default function DashboardPage() {
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h2 className="text-3xl font-bold">Dashboard</h2>
-            <p className="text-gray-600 mt-2">Welcome back! Here's your venue overview.</p>
+        <div className="relative rounded-2xl border-2 border-black bg-gradient-to-r from-[#F5C518]/10 via-white to-emerald-50 p-6 shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] overflow-hidden">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-5">
+              <img
+                src="/images/char-green-octagon.png"
+                alt="TripSlip Venue mascot"
+                className="w-16 h-16 animate-bounce-slow hidden sm:block"
+              />
+              <div>
+                <h2 className="text-3xl font-bold font-['Fraunces']">Dashboard</h2>
+                <p className="text-gray-600 mt-1 font-['Plus_Jakarta_Sans']">Welcome back! Here's your venue overview.</p>
+              </div>
+            </div>
+            <button
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-[#F5C518] text-black font-bold border-2 border-black rounded-lg hover:bg-[#F5C518]/80 transition-all shadow-[2px_2px_0px_0px_rgba(10,10,10,1)] hover:shadow-[1px_1px_0px_0px_rgba(10,10,10,1)] hover:translate-x-[1px] hover:translate-y-[1px] font-['Plus_Jakarta_Sans']"
+            >
+              Export CSV
+            </button>
           </div>
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-primary text-white font-bold border-2 border-black rounded hover:bg-primary/90 transition-colors"
-          >
-            Export CSV
-          </button>
         </div>
 
         {/* Filters */}
@@ -135,7 +145,7 @@ export default function DashboardPage() {
           <UpcomingBookings />
 
           {/* Top Performing Experiences */}
-          <Card className="border-2 border-black shadow-offset">
+          <Card className="border-2 border-black shadow-[4px_4px_0px_#0A0A0A]">
             <CardHeader>
               <CardTitle>Top Performing Experiences</CardTitle>
             </CardHeader>
@@ -145,7 +155,7 @@ export default function DashboardPage() {
               ) : (
                 <div className="space-y-4">
                   {analytics.topExperiences.map((exp) => (
-                    <div key={exp.id} className="flex justify-between items-center p-4 bg-gray-50 rounded">
+                    <div key={exp.id} className="flex justify-between items-center p-4 border-2 border-[#0A0A0A] rounded-xl hover:bg-[#F5C518]/5 transition-all">
                       <div>
                         <p className="font-semibold">{exp.title}</p>
                         <p className="text-sm text-gray-600">{exp.bookingCount} bookings</p>

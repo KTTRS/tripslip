@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@tripslip/ui';
+import { Card, CardContent, Button, Input } from '@tripslip/ui';
 import { supabase } from '../lib/supabase';
 import type { Tables } from '@tripslip/database';
 import { toast } from 'sonner';
@@ -12,11 +12,10 @@ import {
   Edit2, 
   Trash2, 
   Search,
-  Users,
-  CheckCircle,
-  XCircle,
-  Clock
+  Copy,
+  Check,
 } from 'lucide-react';
+import { Layout } from '../components/Layout';
 import { AddStudentModal } from '../components/roster/AddStudentModal';
 import { EditStudentModal } from '../components/roster/EditStudentModal';
 import { CSVImportModal } from '../components/roster/CSVImportModal';
@@ -42,6 +41,9 @@ export default function TripRosterPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCSVModal, setShowCSVModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [messageCopied, setMessageCopied] = useState(false);
+  const [generatingLink, setGeneratingLink] = useState(false);
   
   useEffect(() => {
     if (tripId) {
@@ -135,7 +137,7 @@ export default function TripRosterPage() {
     const filtered = students.filter((student) =>
       student.first_name.toLowerCase().includes(query) ||
       student.last_name.toLowerCase().includes(query) ||
-      student.grade.toLowerCase().includes(query)
+      (student.grade ?? '').toLowerCase().includes(query)
     );
     
     setFilteredStudents(filtered);
@@ -143,25 +145,92 @@ export default function TripRosterPage() {
   
   const getPermissionSlipStatus = (student: StudentWithSlip) => {
     if (!student.permission_slip) {
-      return { label: 'Pending', color: 'gray', icon: Clock };
+      return { label: 'Pending', color: 'gray' };
     }
     
     const slip = student.permission_slip;
     const hasPaidPayment = slip.payments?.some(p => p.status === 'succeeded');
     
     if (hasPaidPayment) {
-      return { label: 'Paid', color: 'green', icon: CheckCircle };
+      return { label: 'Paid', color: 'green' };
     }
     
     if (slip.status === 'signed') {
-      return { label: 'Signed', color: 'blue', icon: CheckCircle };
+      return { label: 'Signed', color: 'blue' };
     }
     
     if (slip.status === 'cancelled') {
-      return { label: 'Cancelled', color: 'red', icon: XCircle };
+      return { label: 'Cancelled', color: 'red' };
     }
     
-    return { label: 'Pending', color: 'gray', icon: Clock };
+    return { label: 'Pending', color: 'gray' };
+  };
+
+  const getPermissionSlipLink = () => {
+    if (!trip?.direct_link_token) return null;
+    return `${window.location.origin}/parent/trip/${trip.direct_link_token}`;
+  };
+
+  const ensureLinkToken = async () => {
+    if (trip?.direct_link_token) return trip.direct_link_token;
+    
+    setGeneratingLink(true);
+    try {
+      const token = crypto.randomUUID();
+      const { error } = await supabase
+        .from('trips')
+        .update({ direct_link_token: token })
+        .eq('id', tripId!);
+      
+      if (error) throw error;
+      
+      setTrip((prev: any) => ({ ...prev, direct_link_token: token }));
+      return token;
+    } catch (err) {
+      console.error('Error generating link:', err);
+      toast.error('Failed to generate link');
+      return null;
+    } finally {
+      setGeneratingLink(false);
+    }
+  };
+
+  const copyLink = async () => {
+    const token = await ensureLinkToken();
+    if (!token) return;
+    
+    const link = `${window.location.origin}/parent/trip/${token}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setLinkCopied(true);
+      toast.success('Link copied! Share it with parents.');
+      setTimeout(() => setLinkCopied(false), 3000);
+    } catch {
+      toast.info(`Copy this link: ${link}`);
+    }
+  };
+
+  const copyMessage = async () => {
+    const token = await ensureLinkToken();
+    if (!token) return;
+    
+    const link = `${window.location.origin}/parent/trip/${token}`;
+    const tripName = trip?.experience?.title || 'the field trip';
+    const venueName = trip?.experience?.venue?.name || '';
+    const tripDate = trip?.trip_date 
+      ? new Date(trip.trip_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+      : '';
+    
+    const message = `Hi! Please sign the permission slip for ${tripName}${venueName ? ` at ${venueName}` : ''}${tripDate ? ` on ${tripDate}` : ''}.\n\nSign here: ${link}\n\nThank you!`;
+    
+    try {
+      await navigator.clipboard.writeText(message);
+      setMessageCopied(true);
+      toast.success('Message copied! Paste it into your messaging app.');
+      setTimeout(() => setMessageCopied(false), 3000);
+    } catch {
+      toast.info(`Copy this message: ${message}`);
+    }
   };
   
   const handleRemoveStudent = async (studentId: string) => {
@@ -198,69 +267,189 @@ export default function TripRosterPage() {
   };
   
   const costCents = trip?.experience?.pricing_tiers?.[0]?.price_cents || 0;
+
+  const signedCount = students.filter(s => {
+    const status = getPermissionSlipStatus(s);
+    return status.label === 'Signed' || status.label === 'Paid';
+  }).length;
+
+  const pendingCount = students.filter(s => {
+    const status = getPermissionSlipStatus(s);
+    return status.label === 'Pending';
+  }).length;
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading roster...</p>
+      <Layout>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5C518] mx-auto mb-4" />
+            <p className="text-gray-600">Loading roster...</p>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
   
   if (!trip) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Trip not found</p>
-          <Button onClick={() => navigate('/')} className="mt-4">
-            Back to Dashboard
-          </Button>
+      <Layout>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <img src="/images/icon-compass.png" alt="" className="w-16 h-16 mx-auto mb-4 opacity-40" />
+            <p className="text-gray-600 mb-4">Trip not found</p>
+            <Button 
+              onClick={() => navigate('/')} 
+              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] font-semibold"
+            >
+              Back to Dashboard
+            </Button>
+          </div>
         </div>
-      </div>
+      </Layout>
     );
   }
   
+  const permissionLink = getPermissionSlipLink();
+  
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b-2 border-black p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/')}
-              className="border-2 border-black"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <h1 className="text-2xl font-bold font-display">Student Roster</h1>
+    <Layout>
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/trips')}
+            className="border-2 border-[#0A0A0A] rounded-xl"
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Trips
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold text-[#0A0A0A]">{trip.experience?.title || 'Field Trip'}</h1>
+            <p className="text-sm text-gray-500">{trip.experience?.venue?.name}</p>
           </div>
         </div>
-      </nav>
-      
-      <main className="max-w-7xl mx-auto p-8">
-        <Card className="border-2 border-black shadow-[4px_4px_0px_#0A0A0A] mb-6">
-          <CardHeader>
-            <CardTitle>{trip.experience?.title || 'Field Trip'}</CardTitle>
-            <p className="text-sm text-gray-600">{trip.experience?.venue?.name}</p>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-gray-600" />
-                <span className="font-semibold">{students.length} Students</span>
+
+        <div className="bg-gradient-to-r from-[#F5C518]/15 via-[#F5C518]/5 to-transparent border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-5 relative overflow-hidden">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
+                  <img src="/images/icon-permission.png" alt="" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-[#0A0A0A]">Share Permission Slip</h2>
+                  <p className="text-xs text-gray-500">Copy the link below and share it with parents via email, text, ClassDojo, Remind, or any platform</p>
+                </div>
               </div>
-              <div className="text-sm text-gray-600">
-                Cost per student: ${(costCents / 100).toFixed(2)}
-              </div>
+
+              {permissionLink ? (
+                <div className="flex items-center gap-2 bg-white border-2 border-[#0A0A0A] rounded-xl px-4 py-2.5">
+                  <span className="flex-1 text-sm text-gray-700 truncate font-mono">{permissionLink}</span>
+                  <button
+                    onClick={copyLink}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 font-semibold text-sm transition-all ${
+                      linkCopied
+                        ? 'bg-green-100 border-green-500 text-green-700'
+                        : 'bg-[#F5C518] border-[#0A0A0A] text-[#0A0A0A] hover:translate-y-[1px] shadow-[2px_2px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A]'
+                    }`}
+                  >
+                    {linkCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {linkCopied ? 'Copied!' : 'Copy Link'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={copyLink}
+                  disabled={generatingLink}
+                  className="w-full flex items-center justify-center gap-2 bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] rounded-xl px-4 py-3 font-bold shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-50"
+                >
+                  <img src="/images/icon-magic.png" alt="" className="w-5 h-5" />
+                  {generatingLink ? 'Generating...' : 'Generate Permission Slip Link'}
+                </button>
+              )}
             </div>
-          </CardContent>
-        </Card>
+
+            <div className="flex flex-col gap-2 lg:w-56">
+              <button
+                onClick={copyMessage}
+                disabled={generatingLink}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 font-semibold text-sm transition-all ${
+                  messageCopied
+                    ? 'bg-green-100 border-green-500 text-green-700'
+                    : 'bg-white border-[#0A0A0A] text-[#0A0A0A] hover:bg-[#F5C518]/10 shadow-[2px_2px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-y-[1px]'
+                }`}
+              >
+                {messageCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {messageCopied ? 'Message Copied!' : 'Copy with Message'}
+              </button>
+              <p className="text-xs text-gray-400 leading-tight">Copies a pre-written message with the link — paste into any app you use to talk to parents</p>
+            </div>
+          </div>
+
+          <img
+            src="/images/char-pink-heart.png"
+            alt=""
+            className="absolute -right-2 -bottom-2 w-16 h-16 opacity-20 animate-float hidden lg:block"
+          />
+        </div>
+
+        <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+          <Card className="border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A]">
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
+                  <img src="/images/icon-team.png" alt="" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Students</p>
+                  <p className="text-xl font-bold text-[#0A0A0A]">{students.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A]">
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-lg bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
+                  <img src="/images/icon-shield.png" alt="" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Signed</p>
+                  <p className="text-xl font-bold text-[#0A0A0A]">{signedCount}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A]">
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-lg bg-orange-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
+                  <img src="/images/icon-megaphone.png" alt="" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Pending</p>
+                  <p className="text-xl font-bold text-[#0A0A0A]">{pendingCount}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A]">
+            <CardContent className="pt-4 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-lg bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
+                  <img src="/images/icon-payment.png" alt="" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Cost</p>
+                  <p className="text-xl font-bold text-[#0A0A0A]">${(costCents / 100).toFixed(2)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="relative flex-1 max-w-md w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
@@ -268,7 +457,7 @@ export default function TripRosterPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search students..."
-              className="pl-10 border-2 border-black"
+              className="pl-10 border-2 border-[#0A0A0A] rounded-xl"
             />
           </div>
           
@@ -276,29 +465,30 @@ export default function TripRosterPage() {
             <Button
               variant="outline"
               onClick={() => navigate(`/trips/${tripId}/slips`)}
-              className="border-2 border-black"
+              className="border-2 border-[#0A0A0A] rounded-xl font-semibold"
             >
-              Track Permission Slips
+              <img src="/images/icon-tracking.png" alt="" className="w-4 h-4 mr-2" />
+              Track Slips
             </Button>
             <Button
               variant="outline"
               onClick={downloadCSVTemplate}
-              className="border-2 border-black"
+              className="border-2 border-[#0A0A0A] rounded-xl"
             >
               <Download className="h-4 w-4 mr-2" />
-              CSV Template
+              Template
             </Button>
             <Button
               variant="outline"
               onClick={() => setShowCSVModal(true)}
-              className="border-2 border-black"
+              className="border-2 border-[#0A0A0A] rounded-xl"
             >
               <Upload className="h-4 w-4 mr-2" />
-              Import CSV
+              Import
             </Button>
             <Button
               onClick={() => setShowAddModal(true)}
-              className="shadow-[4px_4px_0px_#0A0A0A]"
+              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all font-semibold rounded-xl"
             >
               <Plus className="h-4 w-4 mr-2" />
               Add Student
@@ -306,104 +496,105 @@ export default function TripRosterPage() {
           </div>
         </div>
         
-        <Card className="border-2 border-black shadow-[4px_4px_0px_#0A0A0A]">
+        <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl overflow-hidden">
           <CardContent className="p-0">
             {filteredStudents.length === 0 ? (
-              <div className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  {searchQuery ? 'No students found matching your search' : 'No students in this trip yet'}
-                </p>
-                <p className="text-sm text-gray-500 mt-1 mb-4">
+              <div className="text-center py-16">
+                <img src="/images/icon-team.png" alt="" className="w-16 h-16 mx-auto mb-4 opacity-40" />
+                <h3 className="text-lg font-bold text-[#0A0A0A] mb-1">
+                  {searchQuery ? 'No students found' : 'No students in this trip yet'}
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
                   {!searchQuery && 'Add students individually or import from a CSV file'}
                 </p>
-                <div className="flex justify-center gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowCSVModal(true)}
-                    className="border-2 border-black"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Import CSV
-                  </Button>
-                  <Button
-                    onClick={() => setShowAddModal(true)}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Student
-                  </Button>
-                </div>
+                {!searchQuery && (
+                  <div className="flex justify-center gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowCSVModal(true)}
+                      className="border-2 border-[#0A0A0A] rounded-xl"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import CSV
+                    </Button>
+                    <Button
+                      onClick={() => setShowAddModal(true)}
+                      className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] font-semibold rounded-xl"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Student
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b-2 border-black">
+                  <thead className="bg-[#0A0A0A] text-white">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
                         Student Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider hidden sm:table-cell">
                         Grade
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Permission Slip Status
+                      <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">
+                        Permission Slip
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-100">
                     {filteredStudents.map((student) => {
                       const status = getPermissionSlipStatus(student);
-                      const StatusIcon = status.icon;
+                      
+                      const statusStyles = {
+                        green: 'bg-green-100 text-green-700 border-green-300',
+                        blue: 'bg-blue-100 text-blue-700 border-blue-300',
+                        red: 'bg-red-100 text-red-700 border-red-300',
+                        gray: 'bg-gray-100 text-gray-600 border-gray-300',
+                      };
                       
                       return (
-                        <tr key={student.id} className="hover:bg-gray-50">
+                        <tr key={student.id} className="hover:bg-[#F5C518]/5 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="font-medium text-gray-900">
+                            <div className="font-semibold text-[#0A0A0A]">
                               {student.first_name} {student.last_name}
                             </div>
+                            <div className="text-xs text-gray-500 sm:hidden">Grade {student.grade}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                             <span className="text-sm text-gray-600">{student.grade}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <StatusIcon className={`h-4 w-4 ${
-                                status.color === 'green' ? 'text-green-600' :
-                                status.color === 'blue' ? 'text-blue-600' :
-                                status.color === 'red' ? 'text-red-600' :
-                                'text-gray-600'
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${statusStyles[status.color as keyof typeof statusStyles]}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${
+                                status.color === 'green' ? 'bg-green-500' :
+                                status.color === 'blue' ? 'bg-blue-500' :
+                                status.color === 'red' ? 'bg-red-500' :
+                                'bg-gray-400'
                               }`} />
-                              <span className={`text-sm font-medium ${
-                                status.color === 'green' ? 'text-green-600' :
-                                status.color === 'blue' ? 'text-blue-600' :
-                                status.color === 'red' ? 'text-red-600' :
-                                'text-gray-600'
-                              }`}>
-                                {status.label}
-                              </span>
-                            </div>
+                              {status.label}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
+                            <div className="flex justify-end gap-1">
+                              <button
                                 onClick={() => setEditingStudent(student)}
-                                className="border-2 border-black"
+                                className="p-1.5 text-gray-500 hover:text-[#0A0A0A] hover:bg-gray-100 rounded-lg transition-colors"
+                                title="Edit student"
                               >
-                                <Edit2 className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
+                                <Edit2 className="h-4 w-4" />
+                              </button>
+                              <button
                                 onClick={() => handleRemoveStudent(student.id)}
-                                className="border-2 border-red-500 text-red-600 hover:bg-red-50"
+                                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Remove student"
                               >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                                <Trash2 className="h-4 w-4" />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -415,7 +606,7 @@ export default function TripRosterPage() {
             )}
           </CardContent>
         </Card>
-      </main>
+      </div>
       
       {showAddModal && (
         <AddStudentModal
@@ -449,6 +640,6 @@ export default function TripRosterPage() {
           }}
         />
       )}
-    </div>
+    </Layout>
   );
 }

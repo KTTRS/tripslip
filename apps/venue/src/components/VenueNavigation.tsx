@@ -83,11 +83,11 @@ export function VenueNavigation() {
                   key={item.name}
                   to={item.href}
                   className={`
-                    flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors font-['Plus_Jakarta_Sans']
+                    flex items-center px-3 py-2 rounded-lg text-sm font-bold transition-all duration-200 font-['Plus_Jakarta_Sans']
                     ${
                       isActive(item.href)
-                        ? 'bg-[#F5C518] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(10,10,10,1)]'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-black border-2 border-transparent'
+                        ? 'bg-[#F5C518] text-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(10,10,10,1)] scale-[1.02]'
+                        : 'text-gray-700 hover:bg-[#F5C518]/20 hover:text-black hover:border-black/30 hover:shadow-[2px_2px_0px_0px_rgba(10,10,10,0.3)] hover:scale-[1.01] border-2 border-transparent'
                     }
                   `}
                 >
@@ -144,11 +144,11 @@ export function VenueNavigation() {
                   to={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`
-                    flex items-center px-3 py-2 rounded-md text-base font-medium transition-colors font-['Plus_Jakarta_Sans']
+                    flex items-center px-3 py-2 rounded-lg text-base font-bold transition-all duration-200 font-['Plus_Jakarta_Sans']
                     ${
                       isActive(item.href)
-                        ? 'bg-[#F5C518] text-black border-2 border-black'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-black'
+                        ? 'bg-[#F5C518] text-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(10,10,10,1)]'
+                        : 'text-gray-700 hover:bg-[#F5C518]/20 hover:text-black'
                     }
                   `}
                 >

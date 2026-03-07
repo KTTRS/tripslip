@@ -376,12 +376,12 @@ export default function DashboardPage() {
 
   if (schoolLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
+      <Layout>
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F5C518] mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading dashboard...</p>
         </div>
-      </div>
+      </Layout>
     );
   }
 
@@ -389,25 +389,15 @@ export default function DashboardPage() {
     return (
       <Layout>
         <div className="text-center py-12">
-          <svg
-            className="mx-auto h-12 w-12 text-red-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
-          <h3 className="mt-2 text-lg font-medium text-gray-900">
-            No School Association
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {schoolError || 'Your account is not associated with a school. Please contact support.'}
-          </p>
+          <div className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl p-8 max-w-md mx-auto bg-white">
+            <img src="/images/icon-megaphone.png" alt="" className="mx-auto h-16 w-16 object-contain drop-shadow-md" />
+            <h3 className="mt-4 text-lg font-bold text-[#0A0A0A]">
+              No School Association
+            </h3>
+            <p className="mt-2 text-sm text-gray-500">
+              {schoolError || 'Your account is not associated with a school. Please contact support.'}
+            </p>
+          </div>
         </div>
       </Layout>
     );
@@ -415,12 +405,22 @@ export default function DashboardPage() {
 
   return (
     <Layout>
-      <h2 className="text-3xl font-bold mb-8">School Dashboard</h2>
+      <div className="relative mb-8 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50/50 border-2 border-black shadow-[4px_4px_0px_#0A0A0A] p-6 overflow-hidden">
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <h2 className="text-3xl font-bold">School Dashboard</h2>
+            <p className="text-gray-600 mt-1">Monitor trips, teachers, and budgets across your school</p>
+          </div>
+          <img
+            src="/images/char-blue-square.png"
+            alt="TripSlip mascot"
+            className="w-20 h-20 object-contain animate-bounce-slow drop-shadow-lg"
+          />
+        </div>
+      </div>
 
-        {/* Alerts */}
         <TripAlerts alerts={alerts} />
 
-        {/* Filters */}
         <TripFilters
           dateRange={dateRange}
           selectedTeacher={selectedTeacher}
@@ -433,10 +433,10 @@ export default function DashboardPage() {
           onReset={handleResetFilters}
         />
 
-        {/* Metrics Grid */}
         <div className="grid gap-6 md:grid-cols-4 mb-8">
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
+          <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-blue-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
+            <CardHeader className="flex flex-row items-center gap-3 pb-2">
+              <img src="/images/icon-compass.png" alt="" className="w-10 h-10 object-contain drop-shadow-md" />
               <CardTitle className="text-sm text-gray-600">Total Trips</CardTitle>
             </CardHeader>
             <CardContent>
@@ -447,8 +447,9 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
+          <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-green-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
+            <CardHeader className="flex flex-row items-center gap-3 pb-2">
+              <img src="/images/icon-team.png" alt="" className="w-10 h-10 object-contain drop-shadow-md" />
               <CardTitle className="text-sm text-gray-600">Total Students</CardTitle>
             </CardHeader>
             <CardContent>
@@ -457,8 +458,9 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
+          <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-yellow-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
+            <CardHeader className="flex flex-row items-center gap-3 pb-2">
+              <img src="/images/icon-payment.png" alt="" className="w-10 h-10 object-contain drop-shadow-md" />
               <CardTitle className="text-sm text-gray-600">Total Cost</CardTitle>
             </CardHeader>
             <CardContent>
@@ -467,8 +469,9 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
+          <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-purple-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
+            <CardHeader className="flex flex-row items-center gap-3 pb-2">
+              <img src="/images/icon-trophy.png" alt="" className="w-10 h-10 object-contain drop-shadow-md" />
               <CardTitle className="text-sm text-gray-600">Completion Rate</CardTitle>
             </CardHeader>
             <CardContent>
@@ -483,7 +486,7 @@ export default function DashboardPage() {
           <BudgetTracking schoolId={schoolId} />
 
           {/* Teacher Statistics */}
-          <Card className="border-2 border-black shadow-offset">
+          <Card className="border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
             <CardHeader>
               <CardTitle>Trips by Teacher</CardTitle>
             </CardHeader>
@@ -495,7 +498,7 @@ export default function DashboardPage() {
                   {teacherStats.map((teacher) => (
                     <div
                       key={teacher.id}
-                      className="p-4 border-2 border-black rounded-md"
+                      className="p-4 border-2 border-[#0A0A0A] rounded-xl shadow-[2px_2px_0px_#0A0A0A]"
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -504,13 +507,13 @@ export default function DashboardPage() {
                             {teacher.tripCount} trips, {teacher.studentCount} students
                           </p>
                         </div>
-                        <span className="text-lg font-bold text-green-600">
+                        <span className="text-lg font-bold text-[#F5C518]">
                           {teacher.completionRate}%
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                         <div
-                          className="bg-green-600 h-2 rounded-full"
+                          className="bg-[#F5C518] h-2 rounded-full"
                           style={{ width: `${teacher.completionRate}%` }}
                         ></div>
                       </div>
@@ -524,7 +527,7 @@ export default function DashboardPage() {
 
         <div className="grid gap-6 md:grid-cols-1 mb-8">
           {/* Recent Trips */}
-          <Card className="border-2 border-black shadow-offset">
+          <Card className="border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
             <CardHeader>
               <CardTitle>Recent Trips</CardTitle>
             </CardHeader>
@@ -536,7 +539,7 @@ export default function DashboardPage() {
                   {recentTrips.map((trip) => (
                     <div
                       key={trip.id}
-                      className="p-3 border border-gray-200 rounded-md"
+                      className="p-3 border-2 border-[#0A0A0A] rounded-xl shadow-[2px_2px_0px_#0A0A0A]"
                     >
                       <div className="flex justify-between items-start mb-1">
                         <div>

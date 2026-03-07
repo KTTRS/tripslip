@@ -70,17 +70,18 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
   const navItems = getNavItemsForRole(activeRole?.role_name);
 
   return (
-    <nav className="bg-white border-b-2 border-black">
+    <nav className="sticky top-0 z-50 bg-white border-b-2 border-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo/Brand */}
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-primary rounded-lg border-2 border-black shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center">
+              <span className="text-black font-black text-lg leading-none">T</span>
+            </div>
             <h1 className="text-xl font-bold font-display">
               {appName || 'TripSlip'}
             </h1>
           </div>
 
-          {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const isActive = item.path === '/' || item.path === '/dashboard'
@@ -90,10 +91,10 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                     isActive
-                      ? 'bg-black text-white'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-primary text-black border-2 border-black shadow-[2px_2px_0px_#0A0A0A]'
+                      : 'text-gray-700 hover:bg-primary/10 hover:text-black hover:-translate-y-0.5 border-2 border-transparent'
                   }`}
                 >
                   {item.label}
@@ -102,21 +103,19 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
             })}
           </div>
 
-          {/* User Menu */}
           <div className="flex items-center gap-4">
             <RoleSwitcher />
             {userName && (
-              <span className="text-sm text-gray-600 hidden sm:inline">
+              <span className="text-sm text-gray-600 hidden sm:inline font-medium">
                 {userName}
               </span>
             )}
-            <Button onClick={onSignOut} variant="outline" size="sm">
+            <Button onClick={onSignOut} variant="outline" size="sm" className="rounded-lg border-2 border-black font-semibold hover:bg-gray-100 transition-all duration-200">
               Sign Out
             </Button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         <div className="md:hidden pb-3 space-y-1">
           {navItems.map((item) => {
             const isActive = item.path === '/' || item.path === '/dashboard'
@@ -126,10 +125,10 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
               <Link
                 key={item.path}
                 to={item.path}
-                className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                className={`block px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   isActive
-                    ? 'bg-black text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary text-black border-2 border-black shadow-[2px_2px_0px_#0A0A0A]'
+                    : 'text-gray-700 hover:bg-primary/10 border-2 border-transparent'
                 }`}
               >
                 {item.label}

@@ -41,16 +41,17 @@ The landing page at `/` has an `/apps` hub page that links to all other portals.
 - `/` `/dashboard` — Dashboard with stats, quick actions, upcoming trips
 - `/trips` — Full trip list with filters (upcoming/past/all), status badges
 - `/trips/create` — Trip creation wizard (4 steps: details+transportation, experience, students, review+forms+funding+addons)
-- `/trips/:tripId/roster` — Per-trip student roster with permission slip status
+- `/trips/:tripId/roster` — Per-trip student roster with permission slip status + prominent shareable link (copy link / copy-with-message for parents)
 - `/trips/:tripId/slips` — Permission slip tracking with send/remind/communication modal
 - `/trips/:tripId/manifest` — Printable trip manifest for day-of attendance (all signed slips, medical alerts, emergency contacts, CSV download)
 - `/students` — Full student management page (add, CSV import with parent info, edit, delete, send permission slip links)
 - `/profile` — Teacher profile editing + password change
-- `/venues/search` — Venue discovery with search, filters, categories
+- `/venues/search` — Live Geoapify-powered venue discovery (enter address, finds nearby museums/zoos/etc)
 - `/venues/:venueId` — Venue detail
 
 ### Key Files
-- `proxy-server.mjs` — Reverse proxy + API routes (SMS, email, permission slips, file upload)
+- `proxy-server.mjs` — Reverse proxy + API routes (SMS, email, permission slips, file upload, venue discovery)
+- `services/venue-discovery.mjs` — Geoapify-powered venue discovery service (geocoding, POI search, dedup, ranking, DB storage)
 - `start-dev.sh` — Startup script for turbo + proxy
 - `apps/teacher/src/components/roster/SendLinksModal.tsx` — Generate ONE link per trip for all parents (copy, SMS, Remind/ClassDojo)
 - `apps/teacher/src/components/roster/CSVImportModal.tsx` — CSV import with parent contact info columns
@@ -161,9 +162,10 @@ TripSlip uses a neo-brutalist design language with premium 3D claymorphic visual
 - Fonts: Fraunces (display), Plus Jakarta Sans (body), Space Mono (mono)
 - Animations: float, bounce-slow, fade-in, slide-up (defined in tailwind.config.ts)
 
-### Landing Page Visual Assets (apps/landing/public/images/)
+### Visual Assets (deployed to all apps in public/images/)
 - **Stock photos**: hero-fieldtrip, students-museum, science-lab, zoo-visit, teacher-leading, art-workshop (AI-generated field trip scenes)
-- **3D Claymorphic icons**: icon-permission, icon-payment, icon-magic, icon-venue, icon-tracking, icon-language, icon-bus, icon-backpack (transparent PNGs)
+- **3D Claymorphic icons**: icon-permission, icon-payment, icon-magic, icon-venue, icon-tracking, icon-language, icon-bus, icon-backpack, icon-compass, icon-calendar, icon-shield, icon-megaphone, icon-pencil, icon-trophy, icon-team, icon-graduation (transparent PNGs, used throughout all apps)
+- **Claymation characters**: char-pink-heart, char-blue-square, char-green-octagon, char-purple-diamond, char-yellow-star, char-red-pill (individual animated mascots used in headers/sidebars)
 - **Brand characters**: brand-characters.png (mascot crew)
 
 ### Landing Page Sections (HomePage.tsx)
@@ -179,6 +181,32 @@ Navigation is defined in `packages/auth/src/components/Navigation.tsx`:
 - **Venue Admin**: Uses its own `VenueNavigation` component in `apps/venue/src/components/VenueNavigation.tsx` (Dashboard, Experiences, Bookings, Trips, Financials, Employees)
 
 Active nav state uses `startsWith()` for sub-paths (except Dashboard which is exact match).
+
+## Venue Discovery (Geoapify)
+
+The venue search uses Geoapify Places API for live discovery. The `GEOAPIFY_API_KEY` env var is required.
+
+### Correct Geoapify Categories (v2/places API)
+- `entertainment.museum` — museums
+- `entertainment.zoo` — zoos  
+- `entertainment.aquarium` — aquariums
+- `entertainment.planetarium` — planetariums
+- `entertainment.culture.arts_centre` — arts/science centers
+- `heritage` — historic sites
+- `tourism.attraction` — general attractions
+- `leisure.park.nature_reserve` — nature reserves
+- `leisure.park.garden` — botanical gardens
+- `national_park` — national parks
+- `natural.protected_area` — protected areas
+- `commercial.food_and_drink.farm` — farms
+
+NOTE: Categories like `tourism.museum`, `tourism.zoo`, `tourism.aquarium` do NOT exist in the Geoapify API — they return 400 errors.
+
+### API Endpoints
+- `POST /api/discovery/search` — Live Geoapify search: `{address, radiusMiles, venueTypes?, searchText?}` → geocodes address, discovers venues, deduplicates, ranks, returns results
+- `POST /api/discovery/nearby` — Discover from lat/lon: `{lat, lon, radiusMiles}` → raw discovery + dedup + rank
+- `POST /api/discovery/geocode` — Geocode only: `{address}` → `{lat, lon, formatted}`
+- `POST /api/discovery/run` — Full pipeline: `{school_id}` → discover + store in DB
 
 ## Critical DB Facts (for querying)
 

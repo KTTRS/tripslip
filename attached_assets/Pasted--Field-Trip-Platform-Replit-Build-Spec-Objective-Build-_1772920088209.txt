@@ -1,0 +1,945 @@
+# Field Trip Platform — Replit Build Spec
+
+## Objective
+
+Build an MVP that discovers field trip venues near a school, enriches venue data, extracts educational programs from venue websites, ranks results, and exposes a searchable API.
+
+The system should be optimized for:
+
+* nearby field trip discovery
+* structured venue/program records
+* image support where available
+* deterministic extraction first, LLM normalization second
+* auditable evidence for extracted program fields
+
+---
+
+## Product scope for MVP
+
+### Supported venue types
+
+* museum
+* aquarium
+* zoo
+* science_center
+* historic_site
+* botanical_garden
+* nature_area
+* farm
+
+### Supported extracted program fields
+
+* program_title
+* program_type
+* grade_min
+* grade_max
+* duration_minutes
+* price_per_student
+* subjects
+* indoor_outdoor
+* booking_url
+* evidence
+* confidence
+
+### Out of scope for v1
+
+* live booking engine
+* district procurement workflow
+* payments
+* transportation integrations
+* full curriculum standards mapping
+
+---
+
+## Recommended stack
+
+### Backend
+
+* Python
+* FastAPI
+* SQLAlchemy
+* Pydantic
+
+### Database
+
+* PostgreSQL
+* PostGIS extension for geospatial queries
+
+### Jobs / async
+
+* Celery or simple background job runner
+* Redis for queue/cache
+
+### Crawling / parsing
+
+* httpx
+* beautifulsoup4
+* lxml
+* trafilatura
+* pypdf
+
+### Fuzzy matching / dedupe
+
+* rapidfuzz
+
+### LLM layer
+
+* OpenAI API
+* use JSON schema constrained output where possible
+
+### Maps / POI discovery
+
+* Geoapify Places API as primary
+* optional future sources: NPS, Google Places, state park datasets
+
+---
+
+## System architecture
+
+```text
+School Input
+  -> Geocoder
+  -> Venue Discovery Engine
+  -> Venue Normalization + Deduplication
+  -> Venue Enrichment
+  -> Program Extraction Pipeline
+  -> Recommendation Engine
+  -> Search API
+  -> Frontend / Admin UI
+```
+
+---
+
+## Core user flow
+
+1. User enters school address or selects school.
+2. System geocodes the school.
+3. System queries nearby POIs within a radius.
+4. Results are normalized into supported venue types.
+5. Candidate venues are deduplicated and stored.
+6. Venue websites are crawled for education / field trip pages.
+7. Program data is extracted.
+8. Results are ranked by distance + grade fit + subject match + data quality.
+9. API returns venue cards with image, distance, and program summaries.
+
+---
+
+## Venue taxonomy
+
+Use these normalized internal values:
+
+```python
+VENUE_TYPES = [
+    "museum",
+    "aquarium",
+    "zoo",
+    "science_center",
+    "planetarium",
+    "historic_site",
+    "botanical_garden",
+    "nature_area",
+    "farm"
+]
+```
+
+### Suggested category mapping
+
+```python
+CATEGORY_MAP = {
+    "museum": ["tourism.museum"],
+    "aquarium": ["tourism.aquarium", "tourism.attraction"],
+    "zoo": ["tourism.zoo", "tourism.attraction"],
+    "science_center": ["tourism.museum", "tourism.attraction"],
+    "planetarium": ["tourism.attraction"],
+    "historic_site": ["historic", "tourism.attraction", "tourism.museum"],
+    "botanical_garden": ["leisure.park", "tourism.attraction"],
+    "nature_area": ["leisure.park", "leisure.nature_reserve"],
+    "farm": ["agriculture", "tourism.attraction"]
+}
+```
+
+Note: some categories are fuzzy. Use category bundles plus post-filtering, not single-tag assumptions.
+
+---
+
+## Database schema
+
+### schools
+
+```sql
+CREATE TABLE schools (
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    district TEXT,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    zip TEXT,
+    lat DOUBLE PRECISION,
+    lon DOUBLE PRECISION,
+    grades_served TEXT,
+    budget_per_student NUMERIC(10,2),
+    default_radius_miles INTEGER DEFAULT 25,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### venues
+
+```sql
+CREATE TABLE venues (
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    venue_type TEXT,
+    description TEXT,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    country TEXT,
+    lat DOUBLE PRECISION,
+    lon DOUBLE PRECISION,
+    website TEXT,
+    phone TEXT,
+    primary_image_url TEXT,
+    indoor_outdoor TEXT,
+    bus_parking BOOLEAN,
+    lunch_area BOOLEAN,
+    restrooms BOOLEAN,
+    wheelchair_accessible BOOLEAN,
+    capacity_estimate INTEGER,
+    price_range TEXT,
+    confidence_score NUMERIC(4,3),
+    data_source TEXT,
+    provider_place_id TEXT,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### venue_images
+
+```sql
+CREATE TABLE venue_images (
+    id UUID PRIMARY KEY,
+    venue_id UUID REFERENCES venues(id) ON DELETE CASCADE,
+    image_url TEXT NOT NULL,
+    source TEXT NOT NULL,
+    license TEXT,
+    priority INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### raw_places
+
+```sql
+CREATE TABLE raw_places (
+    id UUID PRIMARY KEY,
+    provider TEXT NOT NULL,
+    provider_place_id TEXT,
+    query_category TEXT,
+    name TEXT,
+    address TEXT,
+    lat DOUBLE PRECISION,
+    lon DOUBLE PRECISION,
+    categories JSONB,
+    raw_json JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### program_sources
+
+```sql
+CREATE TABLE program_sources (
+    id UUID PRIMARY KEY,
+    venue_id UUID REFERENCES venues(id) ON DELETE CASCADE,
+    source_url TEXT NOT NULL,
+    page_type TEXT,
+    fetched_at TIMESTAMP,
+    raw_text TEXT,
+    raw_structured_data JSONB,
+    parse_status TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### program_candidates
+
+```sql
+CREATE TABLE program_candidates (
+    id UUID PRIMARY KEY,
+    program_source_id UUID REFERENCES program_sources(id) ON DELETE CASCADE,
+    candidate_title TEXT,
+    candidate_price TEXT,
+    candidate_duration TEXT,
+    candidate_grade_text TEXT,
+    candidate_capacity_text TEXT,
+    extracted_by TEXT,
+    confidence NUMERIC(4,3),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### programs
+
+```sql
+CREATE TABLE programs (
+    id UUID PRIMARY KEY,
+    venue_id UUID REFERENCES venues(id) ON DELETE CASCADE,
+    canonical_title TEXT NOT NULL,
+    program_type TEXT,
+    grade_min INTEGER,
+    grade_max INTEGER,
+    duration_minutes INTEGER,
+    price_per_student NUMERIC(10,2),
+    group_min INTEGER,
+    group_max INTEGER,
+    subjects JSONB,
+    indoor_outdoor TEXT,
+    booking_url TEXT,
+    confidence NUMERIC(4,3),
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### program_evidence
+
+```sql
+CREATE TABLE program_evidence (
+    id UUID PRIMARY KEY,
+    program_id UUID REFERENCES programs(id) ON DELETE CASCADE,
+    field_name TEXT NOT NULL,
+    source_url TEXT NOT NULL,
+    evidence_text TEXT,
+    confidence NUMERIC(4,3),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+---
+
+## API design
+
+### 1. Search venues / trips
+
+`GET /field-trip-options`
+
+Query params:
+
+* `school_id`
+* `grade`
+* `radius_miles`
+* `subject`
+* `month`
+* `budget`
+
+Example response:
+
+```json
+{
+  "school": {
+    "id": "school_1",
+    "name": "Lincoln Elementary"
+  },
+  "results": [
+    {
+      "venue_id": "venue_1",
+      "venue_name": "City Science Center",
+      "venue_type": "science_center",
+      "distance_miles": 8.2,
+      "primary_image_url": "https://...",
+      "programs": [
+        {
+          "program_id": "program_1",
+          "title": "Forces and Motion Lab",
+          "grade_min": 3,
+          "grade_max": 5,
+          "duration_minutes": 90,
+          "price_per_student": 12,
+          "subjects": ["science"],
+          "confidence": 0.91
+        }
+      ],
+      "score": 92
+    }
+  ]
+}
+```
+
+### 2. Discover venues near a school
+
+`POST /discovery/run`
+
+Request body:
+
+```json
+{
+  "school_id": "school_1",
+  "radius_miles": 25
+}
+```
+
+### 3. Crawl a venue website
+
+`POST /venues/{venue_id}/crawl`
+
+### 4. Extract programs for a venue
+
+`POST /venues/{venue_id}/extract-programs`
+
+### 5. Venue details
+
+`GET /venues/{venue_id}`
+
+### 6. Program details
+
+`GET /programs/{program_id}`
+
+---
+
+## Geoapify discovery flow
+
+### Step 1: geocode school
+
+Use school lat/lon already stored if available.
+
+### Step 2: query nearby POIs by category bundles
+
+Do not do one giant query for all categories. Query by bundle and merge.
+
+Suggested bundles:
+
+* museums
+* zoos/aquariums
+* nature/parks
+* historic sites
+* farms
+
+### Example request shape
+
+```python
+import httpx
+
+async def geoapify_places(lat: float, lon: float, radius_meters: int, categories: list[str], api_key: str):
+    url = "https://api.geoapify.com/v2/places"
+    params = {
+        "categories": ",".join(categories),
+        "filter": f"circle:{lon},{lat},{radius_meters}",
+        "limit": 50,
+        "apiKey": api_key,
+    }
+    async with httpx.AsyncClient(timeout=30) as client:
+        r = await client.get(url, params=params)
+        r.raise_for_status()
+        return r.json()
+```
+
+### Normalization rules
+
+* map API categories to internal `venue_type`
+* extract website / address / coordinates when available
+* store raw payload in `raw_places`
+* create or update canonical `venues`
+
+---
+
+## Deduplication logic
+
+Use a merge rule based on:
+
+* normalized name similarity
+* distance threshold
+* same city/state
+
+### Suggested logic
+
+* lowercase
+* strip punctuation
+* remove stopwords like `the`, `museum of`, `center for`
+* use RapidFuzz similarity
+* if name similarity > 90 and distance < 200 meters, merge
+
+### Pseudocode
+
+```python
+from rapidfuzz import fuzz
+
+
+def is_same_venue(a, b):
+    name_score = fuzz.token_sort_ratio(a["normalized_name"], b["normalized_name"])
+    close_enough = a["distance_meters"] < 200
+    return name_score > 90 and close_enough
+```
+
+---
+
+## Image strategy
+
+Images are not guaranteed from POI APIs. Use a multi-source approach.
+
+Priority:
+
+1. image from provider response if available
+2. Wikimedia via wikidata/wikipedia
+3. venue website hero image
+4. manual/admin upload
+5. category fallback image
+
+Store images in `venue_images` and set `primary_image_url` on `venues`.
+
+---
+
+## Crawler design
+
+### Crawl target URLs
+
+Seed from:
+
+* homepage
+* sitemap.xml if available
+* navigation links
+* likely URLs:
+
+  * `/education`
+  * `/field-trips`
+  * `/school-programs`
+  * `/groups`
+  * `/visit`
+  * `/learn`
+  * `/events`
+
+### Crawl rules
+
+* respect robots.txt
+* rate limit per domain
+* store HTML and text
+* capture PDFs linked from education pages
+* avoid full-site crawl for MVP
+
+### Page priority signals
+
+Boost pages containing:
+
+* field trip
+* school programs
+* education
+* group visits
+* student groups
+* workshop
+* teacher resources
+* homeschool
+* scouts
+
+---
+
+## Page classification taxonomy
+
+Use these types:
+
+```python
+PAGE_TYPES = [
+    "education_landing",
+    "program_detail",
+    "event_detail",
+    "group_visit",
+    "general_visit",
+    "venue_about",
+    "calendar",
+    "booking",
+    "pdf_brochure",
+    "irrelevant",
+]
+```
+
+This determines extraction strength.
+
+Priority order for trust:
+
+1. `program_detail`
+2. `pdf_brochure`
+3. `booking`
+4. `education_landing`
+5. `general_visit`
+
+---
+
+## Deterministic extraction layer
+
+Before any LLM call, extract these with rules:
+
+### Extractable fields
+
+* title
+* headings
+* booking links
+* price patterns
+* duration patterns
+* grade ranges
+* capacity expressions
+* structured data
+
+### Regex examples
+
+```python
+PRICE_PATTERNS = [
+    r"\$(\d+(?:\.\d{1,2})?)\s*(?:per student|/student|each)?",
+]
+
+DURATION_PATTERNS = [
+    r"(\d+)\s*(minutes|minute|hours|hour)",
+    r"half day",
+    r"full day",
+]
+
+GRADE_PATTERNS = [
+    r"grades?\s*(K|\d+)\s*[-–to]+\s*(\d+)",
+    r"K[-–](\d+)",
+    r"middle school",
+    r"high school",
+    r"all ages",
+]
+```
+
+### Structured data extraction
+
+Parse in this order:
+
+* JSON-LD
+* Microdata
+* RDFa
+* visible HTML
+
+Capture fields from Schema.org entities when present.
+
+---
+
+## LLM extraction contract
+
+### Input payload to model
+
+Never send raw HTML. Send structured cleaned content.
+
+```json
+{
+  "venue": {
+    "name": "City Science Center",
+    "website": "https://example.org"
+  },
+  "source": {
+    "url": "https://example.org/education/field-trips",
+    "page_type": "education_landing"
+  },
+  "content": {
+    "title": "School Field Trips",
+    "headings": [
+      "Solar System Workshop",
+      "Forces and Motion Lab"
+    ],
+    "text_blocks": [
+      "Solar System Workshop: Students explore planets and gravity. Grades 3-6. 90 minute session. $12 per student.",
+      "Forces and Motion Lab: Hands-on physics experiments for grades 4-8. Duration: 2 hours."
+    ]
+  },
+  "deterministic_candidates": {
+    "prices": ["$12 per student"],
+    "durations": ["90 minute session", "2 hours"],
+    "grade_ranges": ["Grades 3-6", "grades 4-8"]
+  }
+}
+```
+
+### Output schema
+
+```json
+{
+  "programs": [
+    {
+      "program_title": "",
+      "program_type": "",
+      "grade_min": null,
+      "grade_max": null,
+      "duration_minutes": null,
+      "price_per_student": null,
+      "group_min": null,
+      "group_max": null,
+      "subjects": [],
+      "indoor_outdoor": null,
+      "booking_url": null,
+      "confidence": 0.0,
+      "evidence": {
+        "title": "",
+        "grade_range": "",
+        "duration": "",
+        "price": ""
+      }
+    }
+  ]
+}
+```
+
+### Rules for the model
+
+* extract only information directly supported by the text
+* never guess missing values
+* return null when absent
+* include evidence snippets
+* return valid JSON only
+
+### Program types enum
+
+```python
+PROGRAM_TYPES = [
+    "guided_tour",
+    "hands_on_workshop",
+    "self_guided",
+    "performance",
+    "lab_experience",
+    "outdoor_exploration",
+    "seasonal_event",
+]
+```
+
+### Subject taxonomy
+
+```python
+SUBJECTS = [
+    "science",
+    "history",
+    "art",
+    "environment",
+    "astronomy",
+    "engineering",
+    "biology",
+    "earth_science",
+    "agriculture",
+    "civics",
+    "local_history",
+    "career_exposure",
+]
+```
+
+### Grade normalization rules
+
+* `K` becomes `0`
+* `K-2` becomes `0..2`
+* `middle school` becomes `6..8`
+* `high school` becomes `9..12`
+* `all ages` becomes null/null
+
+### Duration normalization rules
+
+* `90 minutes` -> 90
+* `2 hours` -> 120
+* `half day` -> 180
+* `full day` -> 360
+* range like `2-3 hours` -> midpoint
+
+---
+
+## Validation layer
+
+Never trust raw model output. Validate after extraction.
+
+### Validation rules
+
+* `grade_min <= grade_max`
+* `grade_min` and `grade_max` between 0 and 12
+* `duration_minutes` between 5 and 600
+* `price_per_student >= 0`
+* `program_type` must be in enum
+* `subjects` must come from controlled list
+* discard programs with `confidence < 0.4`
+
+### Queue for review when
+
+* confidence < 0.6
+* price detected but ambiguous
+* grade range missing
+* unsupported venue category
+* multiple conflicting extractions for same title
+
+---
+
+## Canonical merge logic for programs
+
+The same program may appear on multiple pages.
+
+Merge using:
+
+* same `venue_id`
+* normalized title similarity
+* overlapping grade ranges
+* similar durations
+
+### Source precedence
+
+1. `program_detail`
+2. `pdf_brochure`
+3. `booking`
+4. `education_landing`
+5. `general_visit`
+
+---
+
+## Ranking engine
+
+The API should rank field trip options.
+
+### Suggested score
+
+```text
+score =
+  0.35 * distance_score
++ 0.20 * grade_fit_score
++ 0.15 * subject_match_score
++ 0.15 * logistics_score
++ 0.15 * trust_score
+```
+
+### Inputs
+
+* distance from school
+* grade overlap
+* subject overlap
+* image quality
+* venue/program confidence
+* website presence
+* booking URL availability
+
+### Distance scoring example
+
+* 0 to 10 miles -> high
+* 10 to 25 -> medium
+* 25+ -> low
+
+---
+
+## Example FastAPI project structure
+
+```text
+app/
+  main.py
+  config.py
+  db.py
+  models/
+    school.py
+    venue.py
+    program.py
+  schemas/
+    school.py
+    venue.py
+    program.py
+  api/
+    schools.py
+    discovery.py
+    venues.py
+    programs.py
+    search.py
+  services/
+    geoapify.py
+    normalization.py
+    dedupe.py
+    crawler.py
+    extractor.py
+    llm_extractor.py
+    ranking.py
+  utils/
+    text.py
+    regexes.py
+    geo.py
+  workers/
+    jobs.py
+  prompts/
+    program_extraction.txt
+```
+
+---
+
+## Build order
+
+### Phase 1
+
+* set up FastAPI + Postgres
+* create schema
+* load a few schools
+* build Geoapify discovery endpoint
+* normalize venues
+* basic dedupe
+
+### Phase 2
+
+* build crawler
+* capture relevant pages and PDFs
+* deterministic extraction of price / grades / duration
+
+### Phase 3
+
+* add LLM normalization
+* validate JSON output
+* store canonical programs + evidence
+
+### Phase 4
+
+* build search and ranking endpoint
+* return venue cards with programs and scores
+
+### Phase 5
+
+* add admin QA queue
+* add image enrichment
+* add scheduled refresh jobs
+
+---
+
+## Replit implementation prompt
+
+Paste this into Replit AI / agent mode:
+
+```text
+Build a production-lean MVP backend for a field trip discovery platform using Python, FastAPI, PostgreSQL, and SQLAlchemy.
+
+Requirements:
+1. Create database models and migrations for schools, venues, venue_images, raw_places, program_sources, program_candidates, programs, and program_evidence.
+2. Add a Geoapify integration that discovers nearby places for a school within a radius by category bundle.
+3. Normalize raw POI results into canonical venue records.
+4. Add venue deduplication using fuzzy name matching and distance thresholds.
+5. Build a crawler that visits only likely education / field trip pages on a venue site, respects robots.txt, and captures HTML + PDFs.
+6. Implement deterministic extraction for price, duration, grade ranges, booking links, and headings.
+7. Add an LLM extraction layer that accepts cleaned structured page input and returns strict JSON matching a defined schema for educational programs.
+8. Validate extracted program JSON and store canonical programs plus field-level evidence.
+9. Implement a ranking engine for field trip results using distance, grade fit, subject match, logistics, and trust signals.
+10. Expose FastAPI endpoints for discovery, crawl, extraction, venue detail, program detail, and field-trip search.
+11. Include environment-variable based config for database URL, Geoapify API key, Redis URL, and OpenAI API key.
+12. Write clean modular code with comments, error handling, and Pydantic response models.
+13. Add seed scripts and a README with setup instructions.
+
+Use this normalized taxonomy:
+Venue types: museum, aquarium, zoo, science_center, planetarium, historic_site, botanical_garden, nature_area, farm
+Program types: guided_tour, hands_on_workshop, self_guided, performance, lab_experience, outdoor_exploration, seasonal_event
+Subjects: science, history, art, environment, astronomy, engineering, biology, earth_science, agriculture, civics, local_history, career_exposure
+
+LLM extraction rules:
+- extract only what is directly supported by the page text
+- return null for missing fields
+- include evidence snippets for title, grades, duration, and price
+- output valid JSON only
+
+Start with Phase 1 and Phase 2 implementation, then scaffold the remaining services and endpoints.
+```
+
+---
+
+## Hard truth on execution
+
+Do not try to make this a full marketplace in v1. The correct MVP is:
+
+* good venue discovery
+* solid program extraction
+* auditable structured data
+* fast ranked search
+
+Everything else is distraction until the data layer works.

@@ -1,7 +1,7 @@
 import http from 'node:http';
 import httpProxy from 'http-proxy';
 import { createClient } from '@supabase/supabase-js';
-import { runDiscoveryForSchool, geocodeAddress, discoverNearbyVenues, deduplicateVenues, normalizeToVenueRecord, rankVenues, storeDiscoveredVenues } from './services/venue-discovery.mjs';
+import { runDiscoveryForSchool, geocodeAddress, discoverNearbyVenues, deduplicateVenues, normalizeToVenueRecord, rankVenues, storeDiscoveredVenues, searchVenuesLive } from './services/venue-discovery.mjs';
 
 const proxy = httpProxy.createProxyServer({ ws: true });
 
@@ -453,6 +453,32 @@ async function handleDiscoveryNearby(req, res) {
   }
 }
 
+async function handleDiscoverySearch(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { address, lat, lon, radiusMiles, venueTypes, searchText } = body;
+
+    if (!address && !lat) {
+      return sendJSON(res, 400, { error: 'address or lat/lon is required' });
+    }
+
+    const apiKey = process.env.GEOAPIFY_API_KEY;
+    if (!apiKey) {
+      return sendJSON(res, 500, { error: 'GEOAPIFY_API_KEY not configured' });
+    }
+
+    const result = await searchVenuesLive(
+      { address, lat, lon, radiusMiles, venueTypes, searchText },
+      apiKey
+    );
+
+    sendJSON(res, 200, result);
+  } catch (err) {
+    console.error('Discovery search error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 async function handleDiscoveryGeocode(req, res) {
   try {
     const body = await parseBody(req);
@@ -484,6 +510,7 @@ const apiHandlers = {
   'POST /api/discovery/run': handleDiscoveryRun,
   'POST /api/discovery/nearby': handleDiscoveryNearby,
   'POST /api/discovery/geocode': handleDiscoveryGeocode,
+  'POST /api/discovery/search': handleDiscoverySearch,
 };
 
 const server = http.createServer(async (req, res) => {
@@ -538,6 +565,7 @@ server.listen(5000, '0.0.0.0', () => {
   console.log('  POST /api/discovery/run');
   console.log('  POST /api/discovery/nearby');
   console.log('  POST /api/discovery/geocode');
+  console.log('  POST /api/discovery/search');
   console.log('App Routes:');
   console.log('  /          -> landing  (port 3000)');
   console.log('  /venue/*   -> venue    (port 3001)');

@@ -103,97 +103,137 @@ export default function LoginPage({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-2 border-black shadow-offset">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">
-            Sign In
-          </CardTitle>
-          <p className="text-sm text-gray-600 text-center mt-2">
-            Welcome back! Please sign in to continue
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50/30 via-white to-orange-50/20 flex items-center justify-center p-4 relative overflow-hidden">
+      <img
+        src="/images/icon-bus.png"
+        alt=""
+        className="absolute top-12 left-12 w-16 h-16 opacity-60 animate-float pointer-events-none hidden md:block"
+      />
+      <img
+        src="/images/icon-backpack.png"
+        alt=""
+        className="absolute bottom-16 right-16 w-14 h-14 opacity-50 animate-float pointer-events-none hidden md:block"
+        style={{ animationDelay: '1.5s' }}
+      />
+      <img
+        src="/images/icon-compass.png"
+        alt=""
+        className="absolute top-1/3 right-12 w-12 h-12 opacity-40 animate-float pointer-events-none hidden lg:block"
+        style={{ animationDelay: '3s' }}
+      />
+
+      <div className="flex items-center gap-8 w-full max-w-4xl">
+        <div className="hidden lg:flex flex-col items-center flex-shrink-0">
+          <img
+            src="/images/char-yellow-star.png"
+            alt="TripSlip mascot"
+            className="w-48 h-48 object-contain animate-bounce-slow drop-shadow-lg"
+          />
+          <p className="mt-4 text-lg font-bold text-gray-700 text-center">
+            Welcome back!
           </p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 bg-red-50 border-2 border-red-500 rounded text-red-700 text-sm">
-                {error}
+          <p className="text-sm text-gray-500 text-center max-w-[200px]">
+            Sign in to manage your field trips
+          </p>
+        </div>
+
+        <Card className="w-full max-w-md border-2 border-black shadow-[4px_4px_0px_#0A0A0A] rounded-2xl bg-white/90 backdrop-blur-sm">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-yellow-400 rounded-lg border-2 border-black shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center">
+                <span className="text-black font-black text-xl">T</span>
               </div>
-            )}
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                className={`w-full px-3 py-2 border-2 border-black rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  fieldErrors.email ? 'border-red-500' : ''
-                }`}
-                placeholder="your@email.com"
-                autoComplete="email"
-              />
-              {fieldErrors.email && (
-                <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+              <span className="text-2xl font-black tracking-tight text-gray-900">TripSlip</span>
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">
+              Sign In
+            </CardTitle>
+            <p className="text-sm text-gray-600 text-center mt-2">
+              Welcome back! Please sign in to continue
+            </p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="p-3 bg-red-50 border-2 border-red-500 rounded-xl text-red-700 text-sm">
+                  {error}
+                </div>
               )}
-            </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-1">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                className={`w-full px-3 py-2 border-2 border-black rounded focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  fieldErrors.password ? 'border-red-500' : ''
-                }`}
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-              {fieldErrors.password && (
-                <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
-              )}
-            </div>
+              <div>
+                <label htmlFor="email" className="block text-sm font-semibold mb-1.5">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
+                  className={`w-full px-4 py-2.5 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-black ${
+                    fieldErrors.email ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                  placeholder="your@email.com"
+                  autoComplete="email"
+                />
+                {fieldErrors.email && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
+                )}
+              </div>
 
-            <div className="text-right">
-              <button
-                type="button"
-                onClick={() => navigate(passwordResetPath)}
-                className="text-sm text-blue-600 hover:underline"
+              <div>
+                <label htmlFor="password" className="block text-sm font-semibold mb-1.5">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  required
+                  className={`w-full px-4 py-2.5 border-2 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-black ${
+                    fieldErrors.password ? 'border-red-500' : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+                {fieldErrors.password && (
+                  <p className="mt-1 text-sm text-red-600">{fieldErrors.password}</p>
+                )}
+              </div>
+
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => navigate(passwordResetPath)}
+                  className="text-sm text-yellow-700 hover:text-yellow-900 hover:underline font-medium transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full shadow-[3px_3px_0px_#0A0A0A] rounded-xl text-base font-bold hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#0A0A0A] transition-all duration-150"
               >
-                Forgot password?
-              </button>
-            </div>
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Button>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full shadow-offset"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-
-            <div className="text-center text-sm">
-              <span className="text-gray-600">Don't have an account? </span>
-              <button
-                type="button"
-                onClick={() => navigate(signupPath)}
-                className="text-blue-600 hover:underline font-medium"
-              >
-                Sign up
-              </button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="text-center text-sm">
+                <span className="text-gray-600">Don't have an account? </span>
+                <button
+                  type="button"
+                  onClick={() => navigate(signupPath)}
+                  className="text-yellow-700 hover:text-yellow-900 hover:underline font-semibold transition-colors"
+                >
+                  Sign up
+                </button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

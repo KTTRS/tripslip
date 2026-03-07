@@ -10,12 +10,12 @@ export function MetricCard({
   accent?: string;
 }) {
   return (
-    <div className={`rounded-2xl p-5 relative overflow-hidden ${
+    <div className={`rounded-xl p-5 relative overflow-hidden border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all ${
       accent === 'bg-bus'
-        ? 'bg-bus text-black'
+        ? 'bg-[#F5C518]/10 text-black'
         : accent === 'bg-black'
           ? 'bg-black text-white'
-          : 'bg-white border border-black/8'
+          : 'bg-white'
     }`}>
       {accent && accent !== 'bg-bus' && accent !== 'bg-black' && (
         <div className={`absolute top-0 left-0 w-1.5 h-full ${accent}`} />
