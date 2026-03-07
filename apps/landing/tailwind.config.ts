@@ -33,6 +33,35 @@ export default {
       boxShadow: {
         'offset': '4px 4px 0px 0px rgba(10, 10, 10, 1)',
         'offset-lg': '8px 8px 0px 0px rgba(10, 10, 10, 1)'
+      },
+      borderWidth: {
+        '3': '3px'
+      },
+      animation: {
+        'float': 'float 6s ease-in-out infinite',
+        'float-delayed': 'float 6s ease-in-out 3s infinite',
+        'bounce-slow': 'bounce-slow 3s ease-in-out infinite',
+        'fade-in': 'fadeIn 1s ease-out',
+        'slide-up': 'slideUp 0.6s ease-out'
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '33%': { transform: 'translateY(-10px) rotate(2deg)' },
+          '66%': { transform: 'translateY(-5px) rotate(-1deg)' }
+        },
+        'bounce-slow': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-8px)' }
+        },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(30px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' }
+        }
       }
     }
   },

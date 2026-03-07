@@ -151,13 +151,23 @@ The `signIn` flow wraps role-loading in try/catch and falls back to a default `t
 
 ## Design System
 
-TripSlip uses a neo-brutalist design language:
+TripSlip uses a neo-brutalist design language with premium 3D claymorphic visual elements:
 - Primary yellow: `#F5C518`
 - Primary black: `#0A0A0A`
 - Card borders: `border-2 border-[#0A0A0A]`
-- Drop shadows: `shadow-[4px_4px_0px_#0A0A0A]`
+- Drop shadows: `shadow-[4px_4px_0px_#0A0A0A]` (offset) / `shadow-[8px_8px_0px_#0A0A0A]` (offset-lg)
 - Hover effect: `hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px]`
 - Accent background: `bg-[#FFFDE7]`
+- Fonts: Fraunces (display), Plus Jakarta Sans (body), Space Mono (mono)
+- Animations: float, bounce-slow, fade-in, slide-up (defined in tailwind.config.ts)
+
+### Landing Page Visual Assets (apps/landing/public/images/)
+- **Stock photos**: hero-fieldtrip, students-museum, science-lab, zoo-visit, teacher-leading, art-workshop (AI-generated field trip scenes)
+- **3D Claymorphic icons**: icon-permission, icon-payment, icon-magic, icon-venue, icon-tracking, icon-language, icon-bus, icon-backpack (transparent PNGs)
+- **Brand characters**: brand-characters.png (mascot crew)
+
+### Landing Page Sections (HomePage.tsx)
+Header → Hero (photo + live dashboard overlay) → PhotoShowcase (5-photo gallery) → HowItWorks (4 steps) → FeatureGrid (6 features with claymorphic icons) → BrandCharacters (mascot crew) → Testimonials → CTASection → Footer (dark)
 
 ## Navigation Structure
 
