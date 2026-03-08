@@ -94,4 +94,4 @@ SUPABASE_DB_PASSWORD = "GXe9Z2ehf6kPiHi"
 [deployment]
 deploymentTarget = "autoscale"
 run = ["bash", "-c", "NODE_ENV=production node proxy-server.mjs"]
-build = ["bash", "-c", "for app in landing venue teacher parent school; do cd apps/$app && npx vite build && cd /home/runner/workspace; done"]
+build = ["bash", "build.sh"]
