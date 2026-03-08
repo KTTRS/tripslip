@@ -5,7 +5,7 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <img src="/images/tripslip-logo-dark.png" alt="TripSlip" className="h-10 w-auto object-contain" />
+              <img src="/images/tripslip-logo-dark.png" alt="TripSlip" className="h-24 w-auto object-contain -my-4" />
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
               Making field trips simple, paperless, and delightful for teachers, parents, and venues.
