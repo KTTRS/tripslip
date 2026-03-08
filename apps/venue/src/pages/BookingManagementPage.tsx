@@ -4,7 +4,6 @@ import { Layout } from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tripslip/ui/components/card';
 import { Button } from '@tripslip/ui/components/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tripslip/ui/components/tabs';
-import { ClayIcon } from '@tripslip/ui/components/clay-icon';
 import { useVenueBookings } from '../hooks/useVenueBookings';
 import { BookingList } from '../components/BookingList';
 import { BookingCalendar } from '../components/BookingCalendar';
@@ -54,9 +53,7 @@ export default function BookingManagementPage() {
       <div className="space-y-8">
         <div className="relative bg-gradient-to-r from-[#F5C518]/20 via-white to-[#4ECDC4]/20 border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 overflow-hidden">
           <div className="flex items-center gap-4">
-            <ClayIcon size="lg" color="teal">
-              <img src="/images/icon-calendar.png" alt="" />
-            </ClayIcon>
+            <img src="/images/icon-calendar.png" alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
             <div>
               <h2 className="text-3xl font-bold text-[#0A0A0A]">Booking Management</h2>
               <p className="text-gray-600 mt-1">
@@ -76,9 +73,7 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <ClayIcon size="md" color="yellow">
-                  <img src="/images/icon-compass.png" alt="" />
-                </ClayIcon>
+                <img src="/images/icon-compass.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.total}</p>
                   <p className="text-sm text-gray-600">Total Bookings</p>
@@ -90,9 +85,7 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <ClayIcon size="md" color="orange">
-                  <img src="/images/icon-megaphone.png" alt="" />
-                </ClayIcon>
+                <img src="/images/icon-megaphone.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.pending}</p>
                   <p className="text-sm text-gray-600">Pending</p>
@@ -104,9 +97,7 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <ClayIcon size="md" color="green">
-                  <img src="/images/icon-shield.png" alt="" />
-                </ClayIcon>
+                <img src="/images/icon-shield.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.confirmed}</p>
                   <p className="text-sm text-gray-600">Confirmed</p>
@@ -118,9 +109,7 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <ClayIcon size="md" color="sky">
-                  <img src="/images/icon-trophy.png" alt="" />
-                </ClayIcon>
+                <img src="/images/icon-trophy.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.completed}</p>
                   <p className="text-sm text-gray-600">Completed</p>
@@ -132,9 +121,7 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <ClayIcon size="md" color="red">
-                  <img src="/images/icon-tracking.png" alt="" />
-                </ClayIcon>
+                <img src="/images/icon-tracking.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.cancelled}</p>
                   <p className="text-sm text-gray-600">Cancelled</p>
@@ -216,9 +203,7 @@ export default function BookingManagementPage() {
                 onClick={() => setFilters({ status: 'pending' })}
               >
                 <div className="text-center flex flex-col items-center gap-2">
-                  <ClayIcon size="sm" color="orange">
-                    <img src="/images/icon-megaphone.png" alt="" />
-                  </ClayIcon>
+                  <img src="/images/icon-megaphone.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                   <p>Review Pending</p>
                 </div>
               </Button>
@@ -229,9 +214,7 @@ export default function BookingManagementPage() {
                 onClick={() => navigate('/experiences')}
               >
                 <div className="text-center flex flex-col items-center gap-2">
-                  <ClayIcon size="sm" color="teal">
-                    <img src="/images/icon-venue.png" alt="" />
-                  </ClayIcon>
+                  <img src="/images/icon-venue.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                   <p>Manage Experiences</p>
                 </div>
               </Button>
@@ -242,9 +225,7 @@ export default function BookingManagementPage() {
                 onClick={() => navigate('/financials')}
               >
                 <div className="text-center flex flex-col items-center gap-2">
-                  <ClayIcon size="sm" color="green">
-                    <img src="/images/icon-payment.png" alt="" />
-                  </ClayIcon>
+                  <img src="/images/icon-payment.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                   <p>View Financials</p>
                 </div>
               </Button>

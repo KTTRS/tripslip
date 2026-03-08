@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Button, ClayIcon } from '@tripslip/ui'
+import { Button } from '@tripslip/ui'
 import { getAppUrl } from '../utils/appUrls'
 
 export default function Header() {
@@ -56,21 +56,15 @@ export default function Header() {
               <div className="absolute right-0 mt-2 w-52 bg-white border-2 border-black rounded-xl shadow-offset z-50 overflow-hidden">
                 <div className="p-2">
                   <a href={getAppUrl('teacher')} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium hover:bg-primary/10 rounded-lg transition-colors">
-                    <ClayIcon size="sm" color="sky">
-                      <img src="/images/icon-permission.png" alt="" />
-                    </ClayIcon>
+                    <img src="/images/icon-permission.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                     Teacher Login
                   </a>
                   <a href={getAppUrl('school')} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium hover:bg-primary/10 rounded-lg transition-colors">
-                    <ClayIcon size="sm" color="yellow">
-                      <img src="/images/icon-tracking.png" alt="" />
-                    </ClayIcon>
+                    <img src="/images/icon-tracking.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                     School Admin
                   </a>
                   <a href={getAppUrl('venue')} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium hover:bg-primary/10 rounded-lg transition-colors">
-                    <ClayIcon size="sm" color="green">
-                      <img src="/images/icon-venue.png" alt="" />
-                    </ClayIcon>
+                    <img src="/images/icon-venue.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                     Venue Admin
                   </a>
                 </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Card, CardContent, Button, ClayIcon } from '@tripslip/ui';
+import { Card, CardContent, Button } from '@tripslip/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
 import { supabase } from '../lib/supabase';
@@ -121,9 +121,7 @@ export default function DashboardPage() {
                     className="w-full h-full object-contain animate-float drop-shadow-lg"
                   />
                 </div>
-                <ClayIcon size="md" color="yellow" className="absolute -bottom-2 -right-2 animate-wiggle">
-                  <img src="/images/icon-pencil.png" alt="" />
-                </ClayIcon>
+                <img src="/images/icon-pencil.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] absolute -bottom-2 -right-2 animate-wiggle" />
               </div>
               <div>
                 <h2 className="font-display text-3xl md:text-4xl font-bold text-[#0A0A0A] tracking-tight">
@@ -140,15 +138,9 @@ export default function DashboardPage() {
               Create New Trip
             </Button>
           </div>
-          <ClayIcon size="xl" color="sky" className="absolute -top-1 right-6 opacity-20 animate-float hidden md:block">
-            <img src="/images/icon-bus.png" alt="" />
-          </ClayIcon>
-          <ClayIcon size="lg" color="orange" className="absolute bottom-3 right-24 opacity-15 animate-bounce-slow hidden md:block">
-            <img src="/images/icon-backpack.png" alt="" />
-          </ClayIcon>
-          <ClayIcon size="lg" color="yellow" className="absolute top-4 right-48 opacity-10 animate-float-delayed hidden lg:block">
-            <img src="/images/char-yellow-star.png" alt="" />
-          </ClayIcon>
+          <img src="/images/icon-bus.png" alt="" className="w-24 h-24 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] absolute -top-1 right-6 opacity-20 animate-float hidden md:block" />
+          <img src="/images/icon-backpack.png" alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] absolute bottom-3 right-24 opacity-15 animate-bounce-slow hidden md:block" />
+          <img src="/images/char-yellow-star.png" alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] absolute top-4 right-48 opacity-10 animate-float-delayed hidden lg:block" />
         </div>
 
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
@@ -160,9 +152,7 @@ export default function DashboardPage() {
             >
               <CardContent className="pt-5 pb-4 px-4">
                 <div className="flex flex-col items-center text-center gap-3 sm:flex-row sm:text-left">
-                  <ClayIcon size="lg" color={card.color} className="group-hover:animate-wiggle">
-                    <img src={card.icon} alt={card.label} />
-                  </ClayIcon>
+                  <img src={card.icon} alt={card.label} className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] group-hover:animate-wiggle" />
                   <div>
                     <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">{card.label}</p>
                     <p className="font-display text-3xl font-bold text-[#0A0A0A]">{card.value}</p>
@@ -176,9 +166,7 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <div className="flex items-center gap-3 mb-5">
-              <ClayIcon size="sm" color="yellow">
-                <img src="/images/icon-magic.png" alt="" />
-              </ClayIcon>
+              <img src="/images/icon-magic.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
               <h3 className="font-display text-xl font-bold text-[#0A0A0A]">Quick Actions</h3>
             </div>
             <div className="grid gap-3">
@@ -188,9 +176,7 @@ export default function DashboardPage() {
                   onClick={() => navigate(action.nav)}
                   className="flex items-center gap-4 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all text-left group"
                 >
-                  <ClayIcon size="lg" color={action.color} className="group-hover:animate-wiggle">
-                    <img src={action.icon} alt={action.title} />
-                  </ClayIcon>
+                  <img src={action.icon} alt={action.title} className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] group-hover:animate-wiggle" />
                   <div className="flex-1">
                     <div className="font-bold text-[#0A0A0A] text-base">{action.title}</div>
                     <div className="text-sm text-gray-500">{action.desc}</div>
@@ -204,9 +190,7 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <ClayIcon size="sm" color="green">
-                  <img src="/images/icon-calendar.png" alt="" />
-                </ClayIcon>
+                <img src="/images/icon-calendar.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                 <h3 className="font-display text-xl font-bold text-[#0A0A0A]">Upcoming Trips</h3>
               </div>
               {recentTrips.length > 0 && (
@@ -221,9 +205,7 @@ export default function DashboardPage() {
             {recentTrips.length === 0 ? (
               <Card className="border-2 border-dashed border-gray-300 bg-gray-50/50">
                 <CardContent className="py-12 text-center">
-                  <ClayIcon size="lg" color="white" className="mx-auto mb-4 opacity-40">
-                    <img src="/images/icon-calendar.png" alt="" />
-                  </ClayIcon>
+                  <img src="/images/icon-calendar.png" alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] mx-auto mb-4 opacity-40" />
                   <p className="text-gray-500 font-bold text-base">No upcoming trips</p>
                   <p className="text-sm text-gray-400 mt-1">Create a trip to get started</p>
                 </CardContent>

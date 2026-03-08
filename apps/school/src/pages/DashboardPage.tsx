@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@tripslip/ui';
-import { ClayIcon } from '@tripslip/ui/components/clay-icon';
 import { useSchoolAuth } from '../contexts/SchoolAuthContext';
 import { supabase } from '../lib/supabase';
 import { Layout } from '../components/Layout';
@@ -373,9 +372,7 @@ export default function DashboardPage() {
         <div className="text-center py-12">
           <div className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl p-8 max-w-md mx-auto bg-white">
             <div className="flex justify-center mb-4">
-              <ClayIcon size="xl" color="orange">
-                <img src="/images/icon-megaphone.png" alt="" />
-              </ClayIcon>
+              <img src="/images/icon-megaphone.png" alt="" className="w-24 h-24 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
             </div>
             <h3 className="mt-4 text-lg font-bold text-[#0A0A0A]">
               No School Association
@@ -393,9 +390,7 @@ export default function DashboardPage() {
     <Layout>
       <div className="relative mb-8 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50/50 border-2 border-black shadow-[4px_4px_0px_#0A0A0A] p-6 overflow-hidden">
         <div className="flex items-center gap-4">
-          <ClayIcon size="lg" color="sky">
-            <img src="/images/icon-graduation.png" alt="" />
-          </ClayIcon>
+          <img src="/images/icon-graduation.png" alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
           <div className="flex-1">
             <h2 className="text-3xl font-bold">School Dashboard</h2>
             <p className="text-gray-600 mt-1">Monitor trips, teachers, and budgets across your school</p>
@@ -425,9 +420,7 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-4 mb-8">
           <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-blue-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
-              <ClayIcon size="md" color="sky">
-                <img src="/images/icon-compass.png" alt="" />
-              </ClayIcon>
+              <img src="/images/icon-compass.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
               <CardTitle className="text-sm text-gray-600">Total Trips</CardTitle>
             </CardHeader>
             <CardContent>
@@ -440,9 +433,7 @@ export default function DashboardPage() {
 
           <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-green-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
-              <ClayIcon size="md" color="green">
-                <img src="/images/icon-team.png" alt="" />
-              </ClayIcon>
+              <img src="/images/icon-team.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
               <CardTitle className="text-sm text-gray-600">Total Students</CardTitle>
             </CardHeader>
             <CardContent>
@@ -453,9 +444,7 @@ export default function DashboardPage() {
 
           <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-yellow-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
-              <ClayIcon size="md" color="yellow">
-                <img src="/images/icon-payment.png" alt="" />
-              </ClayIcon>
+              <img src="/images/icon-payment.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
               <CardTitle className="text-sm text-gray-600">Total Cost</CardTitle>
             </CardHeader>
             <CardContent>
@@ -466,9 +455,7 @@ export default function DashboardPage() {
 
           <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-purple-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
-              <ClayIcon size="md" color="purple">
-                <img src="/images/icon-trophy.png" alt="" />
-              </ClayIcon>
+              <img src="/images/icon-trophy.png" alt="" className="w-14 h-14 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
               <CardTitle className="text-sm text-gray-600">Completion Rate</CardTitle>
             </CardHeader>
             <CardContent>

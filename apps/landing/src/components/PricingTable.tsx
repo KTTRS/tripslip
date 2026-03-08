@@ -1,4 +1,4 @@
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, ClayIcon } from '@tripslip/ui'
+import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@tripslip/ui'
 
 const plans = [
   {
@@ -19,7 +19,6 @@ const plans = [
     iconBg: 'bg-blue-100',
     iconBorder: 'border-blue-300',
     accentColor: 'bg-blue-500',
-    clayColor: 'sky' as const
   },
   {
     name: 'School',
@@ -41,7 +40,6 @@ const plans = [
     iconBg: 'bg-primary/20',
     iconBorder: 'border-primary',
     accentColor: 'bg-primary',
-    clayColor: 'yellow' as const
   },
   {
     name: 'Venue',
@@ -63,7 +61,6 @@ const plans = [
     iconBg: 'bg-green-100',
     iconBorder: 'border-green-300',
     accentColor: 'bg-green-500',
-    clayColor: 'green' as const
   }
 ]
 
@@ -113,9 +110,7 @@ export default function PricingTable() {
 
               <CardHeader className="pb-2 pt-8">
                 <div className="flex items-center gap-4 mb-4">
-                  <ClayIcon size="lg" color={plan.clayColor} className="group-hover:scale-110 transition-transform duration-300">
-                    <img src={plan.icon} alt="" />
-                  </ClayIcon>
+                  <img src={plan.icon} alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] group-hover:scale-110 transition-transform duration-300" />
                   <div>
                     <CardTitle className="font-display text-2xl font-bold">{plan.name}</CardTitle>
                     <CardDescription className="text-sm mt-0.5">

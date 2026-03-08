@@ -1,53 +1,45 @@
-import { Card, CardHeader, CardTitle, CardDescription, ClayIcon } from '@tripslip/ui'
-import type { ClayColor } from '@tripslip/ui'
+import { Card, CardHeader, CardTitle, CardDescription } from '@tripslip/ui'
 
 const features: {
   title: string
   description: string
   icon: string
-  clayColor: ClayColor
   gradient: string
 }[] = [
   {
     title: 'Digital Permission Slips',
     description: 'No more paper forms. Parents sign and submit everything online from their phone.',
     icon: '/images/icon-permission.png',
-    clayColor: 'sky',
     gradient: 'from-blue-50 to-blue-100/50',
   },
   {
     title: 'Instant Payments',
     description: 'Collect trip fees securely with Stripe. Split payments between multiple parents.',
     icon: '/images/icon-payment.png',
-    clayColor: 'green',
     gradient: 'from-green-50 to-green-100/50',
   },
   {
     title: 'Magic Links',
     description: 'Parents access their permission slip with one click. No passwords required.',
     icon: '/images/icon-magic.png',
-    clayColor: 'purple',
     gradient: 'from-purple-50 to-purple-100/50',
   },
   {
     title: 'Real-time Tracking',
     description: 'See who has signed and paid in real-time. Send automatic SMS reminders via Twilio.',
     icon: '/images/icon-tracking.png',
-    clayColor: 'orange',
     gradient: 'from-orange-50 to-orange-100/50',
   },
   {
     title: 'Multi-language Support',
     description: 'Communicate with parents in English, Spanish, or Arabic with automatic translation.',
     icon: '/images/icon-language.png',
-    clayColor: 'pink',
     gradient: 'from-pink-50 to-pink-100/50',
   },
   {
     title: 'Venue Marketplace',
     description: 'Discover and book educational experiences from museums, zoos, and cultural centers.',
     icon: '/images/icon-venue.png',
-    clayColor: 'yellow',
     gradient: 'from-yellow-50 to-primary-100/50',
   }
 ]
@@ -71,9 +63,7 @@ export default function FeatureGrid() {
       <div className="mx-auto max-w-7xl relative z-10">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-primary/50 rounded-full px-4 py-1.5 mb-4">
-            <ClayIcon size="xs" color="yellow">
-              <img src="/images/icon-trophy.png" alt="" />
-            </ClayIcon>
+            <img src="/images/icon-trophy.png" alt="" className="w-8 h-8 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
             <span className="text-sm font-semibold text-black">Powerful Features</span>
           </div>
           <h2 className="font-display text-4xl font-bold text-black sm:text-5xl lg:text-6xl">
@@ -94,9 +84,7 @@ export default function FeatureGrid() {
             >
               <CardHeader>
                 <div className="mb-4">
-                  <ClayIcon size="lg" color={feature.clayColor} className="group-hover:scale-110 transition-transform duration-300">
-                    <img src={feature.icon} alt="" />
-                  </ClayIcon>
+                  <img src={feature.icon} alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)] group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <CardTitle className="font-display text-xl font-bold">{feature.title}</CardTitle>
                 <CardDescription className="text-base leading-relaxed">

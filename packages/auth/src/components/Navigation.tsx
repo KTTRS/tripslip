@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router';
-import { Button, ClayIcon } from '@tripslip/ui';
-import type { ClayColor } from '@tripslip/ui';
+import { Button } from '@tripslip/ui';
 import { RoleSwitcher } from './RoleSwitcher';
 import type { UserRole, ActiveRoleContext } from '../types';
 
@@ -17,31 +16,30 @@ interface NavItem {
   path: string;
   roles: UserRole[];
   icon: string;
-  clayColor: ClayColor;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', path: '/', roles: ['teacher'], icon: '/images/icon-tracking.png', clayColor: 'sky' },
-  { label: 'Trips', path: '/trips', roles: ['teacher'], icon: '/images/icon-bus.png', clayColor: 'yellow' },
-  { label: 'Venues', path: '/venues/search', roles: ['teacher'], icon: '/images/icon-venue.png', clayColor: 'green' },
-  { label: 'Students', path: '/students', roles: ['teacher'], icon: '/images/icon-team.png', clayColor: 'purple' },
-  { label: 'Profile', path: '/profile', roles: ['teacher'], icon: '/images/icon-pencil.png', clayColor: 'pink' },
+  { label: 'Dashboard', path: '/', roles: ['teacher'], icon: '/images/icon-tracking.png' },
+  { label: 'Trips', path: '/trips', roles: ['teacher'], icon: '/images/icon-bus.png' },
+  { label: 'Venues', path: '/venues/search', roles: ['teacher'], icon: '/images/icon-venue.png' },
+  { label: 'Students', path: '/students', roles: ['teacher'], icon: '/images/icon-team.png' },
+  { label: 'Profile', path: '/profile', roles: ['teacher'], icon: '/images/icon-pencil.png' },
 
-  { label: 'Dashboard', path: '/', roles: ['school_admin'], icon: '/images/icon-tracking.png', clayColor: 'sky' },
-  { label: 'Approvals', path: '/approvals', roles: ['school_admin'], icon: '/images/icon-shield.png', clayColor: 'green' },
-  { label: 'Teachers', path: '/teachers', roles: ['school_admin'], icon: '/images/icon-team.png', clayColor: 'purple' },
+  { label: 'Dashboard', path: '/', roles: ['school_admin'], icon: '/images/icon-tracking.png' },
+  { label: 'Approvals', path: '/approvals', roles: ['school_admin'], icon: '/images/icon-shield.png' },
+  { label: 'Teachers', path: '/teachers', roles: ['school_admin'], icon: '/images/icon-team.png' },
 
-  { label: 'Dashboard', path: '/', roles: ['district_admin'], icon: '/images/icon-tracking.png', clayColor: 'sky' },
-  { label: 'District Overview', path: '/district-admin', roles: ['district_admin'], icon: '/images/icon-graduation.png', clayColor: 'yellow' },
+  { label: 'Dashboard', path: '/', roles: ['district_admin'], icon: '/images/icon-tracking.png' },
+  { label: 'District Overview', path: '/district-admin', roles: ['district_admin'], icon: '/images/icon-graduation.png' },
 
-  { label: 'Dashboard', path: '/', roles: ['tripslip_admin'], icon: '/images/icon-tracking.png', clayColor: 'sky' },
-  { label: 'Admin Panel', path: '/tripslip-admin', roles: ['tripslip_admin'], icon: '/images/icon-shield.png', clayColor: 'red' },
+  { label: 'Dashboard', path: '/', roles: ['tripslip_admin'], icon: '/images/icon-tracking.png' },
+  { label: 'Admin Panel', path: '/tripslip-admin', roles: ['tripslip_admin'], icon: '/images/icon-shield.png' },
 
-  { label: 'Dashboard', path: '/dashboard', roles: ['venue_admin'], icon: '/images/icon-tracking.png', clayColor: 'sky' },
-  { label: 'Experiences', path: '/experiences', roles: ['venue_admin'], icon: '/images/icon-magic.png', clayColor: 'purple' },
-  { label: 'Bookings', path: '/bookings', roles: ['venue_admin'], icon: '/images/icon-calendar.png', clayColor: 'green' },
-  { label: 'Financials', path: '/financials', roles: ['venue_admin'], icon: '/images/icon-payment.png', clayColor: 'yellow' },
-  { label: 'Team', path: '/employees', roles: ['venue_admin'], icon: '/images/icon-team.png', clayColor: 'pink' },
+  { label: 'Dashboard', path: '/dashboard', roles: ['venue_admin'], icon: '/images/icon-tracking.png' },
+  { label: 'Experiences', path: '/experiences', roles: ['venue_admin'], icon: '/images/icon-magic.png' },
+  { label: 'Bookings', path: '/bookings', roles: ['venue_admin'], icon: '/images/icon-calendar.png' },
+  { label: 'Financials', path: '/financials', roles: ['venue_admin'], icon: '/images/icon-payment.png' },
+  { label: 'Team', path: '/employees', roles: ['venue_admin'], icon: '/images/icon-team.png' },
 ];
 
 const ROLE_CHARACTERS: Record<string, { image: string; name: string }> = {
@@ -101,9 +99,7 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
                       : 'text-gray-700 hover:text-black hover:-translate-x-0.5 hover:-translate-y-0.5 border-2 border-transparent hover:border-black hover:bg-primary/10 hover:shadow-[3px_3px_0px_#0A0A0A]'
                   }`}
                 >
-                  <ClayIcon size="xs" color={item.clayColor}>
-                    <img src={item.icon} alt="" />
-                  </ClayIcon>
+                  <img src={item.icon} alt="" className="w-8 h-8 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                   {item.label}
                 </Link>
               );
@@ -164,9 +160,7 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
                       : 'text-gray-700 hover:bg-primary/10 border-2 border-transparent hover:border-black active:shadow-[2px_2px_0px_#0A0A0A]'
                   }`}
                 >
-                  <ClayIcon size="sm" color={item.clayColor}>
-                    <img src={item.icon} alt="" />
-                  </ClayIcon>
+                  <img src={item.icon} alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                   {item.label}
                 </Link>
               );

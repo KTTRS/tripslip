@@ -52,8 +52,6 @@ export * from './components/signature-pad';
 // export * from './components/document-viewer'; // Has import issues
 export * from './components/metric-card';
 export * from './components/progress-bar';
-export * from './components/clay-icon';
-
 // Utilities
 export * from './lib/utils';
 export * from './components/use-mobile';

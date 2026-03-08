@@ -5,7 +5,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { Card, CardHeader, CardTitle, CardContent, Button, ClayIcon } from '@tripslip/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
 import type { SupabaseClient } from '@tripslip/database';
 import type { RBACAuthService } from '../rbac-service';
 import type { UserRole } from '../types';
@@ -105,19 +105,13 @@ export default function LoginPage({
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50/30 via-white to-orange-50/20 flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-12 left-12 opacity-60 animate-float pointer-events-none hidden md:block">
-        <ClayIcon size="xl" color="yellow">
-          <img src="/images/icon-bus.png" alt="" />
-        </ClayIcon>
+        <img src="/images/icon-bus.png" alt="" className="w-24 h-24 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
       </div>
       <div className="absolute bottom-16 right-16 opacity-50 animate-float pointer-events-none hidden md:block" style={{ animationDelay: '1.5s' }}>
-        <ClayIcon size="xl" color="orange">
-          <img src="/images/icon-backpack.png" alt="" />
-        </ClayIcon>
+        <img src="/images/icon-backpack.png" alt="" className="w-24 h-24 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
       </div>
       <div className="absolute top-1/3 right-12 opacity-40 animate-float pointer-events-none hidden lg:block" style={{ animationDelay: '3s' }}>
-        <ClayIcon size="lg" color="green">
-          <img src="/images/icon-compass.png" alt="" />
-        </ClayIcon>
+        <img src="/images/icon-compass.png" alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
       </div>
 
       <div className="flex items-center gap-8 w-full max-w-4xl">

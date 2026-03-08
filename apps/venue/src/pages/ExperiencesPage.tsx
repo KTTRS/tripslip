@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router';
 import { Layout } from '../components/Layout';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@tripslip/ui';
 import { Badge } from '@tripslip/ui/components/badge';
-import { ClayIcon } from '@tripslip/ui/components/clay-icon';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { Plus, Edit, Eye } from 'lucide-react';
@@ -100,20 +99,14 @@ export default function ExperiencesPage() {
             <img src="/images/char-green-octagon.png" alt="" className="w-full h-full object-contain" />
           </div>
           <div className="absolute top-1 right-24 w-12 h-12 opacity-40 animate-pulse">
-            <ClayIcon size="sm" color="purple">
-              <img src="/images/icon-magic.png" alt="" />
-            </ClayIcon>
+            <img src="/images/icon-magic.png" alt="" className="w-10 h-10 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
           </div>
           <div className="absolute bottom-1 right-40 w-10 h-10 opacity-30 animate-pulse" style={{ animationDelay: '1s' }}>
-            <ClayIcon size="xs" color="teal">
-              <img src="/images/icon-venue.png" alt="" />
-            </ClayIcon>
+            <img src="/images/icon-venue.png" alt="" className="w-8 h-8 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <ClayIcon size="lg" color="yellow">
-                <img src="/images/icon-venue.png" alt="" />
-              </ClayIcon>
+              <img src="/images/icon-venue.png" alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
               <div>
                 <h2 className="text-3xl font-bold text-[#0A0A0A]">Experiences</h2>
                 <p className="text-gray-600 mt-1">Manage your educational experiences</p>
@@ -133,9 +126,7 @@ export default function ExperiencesPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="py-12 text-center">
               <div className="flex justify-center mb-4">
-                <ClayIcon size="xl" color="yellow">
-                  <img src="/images/icon-magic.png" alt="" />
-                </ClayIcon>
+                <img src="/images/icon-magic.png" alt="" className="w-24 h-24 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
               </div>
               <p className="text-gray-600 mb-4 font-medium">No experiences yet</p>
               <Button
@@ -167,15 +158,11 @@ export default function ExperiencesPage() {
                 <CardContent>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-gray-700">
-                      <ClayIcon size="xs" color="sky">
-                        <img src="/images/icon-calendar.png" alt="" />
-                      </ClayIcon>
+                      <img src="/images/icon-calendar.png" alt="" className="w-8 h-8 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                       <span>{formatDuration(experience.duration_minutes)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-700">
-                      <ClayIcon size="xs" color="green">
-                        <img src="/images/icon-team.png" alt="" />
-                      </ClayIcon>
+                      <img src="/images/icon-team.png" alt="" className="w-8 h-8 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
                       <span>
                         {experience.min_students && experience.max_students
                           ? `${experience.min_students}-${experience.max_students} students`
