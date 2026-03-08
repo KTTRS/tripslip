@@ -15,6 +15,7 @@ import {
   AlertCircle,
   FileText,
   ChevronRight,
+  ClipboardCheck,
 } from 'lucide-react';
 
 interface Trip {
@@ -232,6 +233,13 @@ export default function TripsPage() {
                           {trip.is_free && (
                             <span className="text-green-600 font-medium">Free</span>
                           )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); navigate(`/trips/${trip.id}/manifest`); }}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#0A0A0A] bg-[#F5C518] border border-[#0A0A0A] rounded-lg px-2 py-0.5 hover:shadow-[2px_2px_0px_#0A0A0A] transition-all"
+                          >
+                            <ClipboardCheck className="h-3 w-3" />
+                            Attendance
+                          </button>
                         </div>
                       </div>
                       <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 mt-1" />

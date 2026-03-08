@@ -9,6 +9,7 @@ import {
   Calendar,
   Plus,
   ArrowRight,
+  ClipboardCheck,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -103,6 +104,7 @@ export default function DashboardPage() {
 
   const quickActions = [
     { title: 'Create a Trip', desc: 'Plan a new field trip', icon: '/images/icon-pencil.png', color: 'yellow' as const, nav: '/trips/create' },
+    { title: 'Take Attendance', desc: 'Head count & manifest', icon: '/images/icon-tracking.png', color: 'green' as const, nav: recentTrips.length > 0 ? `/trips/${recentTrips[0].id}/manifest` : '/trips' },
     { title: 'Manage Students', desc: 'Add students or upload a CSV', icon: '/images/icon-team.png', color: 'sky' as const, nav: '/students' },
     { title: 'Browse Venues', desc: 'Find field trip destinations', icon: '/images/icon-venue.png', color: 'green' as const, nav: '/venues/search' },
   ];
@@ -230,14 +232,23 @@ export default function DashboardPage() {
                               {trip.experience.venue.name}
                             </p>
                           )}
-                          <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(trip.trip_date).toLocaleDateString('en-US', {
-                              weekday: 'short',
-                              month: 'short',
-                              day: 'numeric',
-                            })}
-                          </p>
+                          <div className="flex items-center gap-3 mt-1.5">
+                            <p className="text-xs text-gray-400 flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(trip.trip_date).toLocaleDateString('en-US', {
+                                weekday: 'short',
+                                month: 'short',
+                                day: 'numeric',
+                              })}
+                            </p>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); navigate(`/trips/${trip.id}/manifest`); }}
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-[#0A0A0A] bg-[#F5C518] border border-[#0A0A0A] rounded-lg px-2 py-0.5 hover:shadow-[2px_2px_0px_#0A0A0A] transition-all"
+                            >
+                              <ClipboardCheck className="h-3 w-3" />
+                              Attendance
+                            </button>
+                          </div>
                         </div>
                         <ArrowRight className="h-5 w-5 text-gray-400 mt-1 group-hover:text-[#0A0A0A] group-hover:translate-x-1 transition-all" />
                       </div>

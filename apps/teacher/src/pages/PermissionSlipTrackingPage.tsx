@@ -279,13 +279,12 @@ export default function PermissionSlipTrackingPage() {
                   Send Reminders
                 </Button>
                 <Button
-                  variant="outline"
                   onClick={() => navigate(`/trips/${tripId}/manifest`)}
-                  className="border-2 border-black shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all duration-200"
+                  className="bg-[#F5C518] text-black border-2 border-black shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all duration-200 font-bold"
                   style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
                 >
                   <ClipboardList className="h-4 w-4 mr-2" />
-                  View Manifest
+                  Take Attendance
                 </Button>
                 <Button
                   variant="outline"

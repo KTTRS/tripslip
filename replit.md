@@ -53,7 +53,7 @@ The landing page at `/` has an `/apps` hub page that links to all other portals.
 - `/trips/create` — Trip creation wizard (4 steps: details+transportation, experience, students, review+forms+funding+addons)
 - `/trips/:tripId/roster` — Per-trip student roster with permission slip status + prominent shareable link (copy link / copy-with-message for parents)
 - `/trips/:tripId/slips` — Permission slip tracking with send/remind/communication modal
-- `/trips/:tripId/manifest` — Printable trip manifest for day-of attendance (all signed slips, medical alerts, emergency contacts, CSV download)
+- `/trips/:tripId/manifest` — Interactive attendance & manifest page with multi-point head counts (departure/arrival/return), real-time check-off, attendance history, CSV download, print-ready view. Uses existing `attendance` table with `notes` column storing JSON check data.
 - `/students` — Full student management page (add, CSV import with parent info, edit, delete, send permission slip links)
 - `/profile` — Teacher profile editing + password change
 - `/venues/search` — Live Geoapify-powered venue discovery (enter address, finds nearby museums/zoos/etc)
@@ -68,7 +68,7 @@ The landing page at `/` has an `/apps` hub page that links to all other portals.
 - `apps/teacher/src/components/roster/AddStudentModal.tsx` — Add student with parent info
 - `apps/parent/src/pages/TripLookupPage.tsx` — Self-service permission slip: parent opens trip link (`/parent/trip/:token`), fills in child info + contact + signature, creates slip in DB with form_data JSONB
 - `apps/parent/src/pages/PermissionSlipSuccessPage.tsx` — Success page with optional account creation
-- `apps/teacher/src/pages/TripManifestPage.tsx` — Printable trip manifest with all signed slips (handles both roster-linked and parent-submitted slips)
+- `apps/teacher/src/pages/TripManifestPage.tsx` — Interactive attendance page: multi-point head counts (departure/arrival/return tabs), checkbox check-off per student, "Mark All Present", missing student alerts, attendance history log, CSV export with attendance columns, print view with all 3 check columns
 
 ### Routing
 Each sub-app uses a `basename` on its `BrowserRouter` (e.g., `/venue`, `/teacher`) and a matching `base` in its Vite config. The proxy forwards requests by path prefix to the correct internal Vite dev server.

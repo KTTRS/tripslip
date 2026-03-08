@@ -14,6 +14,7 @@ import {
   Search,
   Copy,
   Check,
+  ClipboardCheck,
 } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { AddStudentModal } from '../components/roster/AddStudentModal';
@@ -462,6 +463,13 @@ export default function TripRosterPage() {
           </div>
           
           <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => navigate(`/trips/${tripId}/manifest`)}
+              className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all font-semibold rounded-xl"
+            >
+              <ClipboardCheck className="h-4 w-4 mr-2" />
+              Take Attendance
+            </Button>
             <Button
               variant="outline"
               onClick={() => navigate(`/trips/${tripId}/slips`)}
