@@ -28,7 +28,7 @@ export default function Header() {
     <header className={`sticky top-0 z-50 border-b-2 border-black bg-white transition-shadow duration-300 ${scrolled ? 'shadow-md' : ''}`}>
       <nav className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
         <a href="/" className="flex items-center">
-          <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-44 w-auto object-contain -my-14" />
+          <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-10 w-auto object-contain" />
         </a>
         <div className="hidden md:flex items-center gap-8">
           <a href="/" className="text-gray-700 hover:text-black font-medium transition-colors">
