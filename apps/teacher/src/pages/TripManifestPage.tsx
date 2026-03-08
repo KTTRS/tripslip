@@ -147,6 +147,23 @@ export default function TripManifestPage() {
         attendanceMap.set(row.student_id, checks);
       }
 
+      const safeMedicalInfo = (info: unknown): string => {
+        if (!info) return '';
+        if (typeof info === 'string') return info;
+        if (typeof info === 'object') {
+          const obj = info as Record<string, unknown>;
+          const parts: string[] = [];
+          if (obj.allergies) parts.push(String(obj.allergies));
+          if (obj.conditions) parts.push(String(obj.conditions));
+          if (obj.medications) parts.push(String(obj.medications));
+          if (obj.notes) parts.push(String(obj.notes));
+          if (parts.length > 0) return parts.join('; ');
+          const vals = Object.values(obj).filter(v => v && typeof v !== 'object');
+          return vals.length > 0 ? vals.map(String).join('; ') : '';
+        }
+        return String(info);
+      };
+
       const manifest: ManifestStudent[] = [];
 
       for (const slip of slips || []) {
@@ -160,7 +177,7 @@ export default function TripManifestPage() {
             studentFirstName: student.first_name || '',
             studentLastName: student.last_name || '',
             studentGrade: student.grade || fd.studentGrade || '',
-            studentAllergies: student.medical_info || fd.studentAllergies || '',
+            studentAllergies: safeMedicalInfo(student.medical_info) || fd.studentAllergies || '',
             parentName: fd.parentName || '',
             parentPhone: fd.parentPhone || '',
             parentEmail: fd.parentEmail || '',
