@@ -1,4 +1,4 @@
-modules = ["bash", "web", "nodejs-20", "python-3.11", "postgresql-16"]
+modules = ["bash", "web", "nodejs-20"]
 [agent]
 expertMode = true
 integrations = ["twilio:1.0.0", "stripe:1.0.0"]
