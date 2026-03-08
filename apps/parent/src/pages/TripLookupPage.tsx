@@ -392,11 +392,8 @@ export function TripLookupPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
         <div className="text-center mb-8 relative">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-[#F5C518] rounded-lg border-2 border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center">
-              <span className="font-black text-[#0A0A0A] text-lg">T</span>
-            </div>
-            <span className="font-bold text-[#0A0A0A] text-xl tracking-wide">TripSlip</span>
+          <div className="flex items-center justify-center mb-4">
+            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-14 w-auto object-contain" />
           </div>
           <div className="relative inline-block">
             <h1 className="text-3xl sm:text-4xl font-bold text-[#0A0A0A] mb-2">

@@ -131,11 +131,8 @@ export default function LoginPage({
 
         <Card className="w-full max-w-md border-2 border-black shadow-[4px_4px_0px_#0A0A0A] rounded-2xl bg-white/90 backdrop-blur-sm">
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-yellow-400 rounded-lg border-2 border-black shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center">
-                <span className="text-black font-black text-xl">T</span>
-              </div>
-              <span className="text-2xl font-black tracking-tight text-gray-900">TripSlip</span>
+            <div className="flex items-center justify-center mb-4">
+              <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-14 w-auto object-contain" />
             </div>
             <CardTitle className="text-2xl font-bold text-center">
               Sign In

@@ -66,12 +66,7 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl border-2 border-black shadow-[3px_3px_0px_#0A0A0A] flex items-center justify-center hover:shadow-[4px_4px_0px_#0A0A0A] hover:-translate-x-0.5 hover:-translate-y-0.5 transition-all duration-200">
-              <span className="text-black font-black text-xl leading-none">T</span>
-            </div>
-            <h1 className="text-xl font-bold font-display tracking-tight">
-              {appName || 'TripSlip'}
-            </h1>
+            <img src="/images/tripslip-logo.png" alt={appName || 'TripSlip'} className="h-9 w-auto object-contain" />
             {character && (
               <div className="hidden lg:block relative ml-1">
                 <img

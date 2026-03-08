@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@tripslip/ui/components/button';
 import { 
   LayoutDashboard, 
-  MapPin, 
+  MapPin,
   Calendar, 
   FileText, 
   DollarSign, 
@@ -66,11 +66,8 @@ export function VenueNavigation() {
         <div className="flex justify-between h-16">
           {/* Logo and Brand */}
           <div className="flex items-center">
-            <Link to="/dashboard" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-[#F5C518] border-2 border-black rounded flex items-center justify-center">
-                <MapPin className="h-5 w-5 text-black" />
-              </div>
-              <span className="text-xl font-bold font-['Fraunces']">TripSlip Venue</span>
+            <Link to="/dashboard" className="flex items-center">
+              <img src="/images/tripslip-logo.png" alt="TripSlip Venue" className="h-9 w-auto object-contain" />
             </Link>
           </div>
 

@@ -195,6 +195,7 @@ TripSlip uses a neo-brutalist design language with premium 3D claymorphic visual
 - Animations: float, bounce-slow, fade-in, slide-up (defined in tailwind.config.ts)
 
 ### Visual Assets (deployed to all apps in public/images/)
+- **TripSlip Logo**: `tripslip-logo.png` (yellow ticket icon + "tripslip" wordmark, white background — used in all headers/navs), `tripslip-logo-dark.png` (black background variant), `tripslip-logo-large.png` (larger version for hero/splash contexts). All deployed to every app's `public/images/`.
 - **Stock photos**: hero-fieldtrip, students-museum, science-lab, zoo-visit, teacher-leading, art-workshop (AI-generated field trip scenes)
 - **3D Claymorphic icons**: icon-permission, icon-payment, icon-magic, icon-venue, icon-tracking, icon-language, icon-bus, icon-backpack, icon-compass, icon-calendar, icon-shield, icon-megaphone, icon-pencil, icon-trophy, icon-team, icon-graduation (transparent PNGs, used throughout all apps)
 - **Claymation characters**: char-pink-heart, char-blue-square, char-green-octagon, char-purple-diamond, char-yellow-star, char-red-pill (individual animated mascots used in headers/sidebars)

@@ -219,11 +219,8 @@ export function ParentDashboardPage() {
     <div className="min-h-screen bg-[#FAFAFA]">
       <header className="bg-white border-b-2 border-[#0A0A0A] px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#F5C518] rounded-full border-2 border-[#0A0A0A] flex items-center justify-center">
-              <span className="text-[#0A0A0A] font-bold text-sm">T</span>
-            </div>
-            <span className="text-xl font-bold text-[#0A0A0A]">TripSlip</span>
+          <div className="flex items-center">
+            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-9 w-auto object-contain" />
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600 hidden sm:inline">

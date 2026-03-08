@@ -86,11 +86,8 @@ export function ParentLoginPage() {
     <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center px-4">
       <div className="max-w-md w-full space-y-6 py-12">
         <div className="text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-[#F5C518] rounded-full border-2 border-[#0A0A0A] flex items-center justify-center">
-              <span className="text-[#0A0A0A] font-bold text-lg">T</span>
-            </div>
-            <span className="text-2xl font-bold text-[#0A0A0A]">TripSlip</span>
+          <div className="flex items-center justify-center mb-4">
+            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-14 w-auto object-contain" />
           </div>
           <h1 className="text-3xl font-display font-bold text-[#0A0A0A]">Parent Sign In</h1>
           <p className="text-gray-600 mt-2">View your children's trips and permission slips</p>
