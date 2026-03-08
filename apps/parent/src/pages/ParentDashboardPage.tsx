@@ -83,6 +83,8 @@ export function ParentDashboardPage() {
       }
       setChildren(childProfiles);
 
+      const studentIds = childProfiles.map(c => c.studentId);
+
       const { data: slips } = await supabase
         .from('permission_slips')
         .select(`
@@ -105,7 +107,7 @@ export function ParentDashboardPage() {
             )
           )
         `)
-        .or(`form_data->>parentEmail.eq.${parent.email},signed_by_parent_id.eq.${parent.id}`)
+        .or(`signed_by_parent_id.eq.${parent.id},student_id.in.(${studentIds.join(',')})`)
         .order('created_at', { ascending: false })
         .limit(50);
 
