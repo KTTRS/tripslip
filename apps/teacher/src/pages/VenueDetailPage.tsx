@@ -1,16 +1,3 @@
-/**
- * Venue Detail Page
- * 
- * Comprehensive venue profile display with:
- * - Venue information (name, description, location, contact)
- * - Photo gallery with lightbox
- * - Available experiences with pricing
- * - Reviews and ratings
- * - "Book Experience" call-to-action
- * 
- * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5
- */
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
@@ -57,21 +44,17 @@ export default function VenueDetailPage() {
     setError(null);
 
     try {
-      // Load venue profile
       const { data: venueData, error: venueError } = await venueProfileService.getVenueProfile(venueId);
       if (venueError) throw venueError;
       setVenue(venueData);
 
-      // Load photos
       const { data: photoData, error: photoError } = await venueProfileService.getVenuePhotos(venueId);
       if (photoError) throw photoError;
       setPhotos(photoData || []);
 
-      // Load experiences
       const experienceData = await experienceService.getVenueExperiences(venueId, false);
       setExperiences(experienceData);
 
-      // Load reviews
       const reviewData = await reviewService.getVenueReviews(venueId, {
         limit: 10,
         sortBy: 'created_at',
@@ -87,7 +70,6 @@ export default function VenueDetailPage() {
   };
 
   const handleBookExperience = (experienceId: string) => {
-    // Navigate to trip creation with pre-selected venue and experience
     navigate(`/trips/create?venueId=${venueId}&experienceId=${experienceId}`);
   };
 
@@ -96,8 +78,8 @@ export default function VenueDetailPage() {
       <Layout>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading venue details...</p>
+            <div className="w-12 h-12 border-4 border-[#F5C518] border-t-[#0A0A0A] rounded-full animate-spin mx-auto"></div>
+            <p className="mt-4 text-[#0A0A0A] font-semibold">Loading venue details...</p>
           </div>
         </div>
       </Layout>
@@ -108,12 +90,12 @@ export default function VenueDetailPage() {
     return (
       <Layout>
         <div className="max-w-4xl mx-auto py-12">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-50 border-2 border-red-400 text-red-800 px-5 py-4 rounded-xl shadow-[3px_3px_0px_rgba(239,68,68,0.3)] font-semibold">
             {error || 'Venue not found'}
           </div>
           <button
             onClick={() => navigate('/venues/search')}
-            className="mt-4 text-blue-600 hover:text-blue-800"
+            className="mt-4 text-[#0A0A0A] font-bold hover:text-[#F5C518] transition-colors"
           >
             ← Back to search
           </button>
@@ -125,10 +107,9 @@ export default function VenueDetailPage() {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto py-6 space-y-8">
-        {/* Back Button */}
         <button
           onClick={() => navigate('/venues/search')}
-          className="flex items-center text-blue-600 hover:text-blue-800"
+          className="flex items-center text-[#0A0A0A] font-bold hover:text-[#F5C518] transition-colors"
         >
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -136,27 +117,21 @@ export default function VenueDetailPage() {
           Back to search
         </button>
 
-        {/* Photo Gallery */}
         <PhotoGallery
           primaryPhotoUrl={venue.primary_photo_url}
           photos={photos}
           venueName={venue.name}
         />
 
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
-            {/* Venue Info */}
             <VenueInfo venue={venue} />
 
-            {/* Experiences */}
             <ExperienceList
               experiences={experiences}
               onBookExperience={handleBookExperience}
             />
 
-            {/* Reviews */}
             <ReviewList
               reviews={reviews}
               venueRating={venue.rating}
@@ -164,23 +139,20 @@ export default function VenueDetailPage() {
             />
           </div>
 
-          {/* Right Column - Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-6 space-y-6">
-              {/* Quick Info Card */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">Quick Info</h3>
+              <div className="bg-white border-2 border-[#0A0A0A] rounded-2xl shadow-[4px_4px_0px_#0A0A0A] p-6">
+                <h3 className="text-lg font-bold text-[#0A0A0A] mb-4">Quick Info</h3>
                 
-                {/* Rating */}
                 <div className="mb-4">
                   <div className="flex items-center">
-                    <span className="text-2xl font-bold text-gray-900">{venue.rating.toFixed(1)}</span>
+                    <span className="text-2xl font-bold text-[#0A0A0A]">{venue.rating.toFixed(1)}</span>
                     <div className="ml-2 flex items-center">
                       {[...Array(5)].map((_, i) => (
                         <svg
                           key={i}
                           className={`w-5 h-5 ${
-                            i < Math.floor(venue.rating) ? 'text-yellow-400' : 'text-gray-300'
+                            i < Math.floor(venue.rating) ? 'text-[#F5C518] fill-[#F5C518]' : 'text-gray-300'
                           } fill-current`}
                           viewBox="0 0 20 20"
                         >
@@ -192,29 +164,26 @@ export default function VenueDetailPage() {
                   <p className="text-sm text-gray-600 mt-1">{venue.review_count} reviews</p>
                 </div>
 
-                {/* Capacity */}
                 {venue.capacity_min && venue.capacity_max && (
                   <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700">Capacity</p>
+                    <p className="text-sm font-bold text-[#0A0A0A]">Capacity</p>
                     <p className="text-gray-900">
                       {venue.capacity_min} - {venue.capacity_max} students
                     </p>
                   </div>
                 )}
 
-                {/* Booking Lead Time */}
                 <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700">Booking Lead Time</p>
+                  <p className="text-sm font-bold text-[#0A0A0A]">Booking Lead Time</p>
                   <p className="text-gray-900">{venue.booking_lead_time_days} days in advance</p>
                 </div>
 
-                {/* Contact */}
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Contact</p>
+                  <p className="text-sm font-bold text-[#0A0A0A]">Contact</p>
                   {venue.contact_phone && (
                     <a
                       href={`tel:${venue.contact_phone}`}
-                      className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+                      className="flex items-center text-[#0A0A0A] hover:text-[#F5C518] transition-colors text-sm font-semibold"
                     >
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -229,7 +198,7 @@ export default function VenueDetailPage() {
                   )}
                   <a
                     href={`mailto:${venue.contact_email}`}
-                    className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+                    className="flex items-center text-[#0A0A0A] hover:text-[#F5C518] transition-colors text-sm font-semibold"
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
@@ -246,7 +215,7 @@ export default function VenueDetailPage() {
                       href={venue.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+                      className="flex items-center text-[#0A0A0A] hover:text-[#F5C518] transition-colors text-sm font-semibold"
                     >
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -262,11 +231,10 @@ export default function VenueDetailPage() {
                 </div>
               </div>
 
-              {/* Verified Badge */}
               {venue.verified && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="bg-[#F5C518]/15 border-2 border-[#0A0A0A] rounded-2xl shadow-[4px_4px_0px_#0A0A0A] p-4">
                   <div className="flex items-center">
-                    <svg className="w-6 h-6 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-6 h-6 text-[#0A0A0A] mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -274,8 +242,8 @@ export default function VenueDetailPage() {
                       />
                     </svg>
                     <div>
-                      <p className="font-semibold text-blue-900">Verified Venue</p>
-                      <p className="text-sm text-blue-700">Profile verified by TripSlip</p>
+                      <p className="font-bold text-[#0A0A0A]">Verified Venue</p>
+                      <p className="text-sm text-[#0A0A0A]/70">Profile verified by TripSlip</p>
                     </div>
                   </div>
                 </div>

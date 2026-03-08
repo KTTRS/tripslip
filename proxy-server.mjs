@@ -182,6 +182,36 @@ function parseBody(req) {
   });
 }
 
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW_MS = 60000;
+const RATE_LIMIT_MAX = 10;
+
+function checkRateLimit(ip, endpoint) {
+  const key = `${ip}:${endpoint}`;
+  const now = Date.now();
+  const record = rateLimitStore.get(key);
+  if (!record || now - record.start > RATE_LIMIT_WINDOW_MS) {
+    rateLimitStore.set(key, { start: now, count: 1 });
+    return true;
+  }
+  record.count++;
+  if (record.count > RATE_LIMIT_MAX) return false;
+  return true;
+}
+
+async function verifyAuth(req) {
+  const authHeader = req.headers['authorization'];
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+  const token = authHeader.slice(7);
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase.auth.getUser(token);
+    return !error && !!data?.user;
+  } catch {
+    return false;
+  }
+}
+
 function sendJSON(res, status, data) {
   res.writeHead(status, {
     'Content-Type': 'application/json',
@@ -601,6 +631,19 @@ const server = http.createServer(async (req, res) => {
 
   const routeKey = `${req.method} ${req.url?.split('?')[0]}`;
   if (apiHandlers[routeKey]) {
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const endpoint = req.url?.split('?')[0] || '';
+
+    if (endpoint.startsWith('/api/send-') || endpoint.startsWith('/api/discovery/')) {
+      const authed = await verifyAuth(req);
+      if (!authed) {
+        return sendJSON(res, 401, { error: 'Authentication required' });
+      }
+      if (!checkRateLimit(clientIp, endpoint)) {
+        return sendJSON(res, 429, { error: 'Too many requests. Please try again later.' });
+      }
+    }
+
     return apiHandlers[routeKey](req, res);
   }
 

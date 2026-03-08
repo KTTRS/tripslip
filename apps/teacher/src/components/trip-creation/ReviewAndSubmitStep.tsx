@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useTripCreationStore } from '../../stores/tripCreationStore';
 import { supabase } from '../../lib/supabase';
+import { authFetch } from '../../lib/api';
 import { Button } from '@tripslip/ui/components/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tripslip/ui/components/card';
 import { Badge } from '@tripslip/ui/components/badge';
@@ -184,7 +185,7 @@ export function ReviewAndSubmitStep() {
                   formData.append('form_type', form.formType);
                   formData.append('required', String(form.required));
 
-                  const resp = await fetch('/api/upload-form', {
+                  const resp = await authFetch('/api/upload-form', {
                     method: 'POST',
                     body: formData,
                   });

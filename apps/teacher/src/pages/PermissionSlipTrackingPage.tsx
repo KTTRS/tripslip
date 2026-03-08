@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
 import { supabase } from '../lib/supabase';
+import { authFetch } from '../lib/api';
 import type { Tables, Json } from '@tripslip/database';
 import { toast } from 'sonner';
 import { 
@@ -145,7 +146,7 @@ export default function PermissionSlipTrackingPage() {
     if (!tripId) return;
     setSendingAllSlips(true);
     try {
-      const response = await fetch('/api/send-bulk-reminders', {
+      const response = await authFetch('/api/send-bulk-reminders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tripId }),

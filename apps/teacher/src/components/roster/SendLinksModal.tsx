@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@tripslip/ui';
 import { supabase } from '../../lib/supabase';
+import { authFetch } from '../../lib/api';
 import { toast } from 'sonner';
 import { X, Copy, Check, Link2, MessageSquare, Send } from 'lucide-react';
 
@@ -168,7 +169,7 @@ export function SendLinksModal({ students, onClose, onSuccess }: SendLinksModalP
 
     for (const parent of parentsWithPhones) {
       try {
-        const res = await fetch('/api/send-sms', {
+        const res = await authFetch('/api/send-sms', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

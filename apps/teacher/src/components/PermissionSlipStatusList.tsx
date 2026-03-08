@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@tripslip/ui';
 import { supabase } from '../lib/supabase';
+import { authFetch } from '../lib/api';
 import type { Tables } from '@tripslip/database';
 import { toast } from 'sonner';
 import { 
@@ -287,7 +288,7 @@ export function PermissionSlipStatusList({ tripId }: PermissionSlipStatusListPro
   const handleRemindSlip = async (slipId: string) => {
     setSendingSlipId(slipId);
     try {
-      const response = await fetch('/api/send-permission-slip', {
+      const response = await authFetch('/api/send-permission-slip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ permissionSlipId: slipId }),

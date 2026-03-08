@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { authFetch } from '../../lib/api';
 import { Button } from '@tripslip/ui/components/button';
 import { Card, CardContent } from '@tripslip/ui/components/card';
 import { Badge } from '@tripslip/ui/components/badge';
@@ -153,7 +154,7 @@ export function FormUploadManager({ tripId, venueForms = [], onFormsChange }: Fo
       formData.append('form_type', form.formType);
       formData.append('required', String(form.required));
 
-      const response = await fetch('/api/upload-form', {
+      const response = await authFetch('/api/upload-form', {
         method: 'POST',
         body: formData,
       });

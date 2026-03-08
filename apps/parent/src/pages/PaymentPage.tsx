@@ -88,12 +88,15 @@ export function PaymentPage() {
             last_name
           ),
           trips (
-            title,
-            estimated_cost_cents,
             trip_date,
+            is_free,
             experiences (
               title,
-              add_ons
+              pricing_tiers (
+                min_students,
+                max_students,
+                price_cents
+              )
             )
           )
         `)
@@ -120,7 +123,10 @@ export function PaymentPage() {
       }
 
       setSlip(data as any);
-      setTotalAmount((data as any).trips.estimated_cost_cents);
+      const tripData = data.trips as any;
+      const pricingTiers = tripData?.experiences?.pricing_tiers;
+      const baseCost = pricingTiers?.[0]?.price_cents || 0;
+      setTotalAmount(baseCost);
       setLoading(false);
     } catch (err) {
       if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { authFetch } from '../lib/api';
 import { Layout } from '../components/Layout';
 import { MapPin, Search, ChevronDown, ExternalLink, Globe, Phone, Star, Users, Sparkles, GraduationCap, DollarSign, CheckCircle, ArrowRight } from 'lucide-react';
 
@@ -109,7 +110,7 @@ export default function VenueSearchPage() {
     setHasSearched(true);
 
     try {
-      const response = await fetch('/api/discovery/search', {
+      const response = await authFetch('/api/discovery/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

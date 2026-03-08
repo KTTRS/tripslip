@@ -8,25 +8,22 @@ type PermissionSlip = Database['public']['Tables']['permission_slips']['Row'] & 
     id: string;
     first_name: string;
     last_name: string;
-    grade_level: string;
-    medical_conditions?: string;
+    grade: string;
+    medical_info?: string;
   };
   trips: {
     id: string;
-    title: string;
     trip_date: string;
-    departure_time: string;
-    return_time: string;
-    estimated_cost_cents: number;
+    trip_time: string;
+    status: string;
+    is_free: boolean;
     experiences: {
       title: string;
       description: string;
-    };
-    venues: {
-      name: string;
-      address: string;
-      city: string;
-      state: string;
+      venues: {
+        name: string;
+        address: string;
+      };
     };
   };
 };
@@ -62,25 +59,22 @@ export function usePermissionSlipToken() {
             id,
             first_name,
             last_name,
-            grade_level,
-            medical_conditions
+            grade,
+            medical_info
           ),
           trips (
             id,
-            title,
             trip_date,
-            departure_time,
-            return_time,
-            estimated_cost_cents,
+            trip_time,
+            status,
+            is_free,
             experiences (
               title,
-              description
-            ),
-            venues (
-              name,
-              address,
-              city,
-              state
+              description,
+              venues (
+                name,
+                address
+              )
             )
           )
         `)

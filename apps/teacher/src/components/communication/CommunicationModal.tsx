@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@tripslip/ui';
 import { supabase } from '../../lib/supabase';
+import { authFetch } from '../../lib/api';
 import type { Tables } from '@tripslip/database';
 import { toast } from 'sonner';
 import { X, Send, Eye, Mail, MessageSquare, Users } from 'lucide-react';
@@ -267,7 +268,7 @@ export default function CommunicationModal({
 
             if (channel === 'sms' || channel === 'both') {
               if (parent.phone) {
-                const smsRes = await fetch('/api/send-sms', {
+                const smsRes = await authFetch('/api/send-sms', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ to: parent.phone, message: finalBody }),
