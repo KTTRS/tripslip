@@ -434,13 +434,13 @@ export default function StudentsPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
-                    {filteredStudents.map((student) => {
+                    {filteredStudents.map((student, index) => {
                       const parent = student.parents[0];
                       return (
                         <tr
                           key={student.id}
-                          className={`hover:bg-gray-50 transition-colors ${
-                            selectedStudents.has(student.id) ? 'bg-[#F5C518]/10' : ''
+                          className={`hover:bg-[#F5C518]/10 transition-colors duration-150 ${
+                            selectedStudents.has(student.id) ? 'bg-[#F5C518]/15' : index % 2 === 1 ? 'bg-gray-50/60' : ''
                           }`}
                         >
                           <td className="px-4 py-3">
@@ -505,15 +505,17 @@ export default function StudentsPage() {
                             <div className="flex justify-end gap-1">
                               <button
                                 onClick={() => setEditingStudent(student)}
-                                className="p-1.5 text-gray-500 hover:text-[#0A0A0A] hover:bg-gray-100 rounded transition-colors"
+                                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-[#0A0A0A] hover:bg-gray-100 rounded-lg transition-colors"
                                 title="Edit student"
+                                aria-label={`Edit ${student.first_name} ${student.last_name}`}
                               >
                                 <Edit2 className="h-4 w-4" />
                               </button>
                               <button
                                 onClick={() => handleDeleteStudent(student.id)}
-                                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Remove student"
+                                aria-label={`Remove ${student.first_name} ${student.last_name}`}
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>

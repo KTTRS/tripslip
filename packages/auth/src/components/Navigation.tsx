@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Button } from '@tripslip/ui';
 import { RoleSwitcher } from './RoleSwitcher';
@@ -61,6 +61,10 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
   const navItems = getNavItemsForRole(activeRole?.role_name);
   const character = activeRole?.role_name ? ROLE_CHARACTERS[activeRole.role_name] : null;
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   return (
     <nav className="sticky top-0 z-50 bg-white border-b-3 border-black shadow-[0_4px_0px_#0A0A0A]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -88,6 +92,7 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
                 <Link
                   key={item.path}
                   to={item.path}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`group flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
                     isActive
                       ? 'bg-primary text-black border-2 border-black shadow-[3px_3px_0px_#0A0A0A] -translate-x-0.5 -translate-y-0.5'
@@ -148,7 +153,7 @@ export function Navigation({ activeRole, userName, onSignOut, appName }: Navigat
                 <Link
                   key={item.path}
                   to={item.path}
-                  onClick={() => setMobileMenuOpen(false)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 ${
                     isActive
                       ? 'bg-primary text-black border-2 border-black shadow-[3px_3px_0px_#0A0A0A] -translate-x-0.5'

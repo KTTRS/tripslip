@@ -268,6 +268,16 @@ Response includes `db_count` (venues from our DB) and `new_discovered` (freshly 
 - Trip statuses: `draft`, `pending`, `pending_approval`, `approved`, `confirmed`, `rejected`, `cancelled`, `completed`
 - Slip statuses: `pending` → `sent` → `signed` / `signed_pending_payment` → `paid` / `cancelled`
 
+## HCD / UX Improvements
+
+- **Global focus states**: All 5 apps have `focus-visible` ring styles using brand yellow `#F5C518`, `::selection` highlight, `prefers-reduced-motion` support. Defined in each app's `src/index.css` `@layer base`.
+- **Parent login**: Redesigned to match teacher/venue login warmth (mascot, floating icons, rounded-xl inputs, trust signals).
+- **Navigation**: `aria-current="page"` on active links, mobile menu auto-closes on route change.
+- **Dashboard**: Staggered fade-in animations on stat cards and quick actions, new-user onboarding hint, improved empty state with CTA.
+- **Trips page**: Status badges include icons, filter tabs show counts, filter-specific empty states, improved attendance button sizing.
+- **Students page**: 44px min touch targets on edit/delete, brand-yellow hover row highlight, zebra striping, CSV import summary toast.
+- **Permission slip**: Sticky progress bar (5 sections), "Secure form" trust badge, field-level green checkmarks on valid fields, improved signature area with "Clear & Redo" button and placeholder text.
+
 ## Pilot Users
 
 Four demo accounts exist for testing. Credentials are stored in the team's password manager (not in source control).

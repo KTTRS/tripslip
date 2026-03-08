@@ -184,6 +184,24 @@ export function TripLookupPage() {
     }
   };
 
+  const isFieldValid = (field: keyof FormState): boolean => {
+    const v = form[field];
+    if (typeof v !== 'string' || !v.trim()) return false;
+    if (field === 'parentEmail') return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    if (field === 'parentPhone' || field === 'emergencyContactPhone') return /^[\d\s\-+()]{7,}$/.test(v);
+    return true;
+  };
+
+  const formSections = [
+    { label: 'Trip Details', done: true },
+    { label: 'Student Info', done: isFieldValid('studentFirstName') && isFieldValid('studentLastName') },
+    { label: 'Parent Info', done: isFieldValid('parentFirstName') && isFieldValid('parentLastName') && isFieldValid('parentEmail') && isFieldValid('parentPhone') },
+    { label: 'Emergency', done: isFieldValid('emergencyContactName') && isFieldValid('emergencyContactPhone') },
+    { label: 'Sign', done: !!form.signature },
+  ];
+  const completedSections = formSections.filter(s => s.done).length;
+  const progressPercent = Math.round((completedSections / formSections.length) * 100);
+
   const handleSignatureChange = (sig: string | null) => {
     setForm(prev => ({ ...prev, signature: sig }));
     if (fieldErrors.signature) {
@@ -378,11 +396,20 @@ export function TripLookupPage() {
     notes: (rawTransport.notes) as string | undefined,
   } : null;
 
-  const inputClass = (hasError: boolean) => `
-    w-full border-2 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518]
-    ${hasError ? 'border-red-400' : 'border-[#0A0A0A]'}
+  const inputClass = (field: keyof FormState | null, hasError: boolean) => `
+    w-full border-2 rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#F5C518] focus:border-[#F5C518] transition-all
+    ${hasError ? 'border-red-400' : field && isFieldValid(field) ? 'border-green-300' : 'border-gray-200'}
     disabled:bg-gray-100 disabled:cursor-not-allowed
   `;
+
+  const FieldCheck = ({ field }: { field: keyof FormState }) => {
+    if (!isFieldValid(field)) return null;
+    return (
+      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+      </span>
+    );
+  };
 
   const hasSavedInfo = !!localStorage.getItem('tripslip_parent_info');
 
@@ -391,12 +418,12 @@ export function TripLookupPage() {
       <div className="absolute top-4 right-4 z-10"><LanguageSelector /></div>
 
       <div className="max-w-2xl mx-auto px-4 py-8 sm:py-12">
-        <div className="text-center mb-8 relative">
+        <div className="text-center mb-6 relative">
           <div className="flex items-center justify-center mb-4">
-            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-16 w-auto object-contain" />
+            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-14 w-auto object-contain" />
           </div>
           <div className="relative inline-block">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#0A0A0A] mb-2">
+            <h1 className="text-3xl sm:text-4xl font-display font-bold text-[#0A0A0A] mb-2">
               Permission Slip
             </h1>
             <img
@@ -405,9 +432,34 @@ export function TripLookupPage() {
               className="absolute -right-16 -top-4 w-14 h-14 object-contain animate-float hidden sm:block drop-shadow-lg"
             />
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-500 text-sm">
             Please review the trip details and fill out the form below.
           </p>
+
+          <div className="flex items-center justify-center gap-2 mt-3">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+            <span className="text-xs font-semibold text-green-700">Secure form — your information is protected</span>
+          </div>
+        </div>
+
+        <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[3px_3px_0px_#0A0A0A] p-4 mb-6 sticky top-2 z-20">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Progress</span>
+            <span className="text-xs font-bold text-[#0A0A0A]">{completedSections} of {formSections.length} sections</span>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+            <div
+              className="bg-[#F5C518] h-2.5 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <div className="flex justify-between mt-2">
+            {formSections.map((s, i) => (
+              <span key={i} className={`text-[10px] font-semibold transition-colors ${s.done ? 'text-green-600' : 'text-gray-400'}`}>
+                {s.done ? '✓' : (i + 1)} {s.label}
+              </span>
+            ))}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -455,32 +507,38 @@ export function TripLookupPage() {
                 <label htmlFor="studentFirstName" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                   Child's First Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <div className="relative">
+                  <input
                   id="studentFirstName"
                   type="text"
                   value={form.studentFirstName}
                   onChange={(e) => updateField('studentFirstName', e.target.value)}
-                  className={inputClass(!!fieldErrors.studentFirstName)}
+                  className={inputClass('studentFirstName', !!fieldErrors.studentFirstName)}
                   disabled={submitting}
                   placeholder="e.g. Sofia"
                   autoComplete="off"
                 />
+                  <FieldCheck field="studentFirstName" />
+                </div>
                 {fieldErrors.studentFirstName && <p className="text-red-500 text-xs mt-1">{fieldErrors.studentFirstName}</p>}
               </div>
               <div>
                 <label htmlFor="studentLastName" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                   Child's Last Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <div className="relative">
+                  <input
                   id="studentLastName"
                   type="text"
                   value={form.studentLastName}
                   onChange={(e) => updateField('studentLastName', e.target.value)}
-                  className={inputClass(!!fieldErrors.studentLastName)}
+                  className={inputClass('studentLastName', !!fieldErrors.studentLastName)}
                   disabled={submitting}
                   placeholder="e.g. Garcia"
                   autoComplete="off"
                 />
+                  <FieldCheck field="studentLastName" />
+                </div>
                 {fieldErrors.studentLastName && <p className="text-red-500 text-xs mt-1">{fieldErrors.studentLastName}</p>}
               </div>
               <div>
@@ -491,7 +549,7 @@ export function TripLookupPage() {
                   id="studentGrade"
                   value={form.studentGrade}
                   onChange={(e) => updateField('studentGrade', e.target.value)}
-                  className={inputClass(false)}
+                  className={inputClass(null, false)}
                   disabled={submitting}
                 >
                   <option value="">Select grade</option>
@@ -519,7 +577,7 @@ export function TripLookupPage() {
                   id="studentAllergies"
                   value={form.studentAllergies}
                   onChange={(e) => updateField('studentAllergies', e.target.value)}
-                  className={inputClass(false)}
+                  className={inputClass(null, false)}
                   disabled={submitting}
                   rows={2}
                   placeholder="e.g. peanut allergy, asthma inhaler needed"
@@ -603,60 +661,72 @@ export function TripLookupPage() {
                 <label htmlFor="parentFirstName" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                   Your First Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <div className="relative">
+                  <input
                   id="parentFirstName"
                   type="text"
                   value={form.parentFirstName}
                   onChange={(e) => updateField('parentFirstName', e.target.value)}
-                  className={inputClass(!!fieldErrors.parentFirstName)}
+                  className={inputClass('parentFirstName', !!fieldErrors.parentFirstName)}
                   disabled={submitting}
                   autoComplete="given-name"
                 />
+                  <FieldCheck field="parentFirstName" />
+                </div>
                 {fieldErrors.parentFirstName && <p className="text-red-500 text-xs mt-1">{fieldErrors.parentFirstName}</p>}
               </div>
               <div>
                 <label htmlFor="parentLastName" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                   Your Last Name <span className="text-red-500">*</span>
                 </label>
-                <input
+                <div className="relative">
+                  <input
                   id="parentLastName"
                   type="text"
                   value={form.parentLastName}
                   onChange={(e) => updateField('parentLastName', e.target.value)}
-                  className={inputClass(!!fieldErrors.parentLastName)}
+                  className={inputClass('parentLastName', !!fieldErrors.parentLastName)}
                   disabled={submitting}
                   autoComplete="family-name"
                 />
+                  <FieldCheck field="parentLastName" />
+                </div>
                 {fieldErrors.parentLastName && <p className="text-red-500 text-xs mt-1">{fieldErrors.parentLastName}</p>}
               </div>
               <div>
                 <label htmlFor="parentEmail" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                   Email <span className="text-red-500">*</span>
                 </label>
-                <input
+                <div className="relative">
+                  <input
                   id="parentEmail"
                   type="email"
                   value={form.parentEmail}
                   onChange={(e) => updateField('parentEmail', e.target.value)}
-                  className={inputClass(!!fieldErrors.parentEmail)}
+                  className={inputClass('parentEmail', !!fieldErrors.parentEmail)}
                   disabled={submitting}
                   autoComplete="email"
                 />
+                  <FieldCheck field="parentEmail" />
+                </div>
                 {fieldErrors.parentEmail && <p className="text-red-500 text-xs mt-1">{fieldErrors.parentEmail}</p>}
               </div>
               <div>
                 <label htmlFor="parentPhone" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                   Phone <span className="text-red-500">*</span>
                 </label>
-                <input
+                <div className="relative">
+                  <input
                   id="parentPhone"
                   type="tel"
                   value={form.parentPhone}
                   onChange={(e) => updateField('parentPhone', e.target.value)}
-                  className={inputClass(!!fieldErrors.parentPhone)}
+                  className={inputClass('parentPhone', !!fieldErrors.parentPhone)}
                   disabled={submitting}
                   autoComplete="tel"
                 />
+                  <FieldCheck field="parentPhone" />
+                </div>
                 {fieldErrors.parentPhone && <p className="text-red-500 text-xs mt-1">{fieldErrors.parentPhone}</p>}
               </div>
             </div>
@@ -668,30 +738,36 @@ export function TripLookupPage() {
                   <label htmlFor="emergencyContactName" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                     Name <span className="text-red-500">*</span>
                   </label>
+                  <div className="relative">
                   <input
                     id="emergencyContactName"
                     type="text"
                     value={form.emergencyContactName}
                     onChange={(e) => updateField('emergencyContactName', e.target.value)}
-                    className={inputClass(!!fieldErrors.emergencyContactName)}
+                    className={inputClass('emergencyContactName', !!fieldErrors.emergencyContactName)}
                     disabled={submitting}
                     autoComplete="name"
                   />
+                  <FieldCheck field="emergencyContactName" />
+                </div>
                   {fieldErrors.emergencyContactName && <p className="text-red-500 text-xs mt-1">{fieldErrors.emergencyContactName}</p>}
                 </div>
                 <div>
                   <label htmlFor="emergencyContactPhone" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                     Phone <span className="text-red-500">*</span>
                   </label>
+                  <div className="relative">
                   <input
                     id="emergencyContactPhone"
                     type="tel"
                     value={form.emergencyContactPhone}
                     onChange={(e) => updateField('emergencyContactPhone', e.target.value)}
-                    className={inputClass(!!fieldErrors.emergencyContactPhone)}
+                    className={inputClass('emergencyContactPhone', !!fieldErrors.emergencyContactPhone)}
                     disabled={submitting}
                     autoComplete="tel"
                   />
+                  <FieldCheck field="emergencyContactPhone" />
+                </div>
                   {fieldErrors.emergencyContactPhone && <p className="text-red-500 text-xs mt-1">{fieldErrors.emergencyContactPhone}</p>}
                 </div>
               </div>

@@ -109,15 +109,31 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">
-        {t('permissionSlip.signature')}
-        <span className="text-red-500 ml-1">*</span>
-      </label>
-      
-      <div className="border-2 border-[#0A0A0A] rounded-lg overflow-hidden bg-white">
+      <div className="flex items-center justify-between">
+        <label className="block text-sm font-semibold text-[#0A0A0A]">
+          {t('permissionSlip.signature')}
+          <span className="text-red-500 ml-1">*</span>
+        </label>
+        {hasSignature && (
+          <button
+            type="button"
+            onClick={clearSignature}
+            className="text-sm text-red-600 hover:text-red-700 font-bold px-3 py-1.5 rounded-lg border-2 border-red-300 hover:bg-red-50 transition-all"
+          >
+            Clear & Redo
+          </button>
+        )}
+      </div>
+
+      <div className={`border-2 rounded-xl overflow-hidden bg-white relative ${hasSignature ? 'border-green-400' : 'border-[#0A0A0A]'}`}>
+        {!hasSignature && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p className="text-gray-300 text-lg font-medium select-none">Draw your signature here</p>
+          </div>
+        )}
         <canvas
           ref={canvasRef}
-          className="w-full cursor-crosshair touch-none"
+          className="w-full cursor-crosshair touch-none relative z-10"
           style={{ height: '200px' }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
@@ -130,20 +146,9 @@ export function SignatureCapture({ onSignatureChange, value }: SignatureCaptureP
         />
       </div>
 
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-500">
-          {t('permissionSlip.signatureInstruction')}
-        </p>
-        {hasSignature && (
-          <button
-            type="button"
-            onClick={clearSignature}
-            className="text-sm text-red-600 hover:text-red-700 font-medium px-3 py-1 rounded border border-red-300 hover:bg-red-50 transition-colors"
-          >
-            {t('permissionSlip.clearSignature')}
-          </button>
-        )}
-      </div>
+      <p className="text-xs text-gray-400">
+        {t('permissionSlip.signatureInstruction')} — Use your finger on mobile or mouse on desktop.
+      </p>
     </div>
   );
 }

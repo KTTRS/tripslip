@@ -242,14 +242,18 @@ export function CSVImportModal({ tripId, onClose, onSuccess }: CSVImportModalPro
       setResult(importResult);
 
       if (importResult.success > 0) {
-        toast.success(`Successfully imported ${importResult.success} students`);
+        const skippedCount = importResult.duplicates.length + importResult.errors.length;
+        const successMsg = `${importResult.success} student${importResult.success !== 1 ? 's' : ''} imported`;
+        const skippedMsg = skippedCount > 0 ? `, ${skippedCount} skipped` : '';
+        toast.success(`${successMsg}${skippedMsg}`);
         if (importResult.errors.length === 0 && importResult.duplicates.length === 0) {
           setTimeout(() => {
             onSuccess();
           }, 1500);
         }
       } else if (importResult.errors.length > 0 || importResult.duplicates.length > 0) {
-        toast.error('Import completed with issues. Please review below.');
+        const totalSkipped = importResult.duplicates.length + importResult.errors.length;
+        toast.error(`Import failed: ${totalSkipped} student${totalSkipped !== 1 ? 's' : ''} skipped. Review issues below.`);
       }
     } catch (error) {
       console.error('Error importing CSV:', error);

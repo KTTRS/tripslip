@@ -12,10 +12,13 @@ import {
   Users,
   Clock,
   CheckCircle,
-  AlertCircle,
-  FileText,
   ChevronRight,
   ClipboardCheck,
+  PenLine,
+  ShieldCheck,
+  XCircle,
+  Ban,
+  Search,
 } from 'lucide-react';
 
 interface Trip {
@@ -35,14 +38,14 @@ interface Trip {
   signedCount?: number;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  draft: { label: 'Draft', color: 'text-gray-600', bg: 'bg-gray-100' },
-  pending_approval: { label: 'Pending Approval', color: 'text-orange-700', bg: 'bg-orange-100' },
-  approved: { label: 'Approved', color: 'text-green-700', bg: 'bg-green-100' },
-  confirmed: { label: 'Confirmed', color: 'text-blue-700', bg: 'bg-blue-100' },
-  completed: { label: 'Completed', color: 'text-purple-700', bg: 'bg-purple-100' },
-  cancelled: { label: 'Cancelled', color: 'text-red-700', bg: 'bg-red-100' },
-  rejected: { label: 'Rejected', color: 'text-red-700', bg: 'bg-red-100' },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof Clock }> = {
+  draft: { label: 'Draft', color: 'text-gray-600', bg: 'bg-gray-100', icon: PenLine },
+  pending_approval: { label: 'Pending Approval', color: 'text-orange-700', bg: 'bg-orange-100', icon: Clock },
+  approved: { label: 'Approved', color: 'text-green-700', bg: 'bg-green-100', icon: ShieldCheck },
+  confirmed: { label: 'Confirmed', color: 'text-blue-700', bg: 'bg-blue-100', icon: CheckCircle },
+  completed: { label: 'Completed', color: 'text-purple-700', bg: 'bg-purple-100', icon: CheckCircle },
+  cancelled: { label: 'Cancelled', color: 'text-red-700', bg: 'bg-red-100', icon: XCircle },
+  rejected: { label: 'Rejected', color: 'text-red-700', bg: 'bg-red-100', icon: Ban },
 };
 
 export default function TripsPage() {
@@ -142,19 +145,33 @@ export default function TripsPage() {
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          {['all', 'upcoming', 'past'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium border-2 transition-colors ${
-                filter === f
-                  ? 'bg-[#0A0A0A] text-white border-[#0A0A0A]'
-                  : 'bg-white text-gray-700 border-gray-300 hover:border-[#0A0A0A]'
-              }`}
-            >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
+          {(['all', 'upcoming', 'past'] as const).map((f) => {
+            const count = trips.filter((t) => {
+              if (f === 'all') return true;
+              if (f === 'upcoming') return ['draft', 'pending_approval', 'approved', 'confirmed'].includes(t.status);
+              return ['completed', 'cancelled', 'rejected'].includes(t.status);
+            }).length;
+            return (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium border-2 transition-colors inline-flex items-center gap-1.5 ${
+                  filter === f
+                    ? 'bg-[#0A0A0A] text-white border-[#0A0A0A]'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-[#0A0A0A]'
+                }`}
+              >
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+                <span className={`inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 rounded-full text-xs font-bold ${
+                  filter === f
+                    ? 'bg-[#F5C518] text-[#0A0A0A]'
+                    : 'bg-gray-200 text-gray-600'
+                }`}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {filteredTrips.length === 0 ? (
@@ -175,8 +192,26 @@ export default function TripsPage() {
                 </>
               ) : (
                 <>
-                  <h3 className="text-lg font-semibold">No trips match this filter</h3>
-                  <p className="text-gray-500">Try a different filter.</p>
+                  <Search className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                  <h3 className="text-lg font-bold text-[#0A0A0A] mb-1">
+                    {filter === 'upcoming' ? 'No upcoming trips' : filter === 'past' ? 'No past trips' : 'No trips match this filter'}
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    {filter === 'upcoming'
+                      ? 'You don\'t have any active or scheduled trips right now. Create one to get started!'
+                      : filter === 'past'
+                        ? 'No completed, cancelled, or rejected trips to show yet.'
+                        : 'Try selecting a different filter above.'}
+                  </p>
+                  {filter === 'upcoming' && (
+                    <Button
+                      onClick={() => navigate('/trips/create')}
+                      className="bg-[#F5C518] text-[#0A0A0A] border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] font-semibold"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create a Trip
+                    </Button>
+                  )}
                 </>
               )}
             </CardContent>
@@ -200,7 +235,8 @@ export default function TripsPage() {
                           <h3 className="font-bold text-[#0A0A0A] text-lg truncate">
                             {trip.experience?.title || 'Untitled Trip'}
                           </h3>
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusCfg.color} ${statusCfg.bg}`}>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${statusCfg.color} ${statusCfg.bg}`}>
+                            {(() => { const Icon = statusCfg.icon; return <Icon className="h-3 w-3" />; })()}
                             {statusCfg.label}
                           </span>
                         </div>
@@ -233,11 +269,13 @@ export default function TripsPage() {
                           {trip.is_free && (
                             <span className="text-green-600 font-medium">Free</span>
                           )}
+                        </div>
+                        <div className="mt-2">
                           <button
                             onClick={(e) => { e.stopPropagation(); navigate(`/trips/${trip.id}/manifest`); }}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-[#0A0A0A] bg-[#F5C518] border border-[#0A0A0A] rounded-lg px-2 py-0.5 hover:shadow-[2px_2px_0px_#0A0A0A] transition-all"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#0A0A0A] bg-[#F5C518] border-2 border-[#0A0A0A] rounded-lg px-3 py-1.5 hover:shadow-[2px_2px_0px_#0A0A0A] transition-all"
                           >
-                            <ClipboardCheck className="h-3 w-3" />
+                            <ClipboardCheck className="h-3.5 w-3.5" />
                             Attendance
                           </button>
                         </div>
