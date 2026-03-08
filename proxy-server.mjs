@@ -572,6 +572,84 @@ async function handleDiscoveryGeocode(req, res) {
   }
 }
 
+async function handleAssignAdminRole(req, res) {
+  try {
+    const { userId, role, organizationType, organizationId, authToken } = await parseBody(req);
+
+    if (!userId || !role || !organizationType || !organizationId || !authToken) {
+      return sendJSON(res, 400, { error: 'Missing required fields: userId, role, organizationType, organizationId, authToken' });
+    }
+
+    const ROLE_ORG_MAP = {
+      'school_admin': 'school',
+      'district_admin': 'district',
+    };
+    if (!ROLE_ORG_MAP[role]) {
+      return sendJSON(res, 400, { error: `Invalid role. Only ${Object.keys(ROLE_ORG_MAP).join(', ')} can be assigned via this endpoint.` });
+    }
+    if (organizationType !== ROLE_ORG_MAP[role]) {
+      return sendJSON(res, 400, { error: `Role ${role} requires organization type '${ROLE_ORG_MAP[role]}', got '${organizationType}'` });
+    }
+
+    const supabase = getSupabase();
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authToken);
+    if (authError || !user || user.id !== userId) {
+      return sendJSON(res, 401, { error: 'Invalid or expired auth token' });
+    }
+
+    const { data: existingRoles } = await supabase
+      .from('user_role_assignments')
+      .select('id')
+      .eq('user_id', userId);
+    if (existingRoles && existingRoles.length > 0) {
+      return sendJSON(res, 403, { error: 'User already has role assignments. Admin role can only be assigned during initial signup.' });
+    }
+
+    const orgTable = organizationType === 'school' ? 'schools' : 'districts';
+    const { data: orgExists, error: orgError } = await supabase
+      .from(orgTable)
+      .select('id')
+      .eq('id', organizationId)
+      .single();
+    if (orgError || !orgExists) {
+      return sendJSON(res, 400, { error: `Organization not found in ${orgTable}` });
+    }
+
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('id')
+      .eq('name', role)
+      .single();
+
+    if (roleError || !roleData) {
+      return sendJSON(res, 400, { error: `Invalid role: ${role}` });
+    }
+
+    const { data: assignment, error: assignError } = await supabase
+      .from('user_role_assignments')
+      .insert({
+        user_id: userId,
+        role_id: roleData.id,
+        organization_type: organizationType,
+        organization_id: organizationId,
+        is_active: true,
+      })
+      .select('id')
+      .single();
+
+    if (assignError) {
+      console.error('Role assignment error:', assignError.message);
+      return sendJSON(res, 500, { error: 'Failed to assign role: ' + assignError.message });
+    }
+
+    sendJSON(res, 200, { success: true, assignmentId: assignment.id });
+  } catch (err) {
+    console.error('Admin role assignment error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 const apiHandlers = {
   'POST /api/send-sms': handleSendSMS,
   'POST /api/send-email': handleSendEmail,
@@ -582,6 +660,7 @@ const apiHandlers = {
   'POST /api/discovery/nearby': handleDiscoveryNearby,
   'POST /api/discovery/geocode': handleDiscoveryGeocode,
   'POST /api/discovery/search': handleDiscoverySearch,
+  'POST /api/assign-admin-role': handleAssignAdminRole,
 };
 
 const server = http.createServer(async (req, res) => {

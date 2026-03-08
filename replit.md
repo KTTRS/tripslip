@@ -70,7 +70,7 @@ The landing page at `/` has an `/apps` hub page that links to all other portals.
 - `/venues/:venueId` — Venue detail
 
 ### Key Files
-- `proxy-server.mjs` — Reverse proxy + API routes (SMS, email, permission slips, file upload, venue discovery)
+- `proxy-server.mjs` — Reverse proxy + API routes (SMS, email, permission slips, file upload, venue discovery, admin role assignment)
 - `services/venue-discovery.mjs` — Geoapify-powered venue discovery service (geocoding, POI search, dedup, ranking, DB storage)
 - `start-dev.sh` — Startup script for turbo + proxy
 - `apps/teacher/src/components/roster/SendLinksModal.tsx` — Generate ONE link per trip for all parents (copy, SMS, Remind/ClassDojo)
@@ -122,6 +122,8 @@ Migration `supabase/migrations/20250304000001_fix_rbac_signup_policies.sql` must
 - `assign_user_role()` RPC (SECURITY DEFINER) for role assignment during signup
 - `create_teacher_on_signup()` RPC (SECURITY DEFINER) for creating teacher records
 - `list_schools_for_signup()` RPC for school selector (public access)
+
+**IMPORTANT**: The `assign_user_role()` RPC only allows `teacher`, `parent`, and `venue_admin` self-assignment. School admin and district admin signup uses a server-side API endpoint (`POST /api/assign-admin-role`) in `proxy-server.mjs` that uses the service role key to bypass this restriction. The RBAC auth service (`packages/auth/src/rbac-service-impl.ts`) automatically routes admin roles through this endpoint.
 - INSERT/UPDATE/DELETE policies on `active_role_context` (user self-management)
 - Public read policy on `schools` table for signup form
 - `is_active` column and unique `user_id` index on `teachers` table
