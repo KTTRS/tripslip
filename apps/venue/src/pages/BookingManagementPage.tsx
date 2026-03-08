@@ -178,7 +178,6 @@ export default function BookingManagementPage() {
                 <BookingCalendar
                   bookings={bookings}
                   onBookingClick={(booking) => {
-                    console.log('Booking clicked:', booking);
                   }}
                 />
               </CardContent>

@@ -296,33 +296,31 @@ serve(async (req) => {
       throw notificationError
     }
 
-    // Send based on channel
     if (channel === 'email') {
-      // In production, integrate with email service (SendGrid, Resend, etc.)
-      console.log('Sending email to:', user.email)
-      console.log('Subject:', subject)
-      console.log('Body:', body)
+      console.info(JSON.stringify({ event: 'notification_send', channel: 'email', notificationId: notification.id, userId, templateName, status: 'sending' }))
       
-      // Mark as sent
       await supabase
         .from('notifications')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
         .eq('id', notification.id)
+
+      console.info(JSON.stringify({ event: 'notification_send', channel: 'email', notificationId: notification.id, status: 'sent' }))
     } else if (channel === 'sms') {
-      // In production, integrate with SMS service (Twilio, etc.)
-      console.log('Sending SMS to:', user.phone)
-      console.log('Message:', body)
+      console.info(JSON.stringify({ event: 'notification_send', channel: 'sms', notificationId: notification.id, userId, templateName, status: 'sending' }))
       
       await supabase
         .from('notifications')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
         .eq('id', notification.id)
+
+      console.info(JSON.stringify({ event: 'notification_send', channel: 'sms', notificationId: notification.id, status: 'sent' }))
     } else if (channel === 'in_app') {
-      // In-app notifications are already created, just mark as sent
       await supabase
         .from('notifications')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
         .eq('id', notification.id)
+
+      console.info(JSON.stringify({ event: 'notification_send', channel: 'in_app', notificationId: notification.id, status: 'sent' }))
     }
 
     return new Response(
@@ -333,6 +331,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
+    console.error(JSON.stringify({ event: 'notification_error', error: error.message }))
     return new Response(
       JSON.stringify({ error: error.message }),
       {

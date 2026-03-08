@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router'
+import { ErrorBoundary } from '@tripslip/ui'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
@@ -18,6 +19,7 @@ import { EmployeesPage } from './pages/EmployeesPage'
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
@@ -108,5 +110,6 @@ export default function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </AuthProvider>
+    </ErrorBoundary>
   )
 }

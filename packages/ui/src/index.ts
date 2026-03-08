@@ -48,6 +48,7 @@ export * from './components/toggle';
 export * from './components/tooltip';
 
 // Custom TripSlip Components
+export { ErrorBoundary } from './components/ErrorBoundary';
 export * from './components/signature-pad';
 // export * from './components/document-viewer'; // Has import issues
 export * from './components/metric-card';

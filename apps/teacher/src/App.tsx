@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router'
+import { ErrorBoundary } from '@tripslip/ui'
 import { TeacherAuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
@@ -19,6 +20,7 @@ import VenueDetailPage from './pages/VenueDetailPage'
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <TeacherAuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
@@ -117,5 +119,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </TeacherAuthProvider>
+    </ErrorBoundary>
   )
 }

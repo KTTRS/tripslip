@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { captureError } from '@tripslip/utils/monitoring';
+import { captureError } from '@tripslip/utils';
 
 interface Props {
   children: ReactNode;

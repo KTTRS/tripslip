@@ -97,7 +97,7 @@ export function ParentLoginPage() {
                 alt=""
                 className="w-28 h-28 object-contain animate-float drop-shadow-lg"
               />
-              <p className="text-center text-sm font-bold text-gray-400 mt-1">Welcome back!</p>
+              <p className="text-center text-sm font-bold text-gray-400 mt-1">Welcome back, Parent!</p>
               <p className="text-center text-xs text-gray-400">Stay in the loop on your child's trips</p>
             </div>
             <div className="bg-white border-3 border-[#0A0A0A] rounded-2xl shadow-[6px_6px_0px_#0A0A0A] p-8 w-full">
