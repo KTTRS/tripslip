@@ -51,6 +51,8 @@ export function PaymentSuccessPage() {
   const [downloading, setDownloading] = useState(false);
   const [receiptError, setReceiptError] = useState<string | null>(null);
   const [parentName, setParentName] = useState<string>('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [signupDismissed, setSignupDismissed] = useState(false);
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -124,6 +126,7 @@ export function PaymentSuccessPage() {
     };
 
     verifyPayment();
+    supabase.auth.getUser().then(({ data: { user } }) => setIsLoggedIn(!!user));
   }, [searchParams, t]);
 
   const handleDownloadReceipt = () => {
@@ -348,6 +351,41 @@ export function PaymentSuccessPage() {
             {t('payment.viewSlip', 'View Permission Slip')}
           </Button>
         </div>
+
+        {!isLoggedIn && !signupDismissed && (
+          <div className="bg-white border-[2px] border-[#0A0A0A] rounded-xl shadow-[5px_5px_0px_#0A0A0A] p-6 text-center">
+            <h3 className="text-lg font-bold text-[#0A0A0A] font-['Fraunces'] mb-2">Save Time Next Time</h3>
+            <p className="text-sm text-[#0A0A0A] font-['Plus_Jakarta_Sans'] mb-4">
+              Create a free account so your info is pre-filled on future permission slips. Track all your children's trips in one place.
+            </p>
+            <Button
+              onClick={() => navigate('/signup')}
+              className="w-full"
+              size="lg"
+            >
+              Create Free Account
+            </Button>
+            <button
+              onClick={() => setSignupDismissed(true)}
+              className="mt-3 text-sm text-gray-500 hover:text-gray-700"
+            >
+              No thanks
+            </button>
+          </div>
+        )}
+
+        {isLoggedIn && (
+          <div className="text-center mt-4">
+            <Button
+              onClick={() => navigate('/dashboard')}
+              variant="outline"
+              className="w-full"
+              size="lg"
+            >
+              Go to My Dashboard
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

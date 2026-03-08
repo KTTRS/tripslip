@@ -10,6 +10,7 @@ interface SlipData {
   form_data: {
     studentFirstName?: string;
     studentLastName?: string;
+    childName?: string;
     parentName?: string;
     parentEmail?: string;
   } | null;
@@ -34,13 +35,8 @@ export function PermissionSlipSuccessPage() {
   const [slip, setSlip] = useState<SlipData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [showSignup, setShowSignup] = useState(false);
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
-  const [signingUp, setSigningUp] = useState(false);
-  const [signupDone, setSignupDone] = useState(false);
-  const [signupError, setSignupError] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     if (!slipId || !token) {
@@ -49,7 +45,13 @@ export function PermissionSlipSuccessPage() {
       return;
     }
     fetchSlip();
+    checkAuth();
   }, [slipId, token]);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setIsLoggedIn(!!user);
+  };
 
   const fetchSlip = async () => {
     if (!slipId || !token) return;
@@ -78,48 +80,11 @@ export function PermissionSlipSuccessPage() {
 
       const slipData = data as unknown as SlipData;
       setSlip(slipData);
-
-      if (slipData.form_data?.parentEmail) {
-        setSignupEmail(slipData.form_data.parentEmail);
-      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to load';
       setError(msg);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSignupError(null);
-
-    if (!signupEmail.trim() || !signupPassword.trim()) {
-      setSignupError('Please fill in both fields');
-      return;
-    }
-    if (signupPassword.length < 6) {
-      setSignupError('Password must be at least 6 characters');
-      return;
-    }
-
-    setSigningUp(true);
-
-    try {
-      const { error: authError } = await supabase.auth.signUp({
-        email: signupEmail.trim(),
-        password: signupPassword,
-      });
-
-      if (authError) {
-        throw authError;
-      }
-
-      setSignupDone(true);
-    } catch (err: any) {
-      setSignupError(err.message || 'Failed to create account');
-    } finally {
-      setSigningUp(false);
     }
   };
 
@@ -148,11 +113,10 @@ export function PermissionSlipSuccessPage() {
     );
   }
 
-  const studentName = slip.form_data?.studentFirstName && slip.form_data?.studentLastName
-    ? `${slip.form_data.studentFirstName} ${slip.form_data.studentLastName}`
-    : slip.form_data?.parentName
-    ? `your child`
-    : 'your child';
+  const studentName = slip.form_data?.childName
+    || (slip.form_data?.studentFirstName && slip.form_data?.studentLastName
+      ? `${slip.form_data.studentFirstName} ${slip.form_data.studentLastName}`
+      : 'your child');
 
   const tripTitle = slip.trips?.experience?.title || slip.trips?.experiences?.title || 'the field trip';
   const tripDate = slip.trips?.trip_date
@@ -211,88 +175,36 @@ export function PermissionSlipSuccessPage() {
           </div>
         </div>
 
-        {!signupDone && (
-          <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6">
-            {!showSignup ? (
-              <div className="text-center">
-                <h3 className="font-bold text-[#0A0A0A] mb-2">Save Time Next Time</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Create a free account so your information is pre-filled on future permission slips. You'll just need to review and sign.
-                </p>
-                <button
-                  onClick={() => setShowSignup(true)}
-                  className="w-full px-4 py-3 bg-[#F5C518] text-[#0A0A0A] font-bold rounded-lg border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
-                >
-                  Create Free Account
-                </button>
-                <button
-                  onClick={() => setSignupDone(true)}
-                  className="mt-2 text-sm text-gray-500 hover:text-gray-700"
-                >
-                  No thanks
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSignup} className="space-y-4">
-                <h3 className="font-bold text-[#0A0A0A]">Create Your Account</h3>
-                <div>
-                  <label htmlFor="signupEmail" className="block text-sm font-semibold text-[#0A0A0A] mb-1">Email</label>
-                  <input
-                    id="signupEmail"
-                    type="email"
-                    value={signupEmail}
-                    onChange={(e) => setSignupEmail(e.target.value)}
-                    className="w-full border-2 border-[#0A0A0A] rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
-                    autoComplete="email"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="signupPassword" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
-                    Create a Password
-                  </label>
-                  <input
-                    id="signupPassword"
-                    type="password"
-                    value={signupPassword}
-                    onChange={(e) => setSignupPassword(e.target.value)}
-                    className="w-full border-2 border-[#0A0A0A] rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
-                    autoComplete="new-password"
-                    placeholder="At least 6 characters"
-                  />
-                </div>
-                {signupError && (
-                  <p className="text-sm text-red-600">{signupError}</p>
-                )}
-                <button
-                  type="submit"
-                  disabled={signingUp}
-                  className="w-full px-4 py-3 bg-[#F5C518] text-[#0A0A0A] font-bold rounded-lg border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all disabled:opacity-60"
-                >
-                  {signingUp ? 'Creating...' : 'Create Account'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowSignup(false)}
-                  className="w-full text-sm text-gray-500 hover:text-gray-700"
-                >
-                  Cancel
-                </button>
-              </form>
-            )}
+        {!isLoggedIn && !dismissed && (
+          <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 text-center">
+            <img src="/images/icon-magic.png" alt="" className="w-14 h-14 mx-auto mb-3 drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
+            <h3 className="font-bold text-[#0A0A0A] mb-2">Save Time Next Time</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Create a free account so your information is pre-filled on future permission slips. You'll also get a dashboard to track all your children's trips.
+            </p>
+            <button
+              onClick={() => navigate(`/signup?slip=${slipId}&token=${token}`)}
+              className="w-full px-4 py-3 bg-[#F5C518] text-[#0A0A0A] font-bold rounded-lg border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all"
+            >
+              Create Free Account
+            </button>
+            <button
+              onClick={() => setDismissed(true)}
+              className="mt-3 text-sm text-gray-500 hover:text-gray-700"
+            >
+              No thanks
+            </button>
           </div>
         )}
 
-        {signupDone && showSignup && (
-          <div className="bg-green-50 border-2 border-green-300 rounded-xl p-6 text-center">
-            <div className="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 className="font-bold text-green-800 mb-1">Account Created!</h3>
-            <p className="text-sm text-green-700">
-              Next time you get a permission slip link, your info will be pre-filled. You'll just need to sign!
-            </p>
+        {isLoggedIn && (
+          <div className="text-center">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="px-6 py-3 bg-white text-[#0A0A0A] font-bold rounded-lg border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all"
+            >
+              Go to My Dashboard
+            </button>
           </div>
         )}
       </div>

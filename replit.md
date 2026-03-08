@@ -152,9 +152,29 @@ The `signIn` flow wraps role-loading in try/catch and falls back to a default `t
 5. On submit: creates `permission_slips` record with `student_id = NULL`, data in `form_data` JSONB
 6. Status: `signed_pending_payment` (if payment needed) or `signed` (free/assistance)
 7. If payment needed: redirects to PaymentPage → Stripe checkout → PaymentSuccessPage
-8. If no payment: redirects to PermissionSlipSuccessPage with optional account creation
-9. Teacher sees slip appear in real-time on PermissionSlipTrackingPage
-10. Teacher views trip manifest for day-of attendance at `/trips/:tripId/manifest`
+8. If no payment: redirects to PermissionSlipSuccessPage
+9. Both success pages show "Create Free Account" prompt (unless already logged in)
+10. Teacher sees slip appear in real-time on PermissionSlipTrackingPage
+11. Teacher views trip manifest for day-of attendance at `/trips/:tripId/manifest`
+
+### Parent Account Flow (Optional Sign-Up)
+- After completing a permission slip (free or paid), parent sees account creation prompt
+- Two sign-up methods: email+password OR phone+OTP verification
+- Sign-up links auth user to existing `parents` record via `user_id`
+- If no parent record exists, creates one from slip `form_data`
+- Logged-in parents see their dashboard at `/parent/dashboard`
+
+### Parent App Routes
+| Path | Page | Auth Required |
+|---|---|---|
+| `/` `/login` | ParentLoginPage | No |
+| `/signup` | ParentSignupPage (email or phone) | No |
+| `/dashboard` | ParentDashboardPage (trips, children, payments) | Yes |
+| `/trip/:token` | TripLookupPage (guest slip filling) | No |
+| `/slip/:slipId` | PermissionSlipPage | Token |
+| `/permission-slip/success` | PermissionSlipSuccessPage | Token |
+| `/payment` | PaymentPage | Token |
+| `/payment/success` | PaymentSuccessPage | Token |
 
 ### Status Values for permission_slips
 `pending` → `sent` → `signed` / `signed_pending_payment` → `paid` / `cancelled`
