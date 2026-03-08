@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { Card, CardContent, Button } from '@tripslip/ui';
+import { Card, CardContent, Button, ClayIcon } from '@tripslip/ui';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
 import { supabase } from '../lib/supabase';
@@ -95,16 +95,16 @@ export default function DashboardPage() {
   }
 
   const statCards = [
-    { label: 'Total Trips', value: stats.trips, icon: '/images/icon-compass.png', bg: 'bg-[#F5C518]/20', nav: '/trips' },
-    { label: 'Upcoming', value: stats.upcoming, icon: '/images/icon-calendar.png', bg: 'bg-green-100', nav: '/trips' },
-    { label: 'Students', value: stats.students, icon: '/images/icon-team.png', bg: 'bg-blue-100', nav: '/students' },
-    { label: 'Pending Slips', value: stats.pendingSlips, icon: '/images/icon-permission.png', bg: 'bg-orange-100', nav: '/trips' },
+    { label: 'Total Trips', value: stats.trips, icon: '/images/icon-compass.png', color: 'yellow' as const, nav: '/trips' },
+    { label: 'Upcoming', value: stats.upcoming, icon: '/images/icon-calendar.png', color: 'green' as const, nav: '/trips' },
+    { label: 'Students', value: stats.students, icon: '/images/icon-team.png', color: 'sky' as const, nav: '/students' },
+    { label: 'Pending Slips', value: stats.pendingSlips, icon: '/images/icon-permission.png', color: 'orange' as const, nav: '/trips' },
   ];
 
   const quickActions = [
-    { title: 'Create a Trip', desc: 'Plan a new field trip', icon: '/images/icon-pencil.png', bg: 'bg-[#F5C518]/20', nav: '/trips/create' },
-    { title: 'Manage Students', desc: 'Add students or upload a CSV', icon: '/images/icon-team.png', bg: 'bg-blue-100', nav: '/students' },
-    { title: 'Browse Venues', desc: 'Find field trip destinations', icon: '/images/icon-venue.png', bg: 'bg-green-100', nav: '/venues/search' },
+    { title: 'Create a Trip', desc: 'Plan a new field trip', icon: '/images/icon-pencil.png', color: 'yellow' as const, nav: '/trips/create' },
+    { title: 'Manage Students', desc: 'Add students or upload a CSV', icon: '/images/icon-team.png', color: 'sky' as const, nav: '/students' },
+    { title: 'Browse Venues', desc: 'Find field trip destinations', icon: '/images/icon-venue.png', color: 'green' as const, nav: '/venues/search' },
   ];
 
   return (
@@ -121,11 +121,9 @@ export default function DashboardPage() {
                     className="w-full h-full object-contain animate-float drop-shadow-lg"
                   />
                 </div>
-                <img
-                  src="/images/icon-pencil.png"
-                  alt=""
-                  className="absolute -bottom-2 -right-2 w-10 h-10 animate-wiggle"
-                />
+                <ClayIcon size="md" color="yellow" className="absolute -bottom-2 -right-2 animate-wiggle">
+                  <img src="/images/icon-pencil.png" alt="" />
+                </ClayIcon>
               </div>
               <div>
                 <h2 className="font-display text-3xl md:text-4xl font-bold text-[#0A0A0A] tracking-tight">
@@ -142,21 +140,15 @@ export default function DashboardPage() {
               Create New Trip
             </Button>
           </div>
-          <img
-            src="/images/icon-bus.png"
-            alt=""
-            className="absolute -top-1 right-6 w-16 h-16 opacity-20 animate-float hidden md:block"
-          />
-          <img
-            src="/images/icon-backpack.png"
-            alt=""
-            className="absolute bottom-3 right-24 w-12 h-12 opacity-15 animate-bounce-slow hidden md:block"
-          />
-          <img
-            src="/images/char-yellow-star.png"
-            alt=""
-            className="absolute top-4 right-48 w-14 h-14 opacity-10 animate-float-delayed hidden lg:block"
-          />
+          <ClayIcon size="xl" color="sky" className="absolute -top-1 right-6 opacity-20 animate-float hidden md:block">
+            <img src="/images/icon-bus.png" alt="" />
+          </ClayIcon>
+          <ClayIcon size="lg" color="orange" className="absolute bottom-3 right-24 opacity-15 animate-bounce-slow hidden md:block">
+            <img src="/images/icon-backpack.png" alt="" />
+          </ClayIcon>
+          <ClayIcon size="lg" color="yellow" className="absolute top-4 right-48 opacity-10 animate-float-delayed hidden lg:block">
+            <img src="/images/char-yellow-star.png" alt="" />
+          </ClayIcon>
         </div>
 
         <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
@@ -168,9 +160,9 @@ export default function DashboardPage() {
             >
               <CardContent className="pt-5 pb-4 px-4">
                 <div className="flex flex-col items-center text-center gap-3 sm:flex-row sm:text-left">
-                  <div className={`w-16 h-16 rounded-xl ${card.bg} border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] flex items-center justify-center p-2 group-hover:animate-wiggle flex-shrink-0`}>
-                    <img src={card.icon} alt={card.label} className="w-full h-full object-contain" />
-                  </div>
+                  <ClayIcon size="lg" color={card.color} className="group-hover:animate-wiggle">
+                    <img src={card.icon} alt={card.label} />
+                  </ClayIcon>
                   <div>
                     <p className="text-xs text-gray-500 font-semibold uppercase tracking-wider">{card.label}</p>
                     <p className="font-display text-3xl font-bold text-[#0A0A0A]">{card.value}</p>
@@ -184,9 +176,9 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <div>
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-[#F5C518]/30 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
-                <img src="/images/icon-magic.png" alt="" className="w-full h-full object-contain" />
-              </div>
+              <ClayIcon size="sm" color="yellow">
+                <img src="/images/icon-magic.png" alt="" />
+              </ClayIcon>
               <h3 className="font-display text-xl font-bold text-[#0A0A0A]">Quick Actions</h3>
             </div>
             <div className="grid gap-3">
@@ -196,9 +188,9 @@ export default function DashboardPage() {
                   onClick={() => navigate(action.nav)}
                   className="flex items-center gap-4 p-4 bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all text-left group"
                 >
-                  <div className={`w-14 h-14 rounded-xl ${action.bg} border-2 border-[#0A0A0A] shadow-[2px_2px_0px_#0A0A0A] flex items-center justify-center p-2 group-hover:animate-wiggle flex-shrink-0`}>
-                    <img src={action.icon} alt={action.title} className="w-full h-full object-contain" />
-                  </div>
+                  <ClayIcon size="lg" color={action.color} className="group-hover:animate-wiggle">
+                    <img src={action.icon} alt={action.title} />
+                  </ClayIcon>
                   <div className="flex-1">
                     <div className="font-bold text-[#0A0A0A] text-base">{action.title}</div>
                     <div className="text-sm text-gray-500">{action.desc}</div>
@@ -212,9 +204,9 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-green-100 border-2 border-[#0A0A0A] flex items-center justify-center p-1">
-                  <img src="/images/icon-calendar.png" alt="" className="w-full h-full object-contain" />
-                </div>
+                <ClayIcon size="sm" color="green">
+                  <img src="/images/icon-calendar.png" alt="" />
+                </ClayIcon>
                 <h3 className="font-display text-xl font-bold text-[#0A0A0A]">Upcoming Trips</h3>
               </div>
               {recentTrips.length > 0 && (
@@ -229,9 +221,9 @@ export default function DashboardPage() {
             {recentTrips.length === 0 ? (
               <Card className="border-2 border-dashed border-gray-300 bg-gray-50/50">
                 <CardContent className="py-12 text-center">
-                  <div className="w-16 h-16 rounded-xl bg-gray-100 border-2 border-gray-200 flex items-center justify-center mx-auto mb-4 p-2">
-                    <img src="/images/icon-calendar.png" alt="" className="w-full h-full object-contain opacity-40" />
-                  </div>
+                  <ClayIcon size="lg" color="white" className="mx-auto mb-4 opacity-40">
+                    <img src="/images/icon-calendar.png" alt="" />
+                  </ClayIcon>
                   <p className="text-gray-500 font-bold text-base">No upcoming trips</p>
                   <p className="text-sm text-gray-400 mt-1">Create a trip to get started</p>
                 </CardContent>

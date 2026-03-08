@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Button } from '@tripslip/ui'
+import { Button, ClayIcon } from '@tripslip/ui'
 import { getAppUrl } from '../utils/appUrls'
 
 export default function Header() {
@@ -56,15 +56,21 @@ export default function Header() {
               <div className="absolute right-0 mt-2 w-52 bg-white border-2 border-black rounded-xl shadow-offset z-50 overflow-hidden">
                 <div className="p-2">
                   <a href={getAppUrl('teacher')} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium hover:bg-primary/10 rounded-lg transition-colors">
-                    <img src="/images/icon-permission.png" alt="" className="w-6 h-6" />
+                    <ClayIcon size="sm" color="sky">
+                      <img src="/images/icon-permission.png" alt="" />
+                    </ClayIcon>
                     Teacher Login
                   </a>
                   <a href={getAppUrl('school')} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium hover:bg-primary/10 rounded-lg transition-colors">
-                    <img src="/images/icon-tracking.png" alt="" className="w-6 h-6" />
+                    <ClayIcon size="sm" color="yellow">
+                      <img src="/images/icon-tracking.png" alt="" />
+                    </ClayIcon>
                     School Admin
                   </a>
                   <a href={getAppUrl('venue')} className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium hover:bg-primary/10 rounded-lg transition-colors">
-                    <img src="/images/icon-venue.png" alt="" className="w-6 h-6" />
+                    <ClayIcon size="sm" color="green">
+                      <img src="/images/icon-venue.png" alt="" />
+                    </ClayIcon>
                     Venue Admin
                   </a>
                 </div>

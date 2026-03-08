@@ -1,6 +1,6 @@
 import Header from '../components/Header'
 import Footer from '../components/Footer'
-import { Button } from '@tripslip/ui'
+import { Button, ClayIcon } from '@tripslip/ui'
 import { getAppUrl } from '../utils/appUrls'
 
 const apps = [
@@ -17,6 +17,7 @@ const apps = [
     accent: 'bg-blue-200',
     accentBorder: 'border-blue-400',
     buttonBg: 'bg-blue-500 hover:bg-blue-600',
+    clayColor: 'sky' as const,
     features: [
       'Create & manage field trips',
       'Digital permission slips',
@@ -38,6 +39,7 @@ const apps = [
     accent: 'bg-yellow-200',
     accentBorder: 'border-yellow-400',
     buttonBg: 'bg-amber-500 hover:bg-amber-600',
+    clayColor: 'yellow' as const,
     features: [
       'E-sign permission slips',
       'Secure online payments',
@@ -59,6 +61,7 @@ const apps = [
     accent: 'bg-green-200',
     accentBorder: 'border-green-400',
     buttonBg: 'bg-green-500 hover:bg-green-600',
+    clayColor: 'green' as const,
     features: [
       'Booking management',
       'Availability calendar',
@@ -80,6 +83,7 @@ const apps = [
     accent: 'bg-pink-200',
     accentBorder: 'border-pink-400',
     buttonBg: 'bg-pink-500 hover:bg-pink-600',
+    clayColor: 'pink' as const,
     features: [
       'District-wide oversight',
       'Trip approval workflow',
@@ -98,7 +102,9 @@ export default function AppsPage() {
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-16 animate-fade-in">
             <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-black rounded-full px-5 py-2 mb-6 shadow-[3px_3px_0px_#0A0A0A]">
-              <img src="/images/icon-compass.png" alt="" className="w-5 h-5" />
+              <ClayIcon size="xs" color="green">
+                <img src="/images/icon-compass.png" alt="" />
+              </ClayIcon>
               <span className="text-sm font-bold text-black font-sans">Platform Access</span>
             </div>
             <h1 className="text-4xl sm:text-6xl font-display font-bold tracking-tight text-black mb-4">
@@ -118,9 +124,9 @@ export default function AppsPage() {
               >
                 <div className={`relative bg-gradient-to-r ${app.heroGradient} px-6 pt-6 pb-8 border-b-3 border-black overflow-hidden`}>
                   <div className="flex items-start justify-between">
-                    <div className={`w-16 h-16 rounded-2xl ${app.accent} border-2 border-black p-2.5 flex items-center justify-center shadow-[3px_3px_0px_#0A0A0A] group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
-                      <img src={app.icon} alt="" className="w-9 h-9 object-contain" />
-                    </div>
+                    <ClayIcon size="lg" color={app.clayColor} className="group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                      <img src={app.icon} alt="" />
+                    </ClayIcon>
                     <div className="animate-float">
                       <img
                         src={app.character}

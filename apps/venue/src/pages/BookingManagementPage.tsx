@@ -4,6 +4,7 @@ import { Layout } from '../components/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tripslip/ui/components/card';
 import { Button } from '@tripslip/ui/components/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tripslip/ui/components/tabs';
+import { ClayIcon } from '@tripslip/ui/components/clay-icon';
 import { useVenueBookings } from '../hooks/useVenueBookings';
 import { BookingList } from '../components/BookingList';
 import { BookingCalendar } from '../components/BookingCalendar';
@@ -53,9 +54,9 @@ export default function BookingManagementPage() {
       <div className="space-y-8">
         <div className="relative bg-gradient-to-r from-[#F5C518]/20 via-white to-[#4ECDC4]/20 border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 overflow-hidden">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-[#4ECDC4]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-2">
-              <img src="/images/icon-calendar.png" alt="" className="w-10 h-10 object-contain" />
-            </div>
+            <ClayIcon size="lg" color="teal">
+              <img src="/images/icon-calendar.png" alt="" />
+            </ClayIcon>
             <div>
               <h2 className="text-3xl font-bold text-[#0A0A0A]">Booking Management</h2>
               <p className="text-gray-600 mt-1">
@@ -75,9 +76,9 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-compass.png" alt="" className="w-8 h-8 object-contain" />
-                </div>
+                <ClayIcon size="md" color="yellow">
+                  <img src="/images/icon-compass.png" alt="" />
+                </ClayIcon>
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.total}</p>
                   <p className="text-sm text-gray-600">Total Bookings</p>
@@ -89,9 +90,9 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-orange-500/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-megaphone.png" alt="" className="w-8 h-8 object-contain" />
-                </div>
+                <ClayIcon size="md" color="orange">
+                  <img src="/images/icon-megaphone.png" alt="" />
+                </ClayIcon>
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.pending}</p>
                   <p className="text-sm text-gray-600">Pending</p>
@@ -103,9 +104,9 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-green-500/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-shield.png" alt="" className="w-8 h-8 object-contain" />
-                </div>
+                <ClayIcon size="md" color="green">
+                  <img src="/images/icon-shield.png" alt="" />
+                </ClayIcon>
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.confirmed}</p>
                   <p className="text-sm text-gray-600">Confirmed</p>
@@ -117,9 +118,9 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-trophy.png" alt="" className="w-8 h-8 object-contain" />
-                </div>
+                <ClayIcon size="md" color="sky">
+                  <img src="/images/icon-trophy.png" alt="" />
+                </ClayIcon>
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.completed}</p>
                   <p className="text-sm text-gray-600">Completed</p>
@@ -131,9 +132,9 @@ export default function BookingManagementPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-red-500/20 border-2 border-[#0A0A0A] flex items-center justify-center p-1.5">
-                  <img src="/images/icon-tracking.png" alt="" className="w-8 h-8 object-contain" />
-                </div>
+                <ClayIcon size="md" color="red">
+                  <img src="/images/icon-tracking.png" alt="" />
+                </ClayIcon>
                 <div>
                   <p className="text-2xl font-bold font-mono">{bookingStats.cancelled}</p>
                   <p className="text-sm text-gray-600">Cancelled</p>
@@ -211,33 +212,39 @@ export default function BookingManagementPage() {
             <div className="grid gap-4 md:grid-cols-3">
               <Button
                 variant="outline"
-                className="h-20 border-2 border-[#0A0A0A] hover:bg-[#F5C518] hover:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-200 font-semibold rounded-xl"
+                className="h-24 border-2 border-[#0A0A0A] hover:bg-[#F5C518] hover:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-200 font-semibold rounded-xl"
                 onClick={() => setFilters({ status: 'pending' })}
               >
-                <div className="text-center flex flex-col items-center">
-                  <img src="/images/icon-megaphone.png" alt="" className="h-6 w-6 object-contain mb-2" />
+                <div className="text-center flex flex-col items-center gap-2">
+                  <ClayIcon size="sm" color="orange">
+                    <img src="/images/icon-megaphone.png" alt="" />
+                  </ClayIcon>
                   <p>Review Pending</p>
                 </div>
               </Button>
 
               <Button
                 variant="outline"
-                className="h-20 border-2 border-[#0A0A0A] hover:bg-[#F5C518] hover:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-200 font-semibold rounded-xl"
+                className="h-24 border-2 border-[#0A0A0A] hover:bg-[#F5C518] hover:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-200 font-semibold rounded-xl"
                 onClick={() => navigate('/experiences')}
               >
-                <div className="text-center flex flex-col items-center">
-                  <img src="/images/icon-venue.png" alt="" className="h-6 w-6 object-contain mb-2" />
+                <div className="text-center flex flex-col items-center gap-2">
+                  <ClayIcon size="sm" color="teal">
+                    <img src="/images/icon-venue.png" alt="" />
+                  </ClayIcon>
                   <p>Manage Experiences</p>
                 </div>
               </Button>
 
               <Button
                 variant="outline"
-                className="h-20 border-2 border-[#0A0A0A] hover:bg-[#F5C518] hover:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-200 font-semibold rounded-xl"
+                className="h-24 border-2 border-[#0A0A0A] hover:bg-[#F5C518] hover:shadow-[4px_4px_0px_#0A0A0A] transition-all duration-200 font-semibold rounded-xl"
                 onClick={() => navigate('/financials')}
               >
-                <div className="text-center flex flex-col items-center">
-                  <img src="/images/icon-payment.png" alt="" className="h-6 w-6 object-contain mb-2" />
+                <div className="text-center flex flex-col items-center gap-2">
+                  <ClayIcon size="sm" color="green">
+                    <img src="/images/icon-payment.png" alt="" />
+                  </ClayIcon>
                   <p>View Financials</p>
                 </div>
               </Button>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@tripslip/ui';
+import { ClayIcon } from '@tripslip/ui/components/clay-icon';
 import { useSchoolAuth } from '../contexts/SchoolAuthContext';
 import { supabase } from '../lib/supabase';
 import { Layout } from '../components/Layout';
@@ -55,7 +56,7 @@ export default function DashboardPage() {
     totalCost: 0,
     totalStudents: 0,
     completionRate: 0,
-    totalBudget: 50000000, // $500,000 default budget in cents
+    totalBudget: 50000000,
     spentAmount: 0,
     remainingAmount: 50000000,
   });
@@ -64,7 +65,6 @@ export default function DashboardPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filter states
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [selectedTeacher, setSelectedTeacher] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
@@ -85,9 +85,6 @@ export default function DashboardPage() {
     try {
       setLoading(true);
 
-      // Build query with filters
-      // Note: RLS policies automatically filter trips based on user's role and organization
-      // School admins see trips from their school, district admins see trips from their district
       let query = (supabase as any)
         .from('trips')
         .select(`
@@ -115,7 +112,6 @@ export default function DashboardPage() {
         `)
         .order('trip_date', { ascending: false });
 
-      // Apply date range filter
       if (dateRange.start) {
         query = query.gte('trip_date', dateRange.start);
       }
@@ -123,12 +119,10 @@ export default function DashboardPage() {
         query = query.lte('trip_date', dateRange.end);
       }
 
-      // Apply teacher filter
       if (selectedTeacher) {
         query = query.eq('teacher_id', selectedTeacher);
       }
 
-      // Apply status filter
       if (selectedStatus) {
         query = query.eq('status', selectedStatus);
       }
@@ -137,7 +131,6 @@ export default function DashboardPage() {
 
       if (tripsError) throw tripsError;
 
-      // Calculate metrics
       const calculatedMetrics = (trips || []).reduce(
         (acc: DashboardMetrics, trip: any) => {
           const slips = trip.permission_slips || [];
@@ -176,20 +169,17 @@ export default function DashboardPage() {
         }
       );
 
-      // Calculate average completion rate
       if (calculatedMetrics.totalTrips > 0) {
         calculatedMetrics.completionRate = Math.round(
           (calculatedMetrics.completionRate / calculatedMetrics.totalTrips) * 100
         );
       }
 
-      // Calculate budget metrics
       calculatedMetrics.spentAmount = calculatedMetrics.totalCost;
       calculatedMetrics.remainingAmount = calculatedMetrics.totalBudget - calculatedMetrics.spentAmount;
 
       setMetrics(calculatedMetrics);
 
-      // Calculate teacher statistics
       const teacherMap = new Map<string, TeacherStats>();
       (trips || []).forEach((trip: any) => {
         const teacherId = trip.teacher?.id;
@@ -217,7 +207,6 @@ export default function DashboardPage() {
         stats.completionRate += slips.length > 0 ? completedSlips / slips.length : 0;
       });
 
-      // Calculate average completion rate per teacher
       const teacherStatsArray = Array.from(teacherMap.values()).map((stats) => ({
         ...stats,
         completionRate: stats.tripCount > 0 
@@ -227,14 +216,12 @@ export default function DashboardPage() {
 
       setTeacherStats(teacherStatsArray);
 
-      // Extract unique teachers for filter dropdown
       const uniqueTeachers = Array.from(teacherMap.values()).map((stats) => ({
         id: stats.id,
         name: stats.name,
       }));
       setTeacherList(uniqueTeachers);
 
-      // Format recent trips
       const formattedTrips: TripOverview[] = (trips || []).slice(0, 10).map((trip: any) => {
         const slips = trip.permission_slips || [];
         const completedSlips = slips.filter(
@@ -261,7 +248,6 @@ export default function DashboardPage() {
 
       setRecentTrips(formattedTrips);
 
-      // Generate alerts for trips requiring attention
       const generatedAlerts: Alert[] = [];
       (trips || []).forEach((trip: any) => {
         const slips = trip.permission_slips || [];
@@ -272,7 +258,6 @@ export default function DashboardPage() {
         const tripDate = new Date(trip.trip_date);
         const daysUntilTrip = Math.ceil((tripDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
-        // Alert for low completion rate with upcoming trip
         if (daysUntilTrip <= 7 && daysUntilTrip > 0 && completionRate < 50) {
           generatedAlerts.push({
             id: `${trip.id}-low-completion`,
@@ -293,7 +278,6 @@ export default function DashboardPage() {
           });
         }
 
-        // Alert for overdue trips
         if (daysUntilTrip < 0 && trip.status !== 'completed' && trip.status !== 'cancelled') {
           generatedAlerts.push({
             id: `${trip.id}-overdue`,
@@ -330,7 +314,6 @@ export default function DashboardPage() {
   };
 
   const handleExportCSV = () => {
-    // Generate CSV content
     const headers = [
       'Trip Date',
       'Trip Name',
@@ -356,7 +339,6 @@ export default function DashboardPage() {
       ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
     ].join('\n');
 
-    // Create download link
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -390,7 +372,11 @@ export default function DashboardPage() {
       <Layout>
         <div className="text-center py-12">
           <div className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl p-8 max-w-md mx-auto bg-white">
-            <img src="/images/icon-megaphone.png" alt="" className="mx-auto h-16 w-16 object-contain drop-shadow-md" />
+            <div className="flex justify-center mb-4">
+              <ClayIcon size="xl" color="orange">
+                <img src="/images/icon-megaphone.png" alt="" />
+              </ClayIcon>
+            </div>
             <h3 className="mt-4 text-lg font-bold text-[#0A0A0A]">
               No School Association
             </h3>
@@ -407,6 +393,9 @@ export default function DashboardPage() {
     <Layout>
       <div className="relative mb-8 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50/50 border-2 border-black shadow-[4px_4px_0px_#0A0A0A] p-6 overflow-hidden">
         <div className="flex items-center gap-4">
+          <ClayIcon size="lg" color="sky">
+            <img src="/images/icon-graduation.png" alt="" />
+          </ClayIcon>
           <div className="flex-1">
             <h2 className="text-3xl font-bold">School Dashboard</h2>
             <p className="text-gray-600 mt-1">Monitor trips, teachers, and budgets across your school</p>
@@ -436,7 +425,9 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-4 mb-8">
           <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-blue-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
-              <img src="/images/icon-compass.png" alt="" className="w-10 h-10 object-contain drop-shadow-md" />
+              <ClayIcon size="md" color="sky">
+                <img src="/images/icon-compass.png" alt="" />
+              </ClayIcon>
               <CardTitle className="text-sm text-gray-600">Total Trips</CardTitle>
             </CardHeader>
             <CardContent>
@@ -449,7 +440,9 @@ export default function DashboardPage() {
 
           <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-green-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
-              <img src="/images/icon-team.png" alt="" className="w-10 h-10 object-contain drop-shadow-md" />
+              <ClayIcon size="md" color="green">
+                <img src="/images/icon-team.png" alt="" />
+              </ClayIcon>
               <CardTitle className="text-sm text-gray-600">Total Students</CardTitle>
             </CardHeader>
             <CardContent>
@@ -460,7 +453,9 @@ export default function DashboardPage() {
 
           <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-yellow-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
-              <img src="/images/icon-payment.png" alt="" className="w-10 h-10 object-contain drop-shadow-md" />
+              <ClayIcon size="md" color="yellow">
+                <img src="/images/icon-payment.png" alt="" />
+              </ClayIcon>
               <CardTitle className="text-sm text-gray-600">Total Cost</CardTitle>
             </CardHeader>
             <CardContent>
@@ -471,7 +466,9 @@ export default function DashboardPage() {
 
           <Card className="border-2 border-black shadow-[3px_3px_0px_#0A0A0A] bg-gradient-to-br from-white to-purple-50/40 hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-y-0.5 transition-all">
             <CardHeader className="flex flex-row items-center gap-3 pb-2">
-              <img src="/images/icon-trophy.png" alt="" className="w-10 h-10 object-contain drop-shadow-md" />
+              <ClayIcon size="md" color="purple">
+                <img src="/images/icon-trophy.png" alt="" />
+              </ClayIcon>
               <CardTitle className="text-sm text-gray-600">Completion Rate</CardTitle>
             </CardHeader>
             <CardContent>
@@ -482,10 +479,8 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 mb-8">
-          {/* Budget Tracking */}
           <BudgetTracking schoolId={schoolId} />
 
-          {/* Teacher Statistics */}
           <Card className="border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
             <CardHeader>
               <CardTitle>Trips by Teacher</CardTitle>
@@ -526,7 +521,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-1 mb-8">
-          {/* Recent Trips */}
           <Card className="border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A]">
             <CardHeader>
               <CardTitle>Recent Trips</CardTitle>

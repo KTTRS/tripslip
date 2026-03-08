@@ -1,4 +1,4 @@
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@tripslip/ui'
+import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, ClayIcon } from '@tripslip/ui'
 
 const plans = [
   {
@@ -18,7 +18,8 @@ const plans = [
     gradient: 'from-blue-50 to-blue-100/50',
     iconBg: 'bg-blue-100',
     iconBorder: 'border-blue-300',
-    accentColor: 'bg-blue-500'
+    accentColor: 'bg-blue-500',
+    clayColor: 'sky' as const
   },
   {
     name: 'School',
@@ -39,7 +40,8 @@ const plans = [
     gradient: 'from-primary/10 to-primary/20',
     iconBg: 'bg-primary/20',
     iconBorder: 'border-primary',
-    accentColor: 'bg-primary'
+    accentColor: 'bg-primary',
+    clayColor: 'yellow' as const
   },
   {
     name: 'Venue',
@@ -60,7 +62,8 @@ const plans = [
     gradient: 'from-green-50 to-green-100/50',
     iconBg: 'bg-green-100',
     iconBorder: 'border-green-300',
-    accentColor: 'bg-green-500'
+    accentColor: 'bg-green-500',
+    clayColor: 'green' as const
   }
 ]
 
@@ -110,9 +113,9 @@ export default function PricingTable() {
 
               <CardHeader className="pb-2 pt-8">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className={`w-16 h-16 rounded-2xl ${plan.iconBg} border-3 ${plan.iconBorder} p-2.5 flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(10,10,10,0.15)] group-hover:shadow-[4px_4px_0px_0px_rgba(10,10,10,0.2)] transition-shadow duration-300`}>
-                    <img src={plan.icon} alt="" className="w-10 h-10 object-contain" />
-                  </div>
+                  <ClayIcon size="lg" color={plan.clayColor} className="group-hover:scale-110 transition-transform duration-300">
+                    <img src={plan.icon} alt="" />
+                  </ClayIcon>
                   <div>
                     <CardTitle className="font-display text-2xl font-bold">{plan.name}</CardTitle>
                     <CardDescription className="text-sm mt-0.5">

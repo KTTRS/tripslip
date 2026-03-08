@@ -1,13 +1,17 @@
-import { Button } from '@tripslip/ui'
+import { Button, ClayIcon } from '@tripslip/ui'
 
 export default function CTASection() {
   return (
     <section className="relative bg-primary py-24 px-6 overflow-hidden">
-      <div className="absolute top-6 left-6 animate-float opacity-60">
-        <img src="/images/icon-backpack.png" alt="" className="w-14 h-14" />
+      <div className="absolute top-6 left-6 animate-float opacity-80">
+        <ClayIcon size="xl" color="orange">
+          <img src="/images/icon-backpack.png" alt="" />
+        </ClayIcon>
       </div>
-      <div className="absolute bottom-6 right-10 animate-float-delayed opacity-60">
-        <img src="/images/icon-bus.png" alt="" className="w-16 h-16" />
+      <div className="absolute bottom-6 right-10 animate-float-delayed opacity-80">
+        <ClayIcon size="xl" color="yellow">
+          <img src="/images/icon-bus.png" alt="" />
+        </ClayIcon>
       </div>
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 opacity-10">
         <div className="w-64 h-64 rounded-full border-[8px] border-black" />

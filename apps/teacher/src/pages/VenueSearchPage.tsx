@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
+import { ClayIcon } from '@tripslip/ui';
 import { MapPin, Search, ChevronDown, ExternalLink, Globe, Phone, Star, Users, Sparkles, GraduationCap, DollarSign, CheckCircle, ArrowRight } from 'lucide-react';
 
 interface DiscoveredVenue {
@@ -152,18 +153,24 @@ export default function VenueSearchPage() {
       <div className="space-y-8">
         <div className="relative bg-gradient-to-r from-[#F5C518]/20 via-white to-[#4ECDC4]/15 border-2 border-[#0A0A0A] rounded-2xl shadow-[6px_6px_0px_#0A0A0A] p-8 overflow-hidden">
           <div className="absolute top-4 right-6 animate-float">
-            <img src="/images/char-green-octagon.png" alt="" className="w-16 h-16 drop-shadow-lg" />
+            <ClayIcon size="xl" color="green">
+              <img src="/images/char-green-octagon.png" alt="" />
+            </ClayIcon>
           </div>
           <div className="absolute bottom-2 right-24 animate-bounce-slow">
-            <img src="/images/icon-compass.png" alt="" className="w-10 h-10 opacity-60 drop-shadow-md" />
+            <ClayIcon size="lg" color="teal" className="opacity-60">
+              <img src="/images/icon-compass.png" alt="" />
+            </ClayIcon>
           </div>
           <div className="absolute top-6 right-48 animate-wiggle">
-            <img src="/images/icon-venue.png" alt="" className="w-8 h-8 opacity-40 drop-shadow-md" />
+            <ClayIcon size="md" color="purple" className="opacity-40">
+              <img src="/images/icon-venue.png" alt="" />
+            </ClayIcon>
           </div>
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-[#F5C518] border-2 border-[#0A0A0A] flex items-center justify-center p-2.5 shadow-[3px_3px_0px_#0A0A0A] animate-pulse-glow">
-              <img src="/images/icon-venue.png" alt="" className="w-full h-full object-contain" />
-            </div>
+            <ClayIcon size="xl" color="yellow" className="animate-pulse-glow">
+              <img src="/images/icon-venue.png" alt="" />
+            </ClayIcon>
             <div>
               <h1 className="font-display text-4xl font-bold text-[#0A0A0A]">Discover Venues</h1>
               <p className="mt-1 text-gray-600 text-lg">
@@ -269,8 +276,10 @@ export default function VenueSearchPage() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-[#F5C518] border-t-[#0A0A0A] rounded-full animate-spin" />
-              <img src="/images/icon-compass.png" alt="" className="absolute inset-0 m-auto w-8 h-8 animate-wiggle" />
+              <div className="w-20 h-20 border-4 border-[#F5C518] border-t-[#0A0A0A] rounded-full animate-spin" />
+              <ClayIcon size="md" color="yellow" className="absolute inset-0 m-auto animate-wiggle">
+                <img src="/images/icon-compass.png" alt="" />
+              </ClayIcon>
             </div>
             <p className="text-[#0A0A0A] font-bold text-lg mt-6">Discovering venues near you...</p>
             <p className="text-gray-500 text-sm mt-1">Searching museums, zoos, science centers, and more</p>
@@ -314,8 +323,10 @@ export default function VenueSearchPage() {
 
             {filteredVenues.length === 0 ? (
               <div className="bg-white border-2 border-[#0A0A0A] rounded-2xl shadow-[4px_4px_0px_#0A0A0A] p-16 text-center">
-                <div className="animate-float">
-                  <img src="/images/icon-compass.png" alt="" className="w-20 h-20 mx-auto mb-6 drop-shadow-lg" />
+                <div className="animate-float flex justify-center mb-6">
+                  <ClayIcon size="xl" color="teal">
+                    <img src="/images/icon-compass.png" alt="" />
+                  </ClayIcon>
                 </div>
                 <h3 className="font-display text-2xl font-bold text-[#0A0A0A] mb-3">No venues found</h3>
                 <p className="text-gray-600 text-lg max-w-md mx-auto">
@@ -335,16 +346,24 @@ export default function VenueSearchPage() {
         {!loading && !hasSearched && (
           <div className="bg-white border-2 border-[#0A0A0A] rounded-2xl shadow-[6px_6px_0px_#0A0A0A] p-12 text-center relative overflow-hidden">
             <div className="absolute top-4 left-4 animate-float opacity-40">
-              <img src="/images/char-yellow-star.png" alt="" className="w-12 h-12 drop-shadow-md" />
+              <ClayIcon size="lg" color="yellow">
+                <img src="/images/char-yellow-star.png" alt="" />
+              </ClayIcon>
             </div>
             <div className="absolute bottom-4 right-4 animate-bounce-slow opacity-40">
-              <img src="/images/char-pink-heart.png" alt="" className="w-12 h-12 drop-shadow-md" />
+              <ClayIcon size="lg" color="pink">
+                <img src="/images/char-pink-heart.png" alt="" />
+              </ClayIcon>
             </div>
             <div className="absolute top-8 right-12 animate-wiggle opacity-30">
-              <img src="/images/icon-bus.png" alt="" className="w-8 h-8" />
+              <ClayIcon size="md" color="sky">
+                <img src="/images/icon-bus.png" alt="" />
+              </ClayIcon>
             </div>
-            <div className="animate-float mb-6">
-              <img src="/images/icon-venue.png" alt="" className="w-24 h-24 mx-auto drop-shadow-xl" />
+            <div className="animate-float mb-6 flex justify-center">
+              <ClayIcon size="2xl" color="teal">
+                <img src="/images/icon-venue.png" alt="" />
+              </ClayIcon>
             </div>
             <h3 className="font-display text-3xl font-bold text-[#0A0A0A] mb-3">Ready to explore?</h3>
             <p className="text-gray-600 text-lg max-w-lg mx-auto leading-relaxed">

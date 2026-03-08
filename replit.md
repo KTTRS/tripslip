@@ -34,7 +34,8 @@ Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared pack
 - **Fonts**: Fraunces (display headings, `font-display`), Plus Jakarta Sans (body, `font-sans`), Space Mono (labels, `font-mono`)
 - **Hover**: Cards/buttons lift UP (`translate(-4px,-4px)`) with shadow GROWING to 8px. NEVER shrink shadow on hover.
 - **Shadows**: Default `shadow-offset` (4px), hover `shadow-offset-lg` (8px), active = 2px
-- **Icons**: 3D glossy clay render PNGs (256x256, transparent BG) in each app's `public/images/icon-*.png`. 16 icons: backpack, bus, calendar, compass, graduation, language, magic, megaphone, payment, pencil, permission, shield, team, tracking, trophy, venue. Claymorphic layered shadows: `0 2px, 0 4px, 0 8px`
+- **Icons**: 3D glossy clay render PNGs (256x256, transparent BG) in each app's `public/images/icon-*.png`. 16 icons: backpack, bus, calendar, compass, graduation, language, magic, megaphone, payment, pencil, permission, shield, team, tracking, trophy, venue
+- **ClayIcon component** (`packages/ui`): Wraps icon images in claymorphic containers with gradient backgrounds, inner shadows, highlight spots, and depth shadows. Sizes: xs(28), sm(36), md(48), lg(64), xl(88), 2xl(112). Colors: yellow, sky, green, red, orange, teal, purple, pink, navy, black, white. Usage: `<ClayIcon size="lg" color="sky"><img src="/images/icon-permission.png" /></ClayIcon>`. CSS loaded globally via `@import` in each app's `index.css` from `packages/ui/src/styles/clay-icons.css`.
 - **Borders**: 2px bold borders, `border-3` available for emphasis
 - **All app Tailwind configs** scan `packages/auth/src/` and `packages/ui/src/` and include `borderWidth: { '3': '3px' }`
 - **Characters**: Buddy (blue, Planner), Gem (purple, Organizer), Scout (green, Navigator), Sparkle (pink, Explorer), Sunny (yellow, Leader), Dash (red, Adventurer)

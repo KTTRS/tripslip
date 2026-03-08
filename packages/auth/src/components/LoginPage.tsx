@@ -5,7 +5,7 @@
 
 import { useState, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, ClayIcon } from '@tripslip/ui';
 import type { SupabaseClient } from '@tripslip/database';
 import type { RBACAuthService } from '../rbac-service';
 import type { UserRole } from '../types';
@@ -104,23 +104,21 @@ export default function LoginPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50/30 via-white to-orange-50/20 flex items-center justify-center p-4 relative overflow-hidden">
-      <img
-        src="/images/icon-bus.png"
-        alt=""
-        className="absolute top-12 left-12 w-16 h-16 opacity-60 animate-float pointer-events-none hidden md:block"
-      />
-      <img
-        src="/images/icon-backpack.png"
-        alt=""
-        className="absolute bottom-16 right-16 w-14 h-14 opacity-50 animate-float pointer-events-none hidden md:block"
-        style={{ animationDelay: '1.5s' }}
-      />
-      <img
-        src="/images/icon-compass.png"
-        alt=""
-        className="absolute top-1/3 right-12 w-12 h-12 opacity-40 animate-float pointer-events-none hidden lg:block"
-        style={{ animationDelay: '3s' }}
-      />
+      <div className="absolute top-12 left-12 opacity-60 animate-float pointer-events-none hidden md:block">
+        <ClayIcon size="xl" color="yellow">
+          <img src="/images/icon-bus.png" alt="" />
+        </ClayIcon>
+      </div>
+      <div className="absolute bottom-16 right-16 opacity-50 animate-float pointer-events-none hidden md:block" style={{ animationDelay: '1.5s' }}>
+        <ClayIcon size="xl" color="orange">
+          <img src="/images/icon-backpack.png" alt="" />
+        </ClayIcon>
+      </div>
+      <div className="absolute top-1/3 right-12 opacity-40 animate-float pointer-events-none hidden lg:block" style={{ animationDelay: '3s' }}>
+        <ClayIcon size="lg" color="green">
+          <img src="/images/icon-compass.png" alt="" />
+        </ClayIcon>
+      </div>
 
       <div className="flex items-center gap-8 w-full max-w-4xl">
         <div className="hidden lg:flex flex-col items-center flex-shrink-0">

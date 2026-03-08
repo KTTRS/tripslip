@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { Layout } from '../components/Layout';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@tripslip/ui';
 import { Badge } from '@tripslip/ui/components/badge';
+import { ClayIcon } from '@tripslip/ui/components/clay-icon';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { Plus, Edit, Eye } from 'lucide-react';
@@ -98,17 +99,21 @@ export default function ExperiencesPage() {
           <div className="absolute top-2 right-4 w-16 h-16 animate-bounce" style={{ animationDuration: '3s' }}>
             <img src="/images/char-green-octagon.png" alt="" className="w-full h-full object-contain" />
           </div>
-          <div className="absolute top-1 right-24 w-8 h-8 opacity-40 animate-pulse">
-            <img src="/images/icon-magic.png" alt="" className="w-full h-full object-contain" />
+          <div className="absolute top-1 right-24 w-12 h-12 opacity-40 animate-pulse">
+            <ClayIcon size="sm" color="purple">
+              <img src="/images/icon-magic.png" alt="" />
+            </ClayIcon>
           </div>
-          <div className="absolute bottom-1 right-40 w-7 h-7 opacity-30 animate-pulse" style={{ animationDelay: '1s' }}>
-            <img src="/images/icon-venue.png" alt="" className="w-full h-full object-contain" />
+          <div className="absolute bottom-1 right-40 w-10 h-10 opacity-30 animate-pulse" style={{ animationDelay: '1s' }}>
+            <ClayIcon size="xs" color="teal">
+              <img src="/images/icon-venue.png" alt="" />
+            </ClayIcon>
           </div>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-2">
-                <img src="/images/icon-venue.png" alt="" className="w-full h-full object-contain" />
-              </div>
+              <ClayIcon size="lg" color="yellow">
+                <img src="/images/icon-venue.png" alt="" />
+              </ClayIcon>
               <div>
                 <h2 className="text-3xl font-bold text-[#0A0A0A]">Experiences</h2>
                 <p className="text-gray-600 mt-1">Manage your educational experiences</p>
@@ -128,9 +133,9 @@ export default function ExperiencesPage() {
           <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] rounded-xl">
             <CardContent className="py-12 text-center">
               <div className="flex justify-center mb-4">
-                <div className="w-20 h-20 rounded-xl bg-[#F5C518]/20 border-2 border-[#0A0A0A] flex items-center justify-center p-3">
-                  <img src="/images/icon-magic.png" alt="" className="w-full h-full object-contain" />
-                </div>
+                <ClayIcon size="xl" color="yellow">
+                  <img src="/images/icon-magic.png" alt="" />
+                </ClayIcon>
               </div>
               <p className="text-gray-600 mb-4 font-medium">No experiences yet</p>
               <Button
@@ -162,15 +167,15 @@ export default function ExperiencesPage() {
                 <CardContent>
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2 text-gray-700">
-                      <div className="w-6 h-6 flex-shrink-0">
-                        <img src="/images/icon-calendar.png" alt="" className="w-full h-full object-contain" />
-                      </div>
+                      <ClayIcon size="xs" color="sky">
+                        <img src="/images/icon-calendar.png" alt="" />
+                      </ClayIcon>
                       <span>{formatDuration(experience.duration_minutes)}</span>
                     </div>
                     <div className="flex items-center gap-2 text-gray-700">
-                      <div className="w-6 h-6 flex-shrink-0">
-                        <img src="/images/icon-team.png" alt="" className="w-full h-full object-contain" />
-                      </div>
+                      <ClayIcon size="xs" color="green">
+                        <img src="/images/icon-team.png" alt="" />
+                      </ClayIcon>
                       <span>
                         {experience.min_students && experience.max_students
                           ? `${experience.min_students}-${experience.max_students} students`

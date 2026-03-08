@@ -1,13 +1,17 @@
-import { Button } from '@tripslip/ui'
+import { Button, ClayIcon } from '@tripslip/ui'
 
 export default function Hero() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-white via-yellow-50/30 to-white py-24 px-6">
       <div className="absolute top-10 right-10 animate-float opacity-80">
-        <img src="/images/icon-bus.png" alt="" className="w-20 h-20 drop-shadow-lg" />
+        <ClayIcon size="xl" color="yellow">
+          <img src="/images/icon-bus.png" alt="" />
+        </ClayIcon>
       </div>
       <div className="absolute bottom-20 left-8 animate-float-delayed opacity-70">
-        <img src="/images/icon-backpack.png" alt="" className="w-16 h-16 drop-shadow-lg" />
+        <ClayIcon size="xl" color="orange">
+          <img src="/images/icon-backpack.png" alt="" />
+        </ClayIcon>
       </div>
 
       <div className="mx-auto max-w-7xl">
@@ -109,10 +113,14 @@ export default function Hero() {
             </div>
 
             <div className="absolute -top-4 -right-4 animate-bounce-slow">
-              <img src="/images/icon-permission.png" alt="" className="w-16 h-16 drop-shadow-xl" />
+              <ClayIcon size="lg" color="sky">
+                <img src="/images/icon-permission.png" alt="" />
+              </ClayIcon>
             </div>
             <div className="absolute -bottom-4 -left-4 animate-bounce-slow" style={{ animationDelay: '0.5s' }}>
-              <img src="/images/icon-payment.png" alt="" className="w-14 h-14 drop-shadow-xl" />
+              <ClayIcon size="lg" color="green">
+                <img src="/images/icon-payment.png" alt="" />
+              </ClayIcon>
             </div>
           </div>
         </div>

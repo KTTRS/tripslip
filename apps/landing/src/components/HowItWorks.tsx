@@ -1,31 +1,38 @@
+import { ClayIcon } from '@tripslip/ui'
+import type { ClayColor } from '@tripslip/ui/components/clay-icon'
+
 const steps = [
   {
     number: '01',
     title: 'Teacher creates a trip',
     description: 'Pick a venue, set the date, add trip fees. TripSlip generates digital permission slips automatically.',
     icon: '/images/icon-permission.png',
-    color: 'bg-blue-50'
+    color: 'bg-blue-50',
+    clayColor: 'sky' as ClayColor
   },
   {
     number: '02',
     title: 'Parents get a text',
     description: 'A magic link arrives via SMS. Parents tap to review trip details, sign digitally, and pay — all in 60 seconds.',
     icon: '/images/icon-magic.png',
-    color: 'bg-green-50'
+    color: 'bg-green-50',
+    clayColor: 'green' as ClayColor
   },
   {
     number: '03',
     title: 'School approves',
     description: 'School admins review the trip, check compliance, and approve with one click. Full audit trail included.',
     icon: '/images/icon-tracking.png',
-    color: 'bg-purple-50'
+    color: 'bg-purple-50',
+    clayColor: 'purple' as ClayColor
   },
   {
     number: '04',
     title: 'Kids explore!',
     description: 'With permissions signed, payments collected, and venues booked — the only thing left is the adventure.',
     icon: '/images/icon-bus.png',
-    color: 'bg-primary/10'
+    color: 'bg-primary/10',
+    clayColor: 'yellow' as ClayColor
   }
 ]
 
@@ -52,9 +59,9 @@ export default function HowItWorks() {
                 <div className={`${step.color} rounded-2xl border-2 border-black p-6 shadow-offset hover:-translate-x-1 hover:-translate-y-1 hover:shadow-offset-lg transition-all`}>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-4xl font-bold text-black/10">{step.number}</span>
-                    <div className="w-14 h-14 rounded-xl bg-white border-2 border-black p-2 flex items-center justify-center shadow-sm relative z-10">
-                      <img src={step.icon} alt="" className="w-8 h-8 object-contain" />
-                    </div>
+                    <ClayIcon size="lg" color={step.clayColor}>
+                      <img src={step.icon} alt="" />
+                    </ClayIcon>
                   </div>
                   <h3 className="text-lg font-bold font-display text-black mb-2">{step.title}</h3>
                   <p className="text-sm text-gray-600 leading-relaxed">{step.description}</p>

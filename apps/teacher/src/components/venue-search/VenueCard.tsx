@@ -1,16 +1,3 @@
-/**
- * Venue Card Component
- * 
- * Displays venue information in a card format:
- * - Venue name and photo
- * - Location and distance
- * - Rating and review count
- * - Price range
- * - Key features
- * 
- * Requirements: 3.7
- */
-
 import { useNavigate } from 'react-router';
 import type { VenueSearchHit } from '@tripslip/database';
 
@@ -79,9 +66,8 @@ export function VenueCard({ venue, onClick }: VenueCardProps) {
   return (
     <div
       onClick={handleClick}
-      className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
+      className="bg-white rounded-xl border-2 border-[#0A0A0A] shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[8px_8px_0px_#0A0A0A] hover:-translate-x-1 hover:-translate-y-1 transition-all cursor-pointer overflow-hidden"
     >
-      {/* Image */}
       <div className="h-48 bg-gray-200 relative">
         {venue.primaryPhotoUrl ? (
           <img
@@ -102,9 +88,8 @@ export function VenueCard({ venue, onClick }: VenueCardProps) {
           </div>
         )}
         
-        {/* Verified Badge */}
         {venue.verified && (
-          <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium flex items-center">
+          <div className="absolute top-2 right-2 bg-[#0A0A0A] text-white px-2 py-1 rounded-lg border-2 border-[#0A0A0A] shadow-[2px_2px_0px_rgba(0,0,0,0.3)] text-xs font-bold flex items-center">
             <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
               <path
                 fillRule="evenodd"
@@ -117,29 +102,24 @@ export function VenueCard({ venue, onClick }: VenueCardProps) {
         )}
       </div>
 
-      {/* Content */}
       <div className="p-4">
-        {/* Name */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-1">{venue.name}</h3>
+        <h3 className="text-lg font-bold text-[#0A0A0A] mb-1">{venue.name}</h3>
 
-        {/* Rating */}
         <div className="flex items-center mb-2">
           <div className="flex items-center">
             {renderStars(venue.rating)}
           </div>
-          <span className="ml-2 text-sm text-gray-600">
+          <span className="ml-2 text-sm text-gray-600 font-medium">
             {venue.rating.toFixed(1)} ({venue.reviewCount} reviews)
           </span>
         </div>
 
-        {/* Description */}
         {venue.description && (
           <p className="text-sm text-gray-600 mb-3 line-clamp-2">
             {venue.description}
           </p>
         )}
 
-        {/* Location and Distance */}
         {venue.location && (
           <div className="flex items-center text-sm text-gray-500 mb-2">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +142,6 @@ export function VenueCard({ venue, onClick }: VenueCardProps) {
           </div>
         )}
 
-        {/* Price Range */}
         {venue.priceRange && (
           <div className="flex items-center text-sm text-gray-700 mb-3">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,14 +152,13 @@ export function VenueCard({ venue, onClick }: VenueCardProps) {
                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span className="font-medium">
+            <span className="font-bold">
               {formatPrice(venue.priceRange.min)} - {formatPrice(venue.priceRange.max)}
             </span>
             <span className="ml-1 text-gray-500">per student</span>
           </div>
         )}
 
-        {/* Capacity */}
         {venue.capacityRange && (
           <div className="flex items-center text-sm text-gray-600 mb-3">
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,19 +175,18 @@ export function VenueCard({ venue, onClick }: VenueCardProps) {
           </div>
         )}
 
-        {/* Subject Areas */}
         {venue.subjectAreas.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {venue.subjectAreas.slice(0, 3).map(subject => (
               <span
                 key={subject}
-                className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                className="inline-block bg-[#F5C518]/20 text-[#0A0A0A] text-xs px-2 py-1 rounded-lg border border-[#0A0A0A]/20 font-semibold"
               >
                 {subject}
               </span>
             ))}
             {venue.subjectAreas.length > 3 && (
-              <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">
+              <span className="inline-block bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-lg border border-[#0A0A0A]/10 font-semibold">
                 +{venue.subjectAreas.length - 3} more
               </span>
             )}

@@ -1,3 +1,5 @@
+import { ClayIcon } from '@tripslip/ui'
+
 export default function Footer() {
   return (
     <footer className="border-t-2 border-black bg-[#0A0A0A] text-white">
@@ -5,17 +7,21 @@ export default function Footer() {
         <div className="grid gap-10 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg border-2 border-primary flex items-center justify-center">
-                <span className="text-black font-bold text-sm">T</span>
-              </div>
+              <ClayIcon size="sm" color="yellow">
+                <span className="text-black font-bold text-sm relative z-[2]">T</span>
+              </ClayIcon>
               <h3 className="font-bold text-xl">TripSlip</h3>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
               Making field trips simple, paperless, and delightful for teachers, parents, and venues.
             </p>
-            <div className="mt-6 flex items-center gap-2">
-              <img src="/images/icon-bus.png" alt="" className="w-8 h-8 opacity-60" />
-              <img src="/images/icon-backpack.png" alt="" className="w-7 h-7 opacity-60" />
+            <div className="mt-6 flex items-center gap-3">
+              <ClayIcon size="sm" color="sky">
+                <img src="/images/icon-bus.png" alt="" />
+              </ClayIcon>
+              <ClayIcon size="sm" color="orange">
+                <img src="/images/icon-backpack.png" alt="" />
+              </ClayIcon>
             </div>
           </div>
           <div>
