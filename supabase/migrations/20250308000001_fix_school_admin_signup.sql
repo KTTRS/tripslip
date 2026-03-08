@@ -1,7 +1,3 @@
--- Migration: Fix assign_user_role to allow school_admin and district_admin signup
--- Previously only teacher, parent, and venue_admin were allowed.
--- School admin signup was broken because the RPC would reject the role.
-
 CREATE OR REPLACE FUNCTION public.assign_user_role(
   p_user_id UUID,
   p_role_name TEXT,
@@ -12,14 +8,35 @@ RETURNS JSON
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
-AS $$
+AS $func$
 DECLARE
   v_role_id UUID;
   v_assignment_id UUID;
+  v_existing_count INT;
   v_allowed_signup_roles TEXT[] := ARRAY['teacher', 'parent', 'venue_admin', 'school_admin', 'district_admin'];
 BEGIN
+  IF p_user_id <> auth.uid() THEN
+    RAISE EXCEPTION 'Cannot assign roles to other users';
+  END IF;
+
   IF NOT (p_role_name = ANY(v_allowed_signup_roles)) THEN
     RAISE EXCEPTION 'Cannot self-assign role: %. Only teacher, parent, venue_admin, school_admin, and district_admin roles are allowed during signup.', p_role_name;
+  END IF;
+
+  IF (p_role_name = 'teacher' AND p_organization_type <> 'school')
+    OR (p_role_name = 'parent' AND p_organization_type <> 'platform')
+    OR (p_role_name = 'venue_admin' AND p_organization_type <> 'venue')
+    OR (p_role_name = 'school_admin' AND p_organization_type <> 'school')
+    OR (p_role_name = 'district_admin' AND p_organization_type <> 'district')
+  THEN
+    RAISE EXCEPTION 'Invalid organization type % for role %', p_organization_type, p_role_name;
+  END IF;
+
+  SELECT COUNT(*) INTO v_existing_count
+  FROM user_role_assignments
+  WHERE user_id = p_user_id AND is_active = true;
+  IF v_existing_count > 0 THEN
+    RAISE EXCEPTION 'User already has an active role assignment. Role can only be assigned during initial signup.';
   END IF;
 
   SELECT id INTO v_role_id FROM user_roles WHERE name = p_role_name;
@@ -34,8 +51,6 @@ BEGIN
 
   RETURN json_build_object('assignment_id', v_assignment_id);
 END;
-$$;
+$func$;
 
 GRANT EXECUTE ON FUNCTION public.assign_user_role(UUID, TEXT, TEXT, UUID) TO authenticated;
-
-COMMENT ON FUNCTION public.assign_user_role IS 'Assigns a role to a user during signup. Uses SECURITY DEFINER to bypass RLS. Only tripslip_admin role cannot be self-assigned.';

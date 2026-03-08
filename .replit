@@ -74,6 +74,10 @@ externalPort = 8008
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 24678
+externalPort = 8080
+
 [userenv]
 
 [userenv.shared]
@@ -85,7 +89,7 @@ NODE_ENV = "development"
 GEOAPIFY_API_KEY = "b15719ef590c45a391c8feca6d83976f"
 
 [userenv.development]
-SUPABASE_DB_PASSWORD = "To5ehILmUNK6CWh"
+SUPABASE_DB_PASSWORD = "GXe9Z2ehf6kPiHi"
 
 [deployment]
 deploymentTarget = "autoscale"

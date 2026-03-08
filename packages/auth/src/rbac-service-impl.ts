@@ -78,39 +78,16 @@ export class SupabaseRBACAuthService implements RBACAuthService {
       throw new AuthError('Sign up failed: no user returned', 'SIGNUP_FAILED', 500);
     }
 
-    const adminRoles = ['school_admin', 'district_admin'];
-    if (adminRoles.includes(role)) {
-      const accessToken = data.session?.access_token;
-      if (!accessToken) {
-        throw new AuthError('No session token available for admin role assignment', 'SIGNUP_FAILED', 500);
-      }
-      const response = await fetch('/api/assign-admin-role', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: data.user.id,
-          role,
-          organizationType: organization_type,
-          organizationId: organization_id,
-          authToken: accessToken,
-        }),
+    const { error: assignmentError } = await (this.supabase as any)
+      .rpc('assign_user_role', {
+        p_user_id: data.user.id,
+        p_role_name: role,
+        p_organization_type: organization_type,
+        p_organization_id: organization_id,
       });
-      const result = await response.json();
-      if (!response.ok) {
-        throw new Error(`Failed to assign role: ${result.error}`);
-      }
-    } else {
-      const { error: assignmentError } = await (this.supabase as any)
-        .rpc('assign_user_role', {
-          p_user_id: data.user.id,
-          p_role_name: role,
-          p_organization_type: organization_type,
-          p_organization_id: organization_id,
-        });
 
-      if (assignmentError) {
-        throw new Error(`Failed to assign role: ${assignmentError.message}`);
-      }
+    if (assignmentError) {
+      throw new Error(`Failed to assign role: ${assignmentError.message}`);
     }
 
     // Log role assignment for audit trail (only for TripSlip admin actions)
