@@ -278,6 +278,40 @@ Response includes `db_count` (venues from our DB) and `new_discovered` (freshly 
 - **Students page**: 44px min touch targets on edit/delete, brand-yellow hover row highlight, zebra striping, CSV import summary toast.
 - **Permission slip**: Sticky progress bar (5 sections), "Secure form" trust badge, field-level green checkmarks on valid fields, improved signature area with "Clear & Redo" button and placeholder text.
 
-## Pilot Users
+## Demo Accounts
 
-Four demo accounts exist for testing. Credentials are stored in the team's password manager (not in source control).
+All demo accounts use password: **TripSlip2026!**
+
+### Teachers (login at `/teacher`)
+| Email | Name | School | Data |
+|-------|------|--------|------|
+| sarah.chen@lincolnelementary.edu | Sarah Chen | Lincoln Elementary | 10 trips, 77 students |
+| mike.johnson@lincolnelementary.edu | Mike Johnson | Lincoln Elementary | 3 trips, 20 students |
+| rachel.kim@riverside.edu | Rachel Kim | Riverside Middle | 4 trips, 44 students |
+| david.martinez@sunset.edu | David Martinez | Sunset Elementary | 4 trips, 22 students |
+
+### School Admins (login at `/school`)
+| Email | Name | School |
+|-------|------|--------|
+| patricia.reeves@lincolnelementary.edu | Patricia Reeves | Lincoln Elementary |
+| robert.taylor@riverside.edu | Robert Taylor | Riverside Middle |
+
+### Venue Admins (login at `/venue`)
+| Email | Name | Venue |
+|-------|------|-------|
+| james.park@sciencediscovery.org | James Park | Museum of Science and Industry |
+| lisa.wong@artinstitute.org | Lisa Wong | Art Institute of Chicago |
+
+### Parents (login at `/parent`)
+| Email | Name | Children | Language |
+|-------|------|----------|----------|
+| maria.garcia@gmail.com | Maria Garcia | 5 children | English |
+| tom.wilson@gmail.com | Tom Wilson | 4 children | English |
+| amy.chen@outlook.com | Amy Chen | 3 children | English |
+| jennifer.patel@gmail.com | Jennifer Patel | 3 children | English |
+| carlos.ramirez@gmail.com | Carlos Ramirez | 5 children | Spanish |
+| fatima.hassan@gmail.com | Fatima Hassan | 3 children | Arabic |
+| samantha.brown@yahoo.com | Samantha Brown | 4 children | English |
+| kenji.tanaka@gmail.com | Kenji Tanaka | 2 children | English |
+| david.oconnor@gmail.com | David O'Connor | 2 children | English |
+| priya.sharma@outlook.com | Priya Sharma | 2 children | English |
