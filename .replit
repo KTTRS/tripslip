@@ -86,3 +86,8 @@ GEOAPIFY_API_KEY = "b15719ef590c45a391c8feca6d83976f"
 
 [userenv.development]
 SUPABASE_DB_PASSWORD = "To5ehILmUNK6CWh"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd /home/runner/workspace && NODE_ENV=production node proxy-server.mjs"]
+build = ["bash", "-c", "for app in landing venue teacher parent school; do cd /home/runner/workspace/apps/$app && npx vite build; done"]

@@ -41,9 +41,19 @@ Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared pack
 
 ## Running the Project
 
+### Development
 The workflow runs `bash start-dev.sh` which:
 1. Starts all 5 Vite dev servers via `turbo dev`
 2. Starts a reverse proxy (`proxy-server.mjs`) on port 5000
+
+### Production / Deployment
+Deployment uses autoscale target:
+- **Build**: Runs `vite build` for each of the 5 apps (landing, venue, teacher, parent, school), producing `dist/` directories
+- **Run**: `NODE_ENV=production node proxy-server.mjs` — serves all 5 built apps as static files via the same proxy server (no Vite dev servers needed)
+- The proxy-server.mjs detects `NODE_ENV=production` or `REPL_DEPLOYMENT=1` and switches from proxying to dev servers to serving static files from `apps/*/dist/`
+- All `VITE_*` env vars are baked into the JS bundle at build time
+- Server-side secrets (`SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `GEOAPIFY_API_KEY`) are read at runtime from environment
+- Twilio credentials are fetched from the Replit connector at runtime
 
 The landing page at `/` has an `/apps` hub page that links to all other portals.
 

@@ -1,9 +1,86 @@
 import http from 'node:http';
 import httpProxy from 'http-proxy';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import { geocodeAddress, searchVenuesLive, discoverNearbyVenues, deduplicateVenues, runDiscoveryForSchool } from './services/venue-discovery.mjs';
 
-const proxy = httpProxy.createProxyServer({ ws: true });
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const IS_PRODUCTION = process.env.NODE_ENV === 'production' || process.env.REPL_DEPLOYMENT === '1';
+
+const proxy = IS_PRODUCTION ? null : httpProxy.createProxyServer({ ws: true });
+
+const MIME_TYPES = {
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.webp': 'image/webp',
+  '.webm': 'video/webm',
+  '.mp4': 'video/mp4',
+  '.map': 'application/json',
+};
+
+const APP_DIST_DIRS = {
+  landing: path.join(__dirname, 'apps/landing/dist'),
+  venue: path.join(__dirname, 'apps/venue/dist'),
+  teacher: path.join(__dirname, 'apps/teacher/dist'),
+  parent: path.join(__dirname, 'apps/parent/dist'),
+  school: path.join(__dirname, 'apps/school/dist'),
+};
+
+function serveStatic(res, filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const mime = MIME_TYPES[ext] || 'application/octet-stream';
+  try {
+    const content = fs.readFileSync(filePath);
+    const headers = { 'Content-Type': mime };
+    if (ext === '.js' || ext === '.css' || ext === '.woff2' || ext === '.woff') {
+      headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+    }
+    res.writeHead(200, headers);
+    res.end(content);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function serveApp(req, res, appName, urlPath) {
+  const distDir = APP_DIST_DIRS[appName];
+  if (!distDir || !fs.existsSync(distDir)) {
+    res.writeHead(503, { 'Content-Type': 'text/plain' });
+    res.end('App not built yet');
+    return;
+  }
+
+  const cleanPath = urlPath.replace(/^\/+/, '');
+  const filePath = path.join(distDir, cleanPath);
+
+  if (cleanPath && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    serveStatic(res, filePath);
+    return;
+  }
+
+  const indexPath = path.join(distDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-cache' });
+    res.end(fs.readFileSync(indexPath));
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -531,25 +608,42 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  const target = getTarget(req.url);
-  proxy.web(req, res, { target });
-});
-
-server.on('upgrade', (req, socket, head) => {
-  const target = getTarget(req.url);
-  proxy.ws(req, socket, head, { target });
-});
-
-proxy.on('error', (err, req, res) => {
-  console.error('Proxy error:', err.message);
-  if (res && res.writeHead) {
-    res.writeHead(502, { 'Content-Type': 'text/plain' });
-    res.end('App is starting up, please refresh in a moment.');
+  if (IS_PRODUCTION) {
+    const url = req.url || '/';
+    if (url.startsWith('/venue/') || url === '/venue') {
+      serveApp(req, res, 'venue', url.slice('/venue'.length));
+    } else if (url.startsWith('/teacher/') || url === '/teacher') {
+      serveApp(req, res, 'teacher', url.slice('/teacher'.length));
+    } else if (url.startsWith('/parent/') || url === '/parent') {
+      serveApp(req, res, 'parent', url.slice('/parent'.length));
+    } else if (url.startsWith('/school/') || url === '/school') {
+      serveApp(req, res, 'school', url.slice('/school'.length));
+    } else {
+      serveApp(req, res, 'landing', url);
+    }
+  } else {
+    const target = getTarget(req.url);
+    proxy.web(req, res, { target });
   }
 });
 
+if (!IS_PRODUCTION) {
+  server.on('upgrade', (req, socket, head) => {
+    const target = getTarget(req.url);
+    proxy.ws(req, socket, head, { target });
+  });
+
+  proxy.on('error', (err, req, res) => {
+    console.error('Proxy error:', err.message);
+    if (res && res.writeHead) {
+      res.writeHead(502, { 'Content-Type': 'text/plain' });
+      res.end('App is starting up, please refresh in a moment.');
+    }
+  });
+}
+
 server.listen(5000, '0.0.0.0', () => {
-  console.log('TripSlip API + Proxy running on http://0.0.0.0:5000');
+  console.log(`TripSlip ${IS_PRODUCTION ? 'Production' : 'Dev'} Server running on http://0.0.0.0:5000`);
   console.log('API Routes:');
   console.log('  POST /api/send-sms');
   console.log('  POST /api/send-email');
