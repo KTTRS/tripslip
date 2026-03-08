@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { PaymentForm } from '../components/PaymentForm';
@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { Logger } from '@tripslip/utils';
 
 const logger = new Logger();
+const FETCH_TIMEOUT_MS = 15000;
 
 interface PermissionSlipData {
   id: string;
@@ -49,6 +50,8 @@ export function PaymentPage() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [payItForwardAmount, setPayItForwardAmount] = useState(0);
   const [customPayItForward, setCustomPayItForward] = useState('');
+  const [isTimeout, setIsTimeout] = useState(false);
+  const fetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!slipId || !token) {
@@ -58,10 +61,22 @@ export function PaymentPage() {
     }
 
     fetchPermissionSlip();
+
+    return () => {
+      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
+    };
   }, [slipId, token, t]);
 
   const fetchPermissionSlip = async () => {
     if (!slipId || !token) return;
+
+    fetchTimeoutRef.current = setTimeout(() => {
+      if (loading) {
+        setIsTimeout(true);
+        setError('The payment page is taking longer than expected to load. Please check your internet connection and try again.');
+        setLoading(false);
+      }
+    }, FETCH_TIMEOUT_MS);
 
     try {
       const { data, error: fetchError } = await supabase
@@ -86,18 +101,18 @@ export function PaymentPage() {
         .eq('magic_link_token', token)
         .single();
 
+      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
+
       if (fetchError || !data) {
         throw new Error('Permission slip not found or payment link has expired');
       }
 
-      // Check if already paid
       if (data.status === 'paid') {
         setError(t('payment.alreadyPaid'));
         setLoading(false);
         return;
       }
 
-      // Check if not signed yet
       if (data.status !== 'signed_pending_payment') {
         setError(t('payment.notReadyForPayment'));
         setLoading(false);
@@ -108,6 +123,7 @@ export function PaymentPage() {
       setTotalAmount((data as any).trips.estimated_cost_cents);
       setLoading(false);
     } catch (err) {
+      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
       setError(err instanceof Error ? err.message : 'Failed to load payment information');
       setLoading(false);
     }
@@ -194,17 +210,32 @@ export function PaymentPage() {
   if (error || !slip) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
-          <div className="text-red-500 text-5xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            {t('payment.errorTitle')}
+        <div className="max-w-md w-full bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 text-center">
+          <div className="text-5xl mb-4">{isTimeout ? '⏱️' : '⚠️'}</div>
+          <h1 className="text-2xl font-bold text-[#0A0A0A] mb-4">
+            {isTimeout
+              ? t('payment.timeoutTitle', 'Connection Timeout')
+              : t('payment.errorTitle', 'Payment Error')}
           </h1>
           <p className="text-gray-600 mb-6">
             {error || t('payment.notFound')}
           </p>
+          {isTimeout && (
+            <button
+              onClick={() => {
+                setError(null);
+                setIsTimeout(false);
+                setLoading(true);
+                fetchPermissionSlip();
+              }}
+              className="px-6 py-3 bg-[#F5C518] text-[#0A0A0A] font-bold rounded-lg border-2 border-[#0A0A0A] hover:shadow-[3px_3px_0px_#0A0A0A] transition-all mb-3 w-full"
+            >
+              {t('common.tryAgain', 'Try Again')}
+            </button>
+          )}
           <button
             onClick={() => navigate('/')}
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-[#0A0A0A] text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors w-full"
           >
             {t('common.goHome')}
           </button>

@@ -51,7 +51,7 @@ const characters = [
 
 export default function BrandCharacters() {
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white py-20 px-6 overflow-hidden">
+    <section className="bg-gradient-to-b from-gray-50 to-white py-14 sm:py-20 px-4 sm:px-6 overflow-hidden">
       <div className="mx-auto max-w-6xl text-center">
         <h3 className="font-display text-2xl font-bold text-black sm:text-3xl mb-3">
           Meet the <span className="text-primary">TripSlip</span> Crew

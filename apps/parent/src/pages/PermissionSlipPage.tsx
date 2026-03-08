@@ -387,6 +387,9 @@ export function PermissionSlipPage() {
   }
 
   if (error || !slip) {
+    const isExpired = error?.toLowerCase().includes('expired') || error?.toLowerCase().includes('not found');
+    const isAlreadySigned = error?.toLowerCase().includes('already been signed') || error?.toLowerCase().includes('already signed');
+
     return (
       <div className="min-h-screen bg-[#FAFAFA]">
         <div className="absolute top-4 right-4">
@@ -394,13 +397,27 @@ export function PermissionSlipPage() {
         </div>
         <div className="flex items-center justify-center min-h-screen px-4">
           <div className="max-w-md w-full bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-8 text-center">
-            <div className="text-5xl mb-4">📋</div>
+            <div className="text-5xl mb-4">{isAlreadySigned ? '✅' : isExpired ? '⏰' : '📋'}</div>
             <h1 className="text-2xl font-bold text-[#0A0A0A] mb-4">
-              {t('permissionSlip.errorTitle')}
+              {isAlreadySigned
+                ? t('permissionSlip.alreadySignedTitle', 'Already Signed')
+                : isExpired
+                  ? t('permissionSlip.linkExpiredTitle', 'Link Expired')
+                  : t('permissionSlip.errorTitle')}
             </h1>
             <p className="text-gray-600 mb-6">
-              {error || t('permissionSlip.notFound')}
+              {isExpired
+                ? t('permissionSlip.linkExpiredMessage', 'This permission slip link has expired or is no longer valid. Please contact your child\'s teacher to receive a new link.')
+                : error || t('permissionSlip.notFound')}
             </p>
+            {isExpired && (
+              <div className="mb-4 p-4 bg-[#FFF8E1] border-2 border-[#F5C518] rounded-lg">
+                <p className="text-sm text-gray-700 font-medium mb-1">Need a new link?</p>
+                <p className="text-sm text-gray-600">
+                  Ask your child's teacher to resend the permission slip link, or check your email/text messages for a more recent link.
+                </p>
+              </div>
+            )}
             <button
               onClick={() => navigate('/')}
               className="px-6 py-3 bg-[#0A0A0A] text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"

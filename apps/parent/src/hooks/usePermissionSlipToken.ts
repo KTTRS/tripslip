@@ -31,16 +31,20 @@ type PermissionSlip = Database['public']['Tables']['permission_slips']['Row'] & 
   };
 };
 
+export type TokenErrorType = 'missing' | 'expired' | 'not_found' | 'already_signed' | 'unknown';
+
 export function usePermissionSlipToken() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const [slip, setSlip] = useState<PermissionSlip | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<TokenErrorType | null>(null);
 
   useEffect(() => {
     if (!token) {
       setError('Invalid or missing token');
+      setErrorType('missing');
       setLoading(false);
       return;
     }
@@ -50,7 +54,6 @@ export function usePermissionSlipToken() {
 
   const fetchPermissionSlip = async (magicToken: string) => {
     try {
-      // Fetch permission slip by magic link token
       const { data, error: fetchError } = await supabase
         .from('permission_slips')
         .select(`
@@ -85,16 +88,22 @@ export function usePermissionSlipToken() {
         .single();
 
       if (fetchError) {
+        if (fetchError.code === 'PGRST116' || fetchError.message?.includes('expired')) {
+          setErrorType('expired');
+          throw new Error('This link has expired. Please request a new one from your child\'s teacher.');
+        }
+        setErrorType('not_found');
         throw new Error('Permission slip not found or link has expired');
       }
 
       if (!data) {
+        setErrorType('not_found');
         throw new Error('Permission slip not found');
       }
 
-      // Check if already signed
       if (data.status === 'signed' || data.status === 'paid') {
         setError('This permission slip has already been signed');
+        setErrorType('already_signed');
         setLoading(false);
         return;
       }
@@ -102,10 +111,13 @@ export function usePermissionSlipToken() {
       setSlip(data as PermissionSlip);
       setLoading(false);
     } catch (err) {
+      if (!errorType) {
+        setErrorType('unknown');
+      }
       setError(err instanceof Error ? err.message : 'Failed to load permission slip');
       setLoading(false);
     }
   };
 
-  return { slip, loading, error, token };
+  return { slip, loading, error, errorType, token };
 }

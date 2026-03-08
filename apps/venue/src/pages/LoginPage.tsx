@@ -1,8 +1,3 @@
-/**
- * Venue App Login Page
- * Uses the shared LoginPage component with RBAC auth service
- */
-
 import { useNavigate } from 'react-router';
 import { createRBACAuthService, LoginPage as SharedLoginPage } from '@tripslip/auth';
 import type { UserRole } from '@tripslip/auth';
@@ -13,8 +8,7 @@ const authService = createRBACAuthService(supabase);
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  const handleLoginSuccess = (role: UserRole) => {
-    // Redirect to dashboard for venue admins
+  const handleLoginSuccess = (_role: UserRole) => {
     navigate('/dashboard', { replace: true });
   };
 
@@ -25,6 +19,11 @@ export default function LoginPage() {
       onLoginSuccess={handleLoginSuccess}
       signupPath="/signup"
       passwordResetPath="/forgot-password"
+      portalTitle="Venue Partner Portal"
+      portalSubtitle="Sign in to manage bookings, experiences, and your venue profile"
+      mascotImage="/images/char-green-octagon.png"
+      mascotMessage="Welcome, Partner!"
+      mascotSubMessage="Manage your venue and connect with schools"
     />
   );
 }

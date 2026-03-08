@@ -40,32 +40,43 @@ function PaymentFormInner({
     setIsProcessing(true);
     setError(null);
 
+    const PAYMENT_TIMEOUT_MS = 30000;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
     try {
-      // Create payment intent using payment service
-      const { clientSecret } = await createPaymentIntent({
-        permissionSlipId,
-        amountCents,
-        parentId,
-        isSplitPayment,
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error('Payment is taking longer than expected. Your card has not been charged. Please try again.'));
+        }, PAYMENT_TIMEOUT_MS);
       });
 
-      // Confirm payment with Stripe
-      const { error: confirmError } = await stripe.confirmPayment({
-        elements,
-        clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/payment/success`,
-        },
-      });
+      const paymentFlow = async () => {
+        const { clientSecret } = await createPaymentIntent({
+          permissionSlipId,
+          amountCents,
+          parentId,
+          isSplitPayment,
+        });
 
-      if (confirmError) {
-        const errorMessage = confirmError.message || t('payment.error', 'Payment failed. Please try again.');
-        setError(errorMessage);
-        onError?.(errorMessage);
-      } else {
-        onSuccess();
-      }
+        const { error: confirmError } = await stripe.confirmPayment({
+          elements,
+          clientSecret,
+          confirmParams: {
+            return_url: `${window.location.origin}/payment/success`,
+          },
+        });
+
+        if (confirmError) {
+          throw new Error(confirmError.message || t('payment.error', 'Payment failed. Please try again.'));
+        }
+      };
+
+      await Promise.race([paymentFlow(), timeoutPromise]);
+
+      if (timeoutId) clearTimeout(timeoutId);
+      onSuccess();
     } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId);
       const errorMessage = err instanceof Error 
         ? err.message 
         : t('payment.error', 'An error occurred. Please try again.');

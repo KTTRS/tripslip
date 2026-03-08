@@ -1,14 +1,7 @@
-/**
- * School App Login Page
- * Uses the shared LoginPage component with RBAC auth service
- * Supports school_admin, district_admin, and tripslip_admin roles
- */
-
 import { useNavigate } from 'react-router';
-import { createSupabaseClient } from '@tripslip/database';
-import { supabase } from '../lib/supabase';
 import { createRBACAuthService, LoginPage as SharedLoginPage } from '@tripslip/auth';
 import type { UserRole } from '@tripslip/auth';
+import { supabase } from '../lib/supabase';
 
 const authService = createRBACAuthService(supabase);
 
@@ -16,7 +9,6 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleLoginSuccess = (role: UserRole) => {
-    // Redirect based on role
     switch (role) {
       case 'school_admin':
         navigate('/dashboard', { replace: true });
@@ -28,7 +20,6 @@ export default function LoginPage() {
         navigate('/tripslip-admin', { replace: true });
         break;
       default:
-        // If user doesn't have appropriate role, show error
         alert('You do not have permission to access the school app');
         authService.signOut();
         break;
@@ -42,6 +33,11 @@ export default function LoginPage() {
       onLoginSuccess={handleLoginSuccess}
       signupPath="/signup"
       passwordResetPath="/forgot-password"
+      portalTitle="School Admin Portal"
+      portalSubtitle="Sign in to oversee trips, approve requests, and manage teachers"
+      mascotImage="/images/char-blue-square.png"
+      mascotMessage="Welcome, Admin!"
+      mascotSubMessage="Manage your school's field trip program"
     />
   );
 }

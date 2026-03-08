@@ -32,6 +32,7 @@ export function ParentDashboardPage() {
   const [children, setChildren] = useState<ChildProfile[]>([]);
   const [trips, setTrips] = useState<ChildTrip[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
 
   useEffect(() => {
     checkAuth();
@@ -158,6 +159,7 @@ export function ParentDashboardPage() {
       setTrips(tripList);
     } catch (err) {
       console.error('Failed to load parent data:', err);
+      setDashboardError('We had trouble loading your dashboard. Please try refreshing the page.');
     } finally {
       setLoading(false);
     }
@@ -245,6 +247,28 @@ export function ParentDashboardPage() {
           </h1>
           <p className="text-gray-600 mt-1">Here's what's happening with your children's field trips</p>
         </div>
+
+        {dashboardError && (
+          <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-xl">⚠️</span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-red-800">Something went wrong</p>
+                <p className="text-sm text-red-700 mt-1">{dashboardError}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setDashboardError(null);
+                  setLoading(true);
+                  if (user) loadParentData(user.id);
+                }}
+                className="px-3 py-1 text-xs font-bold bg-red-100 text-red-800 rounded border border-red-300 hover:bg-red-200 transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
 
         {needsAction.length > 0 && (
           <div className="bg-[#FFF8E1] border-2 border-[#F5C518] rounded-xl p-4">

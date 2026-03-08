@@ -75,13 +75,13 @@ export default function PricingTable() {
   };
 
   return (
-    <section className="bg-white py-24 px-6">
+    <section className="bg-white py-16 sm:py-24 px-4 sm:px-6">
       <div className="mx-auto max-w-7xl">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-primary/50 rounded-full px-4 py-1.5 mb-4">
             <span className="text-sm font-semibold text-black">Pricing</span>
           </div>
-          <h2 className="font-display text-4xl font-bold text-black sm:text-5xl">
+          <h2 className="font-display text-3xl font-bold text-black sm:text-5xl">
             Simple, <span className="text-primary">transparent</span> pricing
           </h2>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">

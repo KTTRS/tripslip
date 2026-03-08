@@ -16,6 +16,12 @@ export interface LoginPageProps {
   onLoginSuccess?: (role: UserRole) => void;
   signupPath?: string;
   passwordResetPath?: string;
+  portalTitle?: string;
+  portalSubtitle?: string;
+  mascotImage?: string;
+  mascotMessage?: string;
+  mascotSubMessage?: string;
+  accentColor?: string;
 }
 
 export default function LoginPage({
@@ -24,6 +30,12 @@ export default function LoginPage({
   onLoginSuccess,
   signupPath = '/signup',
   passwordResetPath = '/reset-password',
+  portalTitle = 'Sign In',
+  portalSubtitle = 'Welcome back! Please sign in to continue',
+  mascotImage = '/images/char-yellow-star.png',
+  mascotMessage = 'Welcome back!',
+  mascotSubMessage = 'Sign in to manage your field trips',
+  accentColor,
 }: LoginPageProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -103,7 +115,7 @@ export default function LoginPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50/30 via-white to-orange-50/20 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50/30 via-white to-orange-50/20 flex items-center justify-center px-4 py-6 sm:p-4 relative overflow-hidden">
       <div className="absolute top-12 left-12 opacity-60 animate-float pointer-events-none hidden md:block">
         <img src="/images/icon-bus.png" alt="" className="w-24 h-24 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
       </div>
@@ -114,31 +126,31 @@ export default function LoginPage({
         <img src="/images/icon-compass.png" alt="" className="w-20 h-20 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
       </div>
 
-      <div className="flex items-center gap-8 w-full max-w-4xl">
+      <div className="flex items-center gap-8 w-full max-w-4xl justify-center">
         <div className="hidden lg:flex flex-col items-center flex-shrink-0">
           <img
-            src="/images/char-yellow-star.png"
+            src={mascotImage}
             alt="TripSlip mascot"
             className="w-48 h-48 object-contain animate-bounce-slow drop-shadow-lg"
           />
           <p className="mt-4 text-lg font-bold text-gray-700 text-center">
-            Welcome back!
+            {mascotMessage}
           </p>
           <p className="text-sm text-gray-500 text-center max-w-[200px]">
-            Sign in to manage your field trips
+            {mascotSubMessage}
           </p>
         </div>
 
         <Card className="w-full max-w-md border-2 border-black shadow-[4px_4px_0px_#0A0A0A] rounded-2xl bg-white/90 backdrop-blur-sm">
           <CardHeader className="pb-2">
-            <div className="flex items-center justify-center mb-4">
-              <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-16 w-auto object-contain" />
+            <div className="flex items-center justify-center mb-3 sm:mb-4">
+              <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-12 sm:h-16 w-auto object-contain" />
             </div>
-            <CardTitle className="text-2xl font-bold text-center">
-              Sign In
+            <CardTitle className="text-xl sm:text-2xl font-bold text-center">
+              {portalTitle}
             </CardTitle>
             <p className="text-sm text-gray-600 text-center mt-2">
-              Welcome back! Please sign in to continue
+              {portalSubtitle}
             </p>
           </CardHeader>
           <CardContent>

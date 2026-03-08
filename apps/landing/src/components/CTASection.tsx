@@ -2,7 +2,7 @@ import { Button } from '@tripslip/ui'
 
 export default function CTASection() {
   return (
-    <section className="relative bg-primary py-24 px-6 overflow-hidden">
+    <section className="relative bg-primary py-16 sm:py-24 px-4 sm:px-6 overflow-hidden">
       <div className="absolute top-6 left-6 animate-float opacity-80">
         <img src="/images/icon-backpack.png" alt="" className="w-24 h-24 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
       </div>
@@ -17,7 +17,7 @@ export default function CTASection() {
       </div>
 
       <div className="relative mx-auto max-w-4xl text-center z-10">
-        <h2 className="font-display text-4xl font-bold text-black sm:text-5xl lg:text-6xl">
+        <h2 className="font-display text-3xl font-bold text-black sm:text-5xl lg:text-6xl">
           Ready to ditch
           <br />the permission slip pile?
         </h2>

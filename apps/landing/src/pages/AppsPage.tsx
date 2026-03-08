@@ -98,14 +98,14 @@ export default function AppsPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 bg-gradient-to-b from-primary-50/30 via-white to-gray-50 py-20 px-6">
+      <main className="flex-1 bg-gradient-to-b from-primary-50/30 via-white to-gray-50 py-12 sm:py-20 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl">
           <div className="text-center mb-16 animate-fade-in">
             <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-black rounded-full px-5 py-2 mb-6 shadow-[3px_3px_0px_#0A0A0A]">
               <img src="/images/icon-compass.png" alt="" className="w-8 h-8 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
               <span className="text-sm font-bold text-black font-sans">Platform Access</span>
             </div>
-            <h1 className="text-4xl sm:text-6xl font-display font-bold tracking-tight text-black mb-4">
+            <h1 className="text-3xl sm:text-6xl font-display font-bold tracking-tight text-black mb-4">
               TripSlip <span className="text-primary">Apps</span>
             </h1>
             <p className="mt-2 text-lg sm:text-xl text-gray-600 font-sans max-w-2xl mx-auto">

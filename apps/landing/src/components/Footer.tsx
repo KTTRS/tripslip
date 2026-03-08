@@ -1,8 +1,8 @@
 export default function Footer() {
   return (
     <footer className="border-t-2 border-black bg-[#0A0A0A] text-white">
-      <div className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid gap-10 md:grid-cols-4">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-16">
+        <div className="grid grid-cols-2 gap-8 sm:gap-10 md:grid-cols-4">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <img src="/images/tripslip-logo-dark.png" alt="TripSlip" className="h-10 w-auto object-contain" />

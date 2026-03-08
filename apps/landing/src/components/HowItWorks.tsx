@@ -31,13 +31,13 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-white py-24 px-6">
+    <section id="how-it-works" className="bg-white py-16 sm:py-24 px-4 sm:px-6">
       <div className="mx-auto max-w-7xl">
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 bg-primary/20 border-2 border-primary/50 rounded-full px-4 py-1.5 mb-4">
             <span className="text-sm font-semibold text-black">How It Works</span>
           </div>
-          <h2 className="font-display text-4xl font-bold text-black sm:text-5xl">
+          <h2 className="font-display text-3xl font-bold text-black sm:text-5xl">
             From plan to <span className="text-primary">adventure</span>
             <br />in four simple steps
           </h2>

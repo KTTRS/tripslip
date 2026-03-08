@@ -46,7 +46,7 @@ const features: {
 
 export default function FeatureGrid() {
   return (
-    <section id="features" className="relative bg-gray-50 py-24 px-6 overflow-hidden">
+    <section id="features" className="relative bg-gray-50 py-16 sm:py-24 px-4 sm:px-6 overflow-hidden">
       <div className="absolute top-10 left-10 opacity-30 animate-float pointer-events-none">
         <img src="/images/char-blue-square.png" alt="" className="w-20 h-20 drop-shadow-lg" />
       </div>
@@ -66,7 +66,7 @@ export default function FeatureGrid() {
             <img src="/images/icon-trophy.png" alt="" className="w-8 h-8 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
             <span className="text-sm font-semibold text-black">Powerful Features</span>
           </div>
-          <h2 className="font-display text-4xl font-bold text-black sm:text-5xl lg:text-6xl">
+          <h2 className="font-display text-3xl font-bold text-black sm:text-5xl lg:text-6xl">
             Everything you need to run
             <br />
             <span className="text-primary">amazing</span> field trips
