@@ -594,6 +594,11 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
+  if (req.url === '/healthz' || (req.url === '/' && req.method === 'HEAD')) {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    return res.end('ok');
+  }
+
   const routeKey = `${req.method} ${req.url?.split('?')[0]}`;
   if (apiHandlers[routeKey]) {
     return apiHandlers[routeKey](req, res);
