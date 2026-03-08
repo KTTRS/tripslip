@@ -120,13 +120,15 @@ The signup flow uses RPC functions instead of direct table inserts to bypass RLS
 
 ## Database Seeding
 
-Run `node scripts/seed-demo-data.mjs` to populate Supabase with professional demo data:
-- 6 venues (Science Museum, Zoo, Botanical Garden, History Museum, Aquarium, Art Center)
-- 12 experiences (2 per venue) with real descriptions, durations, grade levels
-- 15 pricing tiers with tiered pricing ($10-$25 per student)
-- 1 school (Lincoln Elementary)
-- 1 roster with 15 students
-The script uses `upsert` and is idempotent.
+Three seed scripts, run in order:
+
+1. **`node scripts/seed-demo-data.mjs`** — Base data: 6 venues, 12 experiences, 15 pricing tiers, 1 school, 15 students
+2. **`node scripts/seed-demo-scenarios.mjs`** — Core scenarios: 3 schools, 4 teachers, 6 rosters, 100+ students, 11 trips, 4 parents, 2 venue admin links, venue bookings
+3. **`node scripts/seed-expanded-demos.mjs`** — Expanded variety: 6 more parents (multi-language), parent-student links, 8 more trips (free, cancelled, split-funded, big assistance funds), 139+ more permission slips across all statuses, 88+ payment records, 7 more venue bookings
+
+Final totals: 4 schools, 8 teachers, 9 rosters, 185 students, 22 trips (all statuses), 251 permission slips, 88 payments, 76 parent-student links, 12 venue bookings, 10 parent accounts.
+
+All scripts use `upsert`/existence checks and are idempotent.
 
 ## Real Database Integration
 
