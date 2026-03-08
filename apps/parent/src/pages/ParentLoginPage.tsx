@@ -87,7 +87,7 @@ export function ParentLoginPage() {
       <div className="max-w-md w-full space-y-6 py-12">
         <div className="text-center">
           <div className="flex items-center justify-center mb-4">
-            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-40 w-auto object-contain -my-10" />
+            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-56 w-auto object-contain -my-16" />
           </div>
           <h1 className="text-3xl font-display font-bold text-[#0A0A0A]">Parent Sign In</h1>
           <p className="text-gray-600 mt-2">View your children's trips and permission slips</p>

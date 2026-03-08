@@ -67,7 +67,7 @@ export function VenueNavigation() {
           {/* Logo and Brand */}
           <div className="flex items-center">
             <Link to="/dashboard" className="flex items-center">
-              <img src="/images/tripslip-logo.png" alt="TripSlip Venue" className="h-24 w-auto object-contain -my-6" />
+              <img src="/images/tripslip-logo.png" alt="TripSlip Venue" className="h-36 w-auto object-contain -my-12" />
             </Link>
           </div>
 

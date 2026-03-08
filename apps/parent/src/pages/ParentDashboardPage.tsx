@@ -220,7 +220,7 @@ export function ParentDashboardPage() {
       <header className="bg-white border-b-2 border-[#0A0A0A] px-4 py-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-24 w-auto object-contain -my-6" />
+            <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-36 w-auto object-contain -my-12" />
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600 hidden sm:inline">
