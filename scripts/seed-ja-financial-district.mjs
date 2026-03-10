@@ -17,18 +17,18 @@ const JA_VENUE_ID = 'aa000000-0000-0000-0000-000000000001';
 const JA_VENUE = {
   id: JA_VENUE_ID,
   name: 'JA Finance Park',
-  description: 'JA Finance Park is Junior Achievement\'s flagship experiential learning facility where students step into a realistic simulated city to practice real-world financial decision-making. Through immersive role-play, students manage personal budgets, make spending decisions on housing, transportation, food, and insurance, and learn the fundamentals of financial literacy that will serve them for life. Our 10,000+ square foot facility features life-sized storefronts including a bank, insurance office, retail shops, and a housing center — all designed to give students hands-on experience with money management, career planning, and civic responsibility.',
+  description: 'JA Finance Park is Junior Achievement\'s flagship experiential learning facility in Detroit\'s Financial District where students step into a realistic simulated city to practice real-world financial decision-making. Through immersive role-play, students manage personal budgets, make spending decisions on housing, transportation, food, and insurance, and learn the fundamentals of financial literacy that will serve them for life. Our 10,000+ square foot facility features life-sized storefronts including a bank, insurance office, retail shops, and a housing center — all designed to give students hands-on experience with money management, career planning, and civic responsibility.',
   address: {
-    street: '651 W Washington Blvd',
-    city: 'Chicago',
-    state: 'IL',
-    zipCode: '60661',
+    street: '1 Kennedy Square',
+    city: 'Detroit',
+    state: 'MI',
+    zipCode: '48226',
     country: 'USA',
-    coordinates: { lat: 41.8825, lng: -87.6441 }
+    coordinates: { lat: 42.3314, lng: -83.0458 }
   },
-  contact_email: 'financepark@jachicago.org',
-  contact_phone: '(312) 715-1300',
-  website: 'https://jachicago.org',
+  contact_email: 'financepark@jadetroit.org',
+  contact_phone: '(313) 961-2727',
+  website: 'https://jadetroit.org',
   capacity_min: 20,
   capacity_max: 150,
   rating: 4.8,
@@ -192,14 +192,109 @@ const PRICING_TIERS = [
 ];
 
 const JA_ADMIN = {
-  email: 'sarah.mitchell@jachicago.org',
+  email: 'sarah.mitchell@jadetroit.org',
   firstName: 'Sarah',
   lastName: 'Mitchell',
 };
 
 const JA_TEAM = [
-  { email: 'marcus.rivera@jachicago.org', firstName: 'Marcus', lastName: 'Rivera', role: 'administrator' },
-  { email: 'aisha.johnson@jachicago.org', firstName: 'Aisha', lastName: 'Johnson', role: 'editor' },
+  { email: 'marcus.rivera@jadetroit.org', firstName: 'Marcus', lastName: 'Rivera', role: 'administrator' },
+  { email: 'aisha.johnson@jadetroit.org', firstName: 'Aisha', lastName: 'Johnson', role: 'editor' },
+];
+
+const DETROIT_SCHOOLS = [
+  {
+    id: 'aa400000-0000-0000-0000-000000000001',
+    name: 'Cass Technical High School',
+    address: { street: '2501 Second Ave', city: 'Detroit', state: 'MI', zipCode: '48201' },
+  },
+  {
+    id: 'aa400000-0000-0000-0000-000000000002',
+    name: 'DPSCD Virtual Academy',
+    address: { street: '3011 W Grand Blvd', city: 'Detroit', state: 'MI', zipCode: '48202' },
+  },
+  {
+    id: 'aa400000-0000-0000-0000-000000000003',
+    name: 'Southeastern High School',
+    address: { street: '3030 Fairview St', city: 'Detroit', state: 'MI', zipCode: '48214' },
+  },
+  {
+    id: 'aa400000-0000-0000-0000-000000000004',
+    name: 'Renaissance High School',
+    address: { street: '6620 W Outer Dr', city: 'Detroit', state: 'MI', zipCode: '48235' },
+  },
+  {
+    id: 'aa400000-0000-0000-0000-000000000005',
+    name: 'Henry Ford Academy',
+    address: { street: '20900 Oakwood Blvd', city: 'Dearborn', state: 'MI', zipCode: '48124' },
+  },
+  {
+    id: 'aa400000-0000-0000-0000-000000000006',
+    name: 'Marygrove Conservancy / CMA',
+    address: { street: '8425 W McNichols Rd', city: 'Detroit', state: 'MI', zipCode: '48221' },
+  },
+];
+
+const DETROIT_TEACHERS = [
+  { id: 'aa500000-0000-0000-0000-000000000001', school_id: DETROIT_SCHOOLS[0].id, first_name: 'Rosa', last_name: 'Rodriguez', email: 'rodriguez@cass.dpscd.org' },
+  { id: 'aa500000-0000-0000-0000-000000000002', school_id: DETROIT_SCHOOLS[1].id, first_name: 'James', last_name: 'Thompson', email: 'thompson@virtual.dpscd.org' },
+  { id: 'aa500000-0000-0000-0000-000000000003', school_id: DETROIT_SCHOOLS[2].id, first_name: 'Denise', last_name: 'Williams', email: 'williams@se.dpscd.org' },
+  { id: 'aa500000-0000-0000-0000-000000000004', school_id: DETROIT_SCHOOLS[3].id, first_name: 'Marcus', last_name: 'Davis', email: 'davis@ren.dpscd.org' },
+  { id: 'aa500000-0000-0000-0000-000000000005', school_id: DETROIT_SCHOOLS[4].id, first_name: 'Linda', last_name: 'Chen', email: 'chen@hfa.edu' },
+  { id: 'aa500000-0000-0000-0000-000000000006', school_id: DETROIT_SCHOOLS[5].id, first_name: 'Angela', last_name: 'Johnson', email: 'johnson@marygrove.edu' },
+];
+
+const DETROIT_STUDENTS = [
+  { roster_school_idx: 0, students: [
+    { first_name: 'Jaylen', last_name: 'Carter', grade: '11' },
+    { first_name: 'Nia', last_name: 'Washington', grade: '11' },
+    { first_name: 'Marcus', last_name: 'Thompson', grade: '11' },
+    { first_name: 'Amara', last_name: 'Okafor', grade: '11' },
+    { first_name: 'DeShawn', last_name: 'Mitchell', grade: '11' },
+    { first_name: 'Zoe', last_name: 'Kim', grade: '11' },
+    { first_name: 'Isaiah', last_name: 'Brown', grade: '11' },
+    { first_name: 'Aaliyah', last_name: 'Jackson', grade: '11' },
+    { first_name: 'Tyler', last_name: 'Garcia', grade: '11' },
+    { first_name: 'Destiny', last_name: 'Williams', grade: '11' },
+  ]},
+  { roster_school_idx: 2, students: [
+    { first_name: 'Malik', last_name: 'Reed', grade: '10' },
+    { first_name: 'Jasmine', last_name: 'Cole', grade: '10' },
+    { first_name: 'Andre', last_name: 'Price', grade: '10' },
+    { first_name: 'Kayla', last_name: 'Foster', grade: '10' },
+    { first_name: 'Elijah', last_name: 'Grant', grade: '10' },
+    { first_name: 'Brianna', last_name: 'Harris', grade: '10' },
+    { first_name: 'Darius', last_name: 'Scott', grade: '10' },
+    { first_name: 'Tamika', last_name: 'Adams', grade: '10' },
+  ]},
+  { roster_school_idx: 3, students: [
+    { first_name: 'Kenji', last_name: 'Robinson', grade: '9' },
+    { first_name: 'Imani', last_name: 'Taylor', grade: '9' },
+    { first_name: 'Xavier', last_name: 'Lewis', grade: '9' },
+    { first_name: 'Aisha', last_name: 'Moore', grade: '9' },
+    { first_name: 'Jerome', last_name: 'Clark', grade: '9' },
+    { first_name: 'Layla', last_name: 'Baker', grade: '9' },
+    { first_name: 'Cameron', last_name: 'Wright', grade: '9' },
+  ]},
+  { roster_school_idx: 4, students: [
+    { first_name: 'Sophia', last_name: 'Nguyen', grade: '8' },
+    { first_name: 'Liam', last_name: 'Patel', grade: '8' },
+    { first_name: 'Olivia', last_name: 'Chen', grade: '8' },
+    { first_name: 'Noah', last_name: 'Ramirez', grade: '8' },
+    { first_name: 'Emma', last_name: 'Brooks', grade: '8' },
+    { first_name: 'Ethan', last_name: 'Stewart', grade: '8' },
+  ]},
+  { roster_school_idx: 5, students: [
+    { first_name: 'Mia', last_name: 'Henderson', grade: '7' },
+    { first_name: 'Lucas', last_name: 'Rivera', grade: '7' },
+    { first_name: 'Chloe', last_name: 'Patterson', grade: '7' },
+    { first_name: 'Owen', last_name: 'Jenkins', grade: '7' },
+    { first_name: 'Grace', last_name: 'Cooper', grade: '7' },
+    { first_name: 'Mason', last_name: 'Howard', grade: '7' },
+    { first_name: 'Lily', last_name: 'Ward', grade: '7' },
+    { first_name: 'Jackson', last_name: 'Torres', grade: '7' },
+    { first_name: 'Ava', last_name: 'Morgan', grade: '7' },
+  ]},
 ];
 
 async function ensureAuthUser(email, firstName, lastName) {
@@ -226,7 +321,7 @@ async function ensureAuthUser(email, firstName, lastName) {
 }
 
 async function seed() {
-  console.log('=== JA Finance Park Demo Seeding ===\n');
+  console.log('=== JA Finance Park — Detroit Demo Seeding ===\n');
 
   console.log('1. Creating JA Finance Park venue...');
   const { error: venueErr } = await supabase.from('venues').upsert(JA_VENUE, { onConflict: 'id' });
@@ -234,7 +329,7 @@ async function seed() {
     console.error('   ERROR:', venueErr.message);
     return;
   }
-  console.log('   ✓ JA Finance Park created');
+  console.log('   ✓ JA Finance Park — 1 Kennedy Square, Detroit Financial District');
 
   console.log('\n2. Creating experiences...');
   for (const exp of EXPERIENCES) {
@@ -264,10 +359,8 @@ async function seed() {
     return;
   }
 
-  await supabase.from('venues').update({ claimed_by: adminUserId }).eq('id', JA_VENUE_ID);
-
   const { data: existingVU } = await supabase.from('venue_users')
-    .select('id').eq('user_id', adminUserId).eq('venue_id', JA_VENUE_ID).limit(1);
+    .select('id').eq('user_id', adminUserId).eq('venue_id', JA_VENUE_ID);
   if (!existingVU?.length) {
     const { error } = await supabase.from('venue_users').insert({
       venue_id: JA_VENUE_ID,
@@ -275,10 +368,12 @@ async function seed() {
       role: 'administrator',
     });
     if (error) console.error('   ERROR linking admin:', error.message);
-    else console.log(`   ✓ Sarah Mitchell → JA Finance Park (administrator)`);
+    else console.log(`   ✓ Sarah Mitchell → administrator`);
   } else {
-    console.log('   Admin user already linked');
+    console.log(`   Admin already linked`);
   }
+
+  await supabase.from('venues').update({ claimed_by: adminUserId, claimed_at: new Date().toISOString() }).eq('id', JA_VENUE_ID);
 
   console.log('\n5. Creating JA team members...');
   for (const member of JA_TEAM) {
@@ -286,7 +381,7 @@ async function seed() {
     if (!userId) continue;
 
     const { data: existing } = await supabase.from('venue_users')
-      .select('id').eq('user_id', userId).eq('venue_id', JA_VENUE_ID).limit(1);
+      .select('id').eq('user_id', userId).eq('venue_id', JA_VENUE_ID);
     if (!existing?.length) {
       const { error } = await supabase.from('venue_users').insert({
         venue_id: JA_VENUE_ID,
@@ -303,342 +398,402 @@ async function seed() {
     }
   }
 
-  console.log('\n6. Creating demo trips and bookings...');
-
-  const { data: teachers } = await supabase.from('teachers')
-    .select('id, first_name, last_name, email, school_id')
-    .limit(4);
-
-  if (!teachers?.length) {
-    console.log('   No teachers found — skipping trips. Run seed-demo-scenarios.mjs first.');
-  } else {
-    const tripData = [
-      {
-        id: 'aa200000-0000-0000-0000-000000000001',
-        experience_id: EXPERIENCES[0].id,
-        teacher_id: teachers[0].id,
-        trip_date: '2026-04-15',
-        trip_time: '09:00:00',
-        student_count: 28,
-        status: 'confirmed',
-        is_free: false,
-        funding_model: 'school_funded',
-        direct_link_token: 'ja-fp-entry-' + randomUUID().substring(0, 8),
-        transportation: { type: 'school_bus', bus_count: 1, departure_time: '08:00', pickup_location: 'School front entrance' },
-      },
-      {
-        id: 'aa200000-0000-0000-0000-000000000002',
-        experience_id: EXPERIENCES[2].id,
-        teacher_id: teachers.length > 1 ? teachers[1].id : teachers[0].id,
-        trip_date: '2026-04-22',
-        trip_time: '09:30:00',
-        student_count: 32,
-        status: 'confirmed',
-        is_free: false,
-        funding_model: 'parent_pay',
-        direct_link_token: 'ja-biztown-' + randomUUID().substring(0, 8),
-        transportation: { type: 'charter_bus', bus_count: 1, departure_time: '08:15', pickup_location: 'Main parking lot' },
-      },
-      {
-        id: 'aa200000-0000-0000-0000-000000000003',
-        experience_id: EXPERIENCES[1].id,
-        teacher_id: teachers.length > 2 ? teachers[2].id : teachers[0].id,
-        trip_date: '2026-05-06',
-        trip_time: '09:00:00',
-        student_count: 25,
-        status: 'pending',
-        is_free: false,
-        funding_model: 'split_funded',
-        assistance_fund_cents: 50000,
-        direct_link_token: 'ja-fp-adv-' + randomUUID().substring(0, 8),
-        transportation: { type: 'school_bus', bus_count: 1, departure_time: '07:45', pickup_location: 'Bus loop' },
-      },
-      {
-        id: 'aa200000-0000-0000-0000-000000000004',
-        experience_id: EXPERIENCES[0].id,
-        teacher_id: teachers.length > 3 ? teachers[3].id : teachers[0].id,
-        trip_date: '2026-05-20',
-        trip_time: '10:00:00',
-        student_count: 45,
-        status: 'pending',
-        is_free: false,
-        funding_model: 'parent_pay',
-        direct_link_token: 'ja-fp-entry2-' + randomUUID().substring(0, 8),
-        transportation: { type: 'school_bus', bus_count: 2, departure_time: '08:30', pickup_location: 'South entrance' },
-      },
-      {
-        id: 'aa200000-0000-0000-0000-000000000005',
-        experience_id: EXPERIENCES[3].id,
-        teacher_id: teachers[0].id,
-        trip_date: '2026-03-25',
-        trip_time: '13:00:00',
-        student_count: 60,
-        status: 'completed',
-        is_free: true,
-        funding_model: 'school_funded',
-        direct_link_token: 'ja-career-' + randomUUID().substring(0, 8),
-        transportation: { type: 'none', notes: 'Speakers visit school — no transportation needed' },
-      },
-      {
-        id: 'aa200000-0000-0000-0000-000000000006',
-        experience_id: EXPERIENCES[0].id,
-        teacher_id: teachers.length > 1 ? teachers[1].id : teachers[0].id,
-        trip_date: '2026-02-12',
-        trip_time: '09:00:00',
-        student_count: 30,
-        status: 'completed',
-        is_free: false,
-        funding_model: 'parent_pay',
-        direct_link_token: 'ja-fp-past-' + randomUUID().substring(0, 8),
-        transportation: { type: 'school_bus', bus_count: 1, departure_time: '08:00', pickup_location: 'Front circle' },
-      },
-      {
-        id: 'aa200000-0000-0000-0000-000000000007',
-        experience_id: EXPERIENCES[2].id,
-        teacher_id: teachers.length > 2 ? teachers[2].id : teachers[0].id,
-        trip_date: '2026-01-28',
-        trip_time: '09:30:00',
-        student_count: 48,
-        status: 'completed',
-        is_free: false,
-        funding_model: 'school_funded',
-        direct_link_token: 'ja-biz-past-' + randomUUID().substring(0, 8),
-        transportation: { type: 'charter_bus', bus_count: 1, departure_time: '08:00', pickup_location: 'North lot' },
-      },
-    ];
-
-    for (const trip of tripData) {
-      const { error } = await supabase.from('trips').upsert(trip, { onConflict: 'id' });
-      const exp = EXPERIENCES.find(e => e.id === trip.experience_id);
-      if (error) console.error(`   ERROR trip ${trip.trip_date}:`, error.message);
-      else console.log(`   ✓ Trip: ${exp?.title?.substring(0, 30)}... on ${trip.trip_date} (${trip.status})`);
-    }
-
-    console.log('\n7. Creating venue bookings...');
-    const bookings = [
-      {
-        id: 'aa300000-0000-0000-0000-000000000001',
-        trip_id: tripData[0].id,
-        venue_id: JA_VENUE_ID,
-        experience_id: tripData[0].experience_id,
-        scheduled_date: tripData[0].trip_date,
-        start_time: '09:00:00',
-        end_time: '13:00:00',
-        student_count: tripData[0].student_count,
-        chaperone_count: 4,
-        status: 'confirmed',
-        confirmation_number: 'JA-FP-2026-0415',
-        quoted_price_cents: 28 * 1500,
-        paid_cents: 28 * 1500,
-        venue_notes: '7th grade group, 28 students. Completed all 12 pre-visit sessions. 4 chaperones confirmed.',
-        confirmed_at: '2026-03-15T10:00:00Z',
-      },
-      {
-        id: 'aa300000-0000-0000-0000-000000000002',
-        trip_id: tripData[1].id,
-        venue_id: JA_VENUE_ID,
-        experience_id: tripData[1].experience_id,
-        scheduled_date: tripData[1].trip_date,
-        start_time: '09:30:00',
-        end_time: '14:30:00',
-        student_count: tripData[1].student_count,
-        chaperone_count: 5,
-        status: 'confirmed',
-        confirmation_number: 'JA-BT-2026-0422',
-        quoted_price_cents: 32 * 1400,
-        paid_cents: 0,
-        venue_notes: '5th grade BizTown experience. 32 students, 5 chaperones. Pre-visit curriculum complete.',
-        confirmed_at: '2026-03-20T14:30:00Z',
-      },
-      {
-        id: 'aa300000-0000-0000-0000-000000000003',
-        trip_id: tripData[2].id,
-        venue_id: JA_VENUE_ID,
-        experience_id: tripData[2].experience_id,
-        scheduled_date: tripData[2].trip_date,
-        start_time: '09:00:00',
-        end_time: '14:00:00',
-        student_count: tripData[2].student_count,
-        chaperone_count: 3,
-        status: 'pending',
-        confirmation_number: 'JA-FPA-2026-0506',
-        quoted_price_cents: 25 * 1800,
-        paid_cents: 0,
-        venue_notes: '10th grade Advanced Finance Park. Partial scholarship funding. Awaiting school approval.',
-      },
-      {
-        id: 'aa300000-0000-0000-0000-000000000004',
-        trip_id: tripData[3].id,
-        venue_id: JA_VENUE_ID,
-        experience_id: tripData[3].experience_id,
-        scheduled_date: tripData[3].trip_date,
-        start_time: '10:00:00',
-        end_time: '14:00:00',
-        student_count: tripData[3].student_count,
-        chaperone_count: 6,
-        status: 'pending',
-        confirmation_number: 'JA-FP-2026-0520',
-        quoted_price_cents: 45 * 1200,
-        paid_cents: 0,
-        venue_notes: 'Large 8th grade group, 45 students. Requesting AM slot. 6 chaperones needed.',
-      },
-      {
-        id: 'aa300000-0000-0000-0000-000000000005',
-        trip_id: tripData[4].id,
-        venue_id: JA_VENUE_ID,
-        experience_id: tripData[4].experience_id,
-        scheduled_date: tripData[4].trip_date,
-        start_time: '13:00:00',
-        end_time: '14:30:00',
-        student_count: tripData[4].student_count,
-        chaperone_count: 2,
-        status: 'completed',
-        confirmation_number: 'JA-CS-2026-0325',
-        quoted_price_cents: 0,
-        paid_cents: 0,
-        venue_notes: 'Free career speaker session at school. 3 speakers from finance, healthcare, and tech.',
-        confirmed_at: '2026-03-10T09:00:00Z',
-        completed_at: '2026-03-25T14:30:00Z',
-      },
-      {
-        id: 'aa300000-0000-0000-0000-000000000006',
-        trip_id: tripData[5].id,
-        venue_id: JA_VENUE_ID,
-        experience_id: tripData[5].experience_id,
-        scheduled_date: tripData[5].trip_date,
-        start_time: '09:00:00',
-        end_time: '13:00:00',
-        student_count: tripData[5].student_count,
-        chaperone_count: 4,
-        status: 'completed',
-        confirmation_number: 'JA-FP-2026-0212',
-        quoted_price_cents: 30 * 1500,
-        paid_cents: 30 * 1500,
-        venue_notes: 'Completed successfully. Teacher feedback: "Students loved it — best field trip of the year!"',
-        confirmed_at: '2026-01-20T11:00:00Z',
-        completed_at: '2026-02-12T13:00:00Z',
-      },
-      {
-        id: 'aa300000-0000-0000-0000-000000000007',
-        trip_id: tripData[6].id,
-        venue_id: JA_VENUE_ID,
-        experience_id: tripData[6].experience_id,
-        scheduled_date: tripData[6].trip_date,
-        start_time: '09:30:00',
-        end_time: '14:30:00',
-        student_count: tripData[6].student_count,
-        chaperone_count: 6,
-        status: 'completed',
-        confirmation_number: 'JA-BT-2026-0128',
-        quoted_price_cents: 48 * 1400,
-        paid_cents: 48 * 1400,
-        venue_notes: 'Large BizTown group. All 21 businesses staffed. Outstanding student engagement.',
-        confirmed_at: '2026-01-05T10:00:00Z',
-        completed_at: '2026-01-28T14:30:00Z',
-      },
-    ];
-
-    for (const booking of bookings) {
-      const { error } = await supabase.from('venue_bookings').upsert(booking, { onConflict: 'id' });
-      if (error) console.error(`   ERROR booking ${booking.confirmation_number}:`, error.message);
-      else console.log(`   ✓ Booking ${booking.confirmation_number} (${booking.status})`);
-    }
-
-    console.log('\n8. Creating permission slips for completed/confirmed trips...');
-    let slipCount = 0;
-    const completedAndConfirmedTrips = tripData.filter(t =>
-      t.status === 'completed' || t.status === 'confirmed'
-    );
-
-    for (const trip of completedAndConfirmedTrips) {
-      const { data: existingSlips } = await supabase.from('permission_slips')
-        .select('id').eq('trip_id', trip.id).limit(1);
-      if (existingSlips?.length) {
-        console.log(`   Slips already exist for trip ${trip.trip_date}`);
-        continue;
-      }
-
-      const { data: roster } = await supabase.from('rosters')
-        .select('id').eq('teacher_id', trip.teacher_id).limit(1);
-      let studentIds = [];
-      if (roster?.length) {
-        const { data: students } = await supabase.from('students')
-          .select('id').eq('roster_id', roster[0].id).limit(trip.student_count);
-        studentIds = students?.map(s => s.id) || [];
-      }
-
-      const slipStatus = trip.status === 'completed' ? 'paid' : 'signed';
-      const numSlips = Math.min(studentIds.length || trip.student_count, trip.student_count);
-
-      for (let i = 0; i < numSlips; i++) {
-        const slipId = randomUUID();
-        const { error } = await supabase.from('permission_slips').insert({
-          id: slipId,
-          trip_id: trip.id,
-          student_id: studentIds[i] || null,
-          status: slipStatus,
-          form_data: {
-            parent_name: `Parent ${i + 1}`,
-            parent_email: `parent${i + 1}@example.com`,
-            parent_phone: `555-${String(1000 + i).padStart(4, '0')}`,
-            emergency_contact: `Emergency ${i + 1}`,
-            emergency_phone: `555-${String(2000 + i).padStart(4, '0')}`,
-            allergies: i % 5 === 0 ? 'None' : i % 5 === 1 ? 'Peanuts' : i % 5 === 2 ? 'Latex' : 'None',
-            medical_notes: '',
-            consent_photo: true,
-            consent_emergency_treatment: true,
-          },
-          signed_at: new Date(Date.now() - (30 + i) * 24 * 60 * 60 * 1000).toISOString(),
-          magic_link_token: randomUUID(),
-        });
-        if (error) console.error(`   Slip error: ${error.message}`);
-        else slipCount++;
-      }
-    }
-    console.log(`   ✓ Created ${slipCount} permission slips`);
-
-    console.log('\n9. Creating payments for paid trips...');
-    let paymentCount = 0;
-    const paidTrips = tripData.filter(t => t.status === 'completed' && !t.is_free);
-
-    for (const trip of paidTrips) {
-      const { data: slips } = await supabase.from('permission_slips')
-        .select('id').eq('trip_id', trip.id);
-
-      if (!slips?.length) continue;
-
-      const exp = EXPERIENCES.find(e => e.id === trip.experience_id);
-      const tier = PRICING_TIERS.find(pt =>
-        pt.experience_id === trip.experience_id &&
-        trip.student_count >= pt.min_students &&
-        trip.student_count <= pt.max_students
-      );
-      const pricePerStudent = tier?.price_cents || 1500;
-
-      for (const slip of slips) {
-        const { data: existingPayment } = await supabase.from('payments')
-          .select('id').eq('permission_slip_id', slip.id).limit(1);
-        if (existingPayment?.length) continue;
-
-        const { error } = await supabase.from('payments').insert({
-          id: randomUUID(),
-          permission_slip_id: slip.id,
-          amount_cents: pricePerStudent,
-          status: 'succeeded',
-          payment_method: 'card',
-          stripe_payment_intent_id: `pi_ja_${randomUUID().substring(0, 16)}`,
-          paid_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
-        });
-        if (!error) paymentCount++;
-      }
-    }
-    console.log(`   ✓ Created ${paymentCount} payments`);
+  console.log('\n6. Creating Detroit DPSCD schools...');
+  for (const school of DETROIT_SCHOOLS) {
+    const { error } = await supabase.from('schools').upsert(school, { onConflict: 'id' });
+    if (error) console.error(`   ERROR ${school.name}:`, error.message);
+    else console.log(`   ✓ ${school.name}`);
   }
 
-  console.log('\n=== JA FINANCE PARK DEMO VERIFICATION ===');
+  console.log('\n7. Creating Detroit teachers...');
+  for (const teacher of DETROIT_TEACHERS) {
+    const teacherUserId = await ensureAuthUser(teacher.email, teacher.first_name, teacher.last_name);
+    const { error } = await supabase.from('teachers').upsert({
+      ...teacher,
+      user_id: teacherUserId,
+      is_active: true,
+    }, { onConflict: 'id' });
+    const school = DETROIT_SCHOOLS.find(s => s.id === teacher.school_id);
+    if (error) console.error(`   ERROR ${teacher.first_name} ${teacher.last_name}:`, error.message);
+    else console.log(`   ✓ ${teacher.first_name} ${teacher.last_name} — ${school?.name}`);
+  }
 
-  const { data: jaVenue } = await supabase.from('venues').select('name, rating, review_count').eq('id', JA_VENUE_ID).single();
-  console.log(`Venue: ${jaVenue?.name} (${jaVenue?.rating}★, ${jaVenue?.review_count} reviews)`);
+  console.log('\n8. Creating rosters and students...');
+  const rosterIds = [];
+  for (const group of DETROIT_STUDENTS) {
+    const teacher = DETROIT_TEACHERS[group.roster_school_idx];
+    const school = DETROIT_SCHOOLS[group.roster_school_idx];
+    const rosterId = randomUUID();
+
+    const { data: existingRoster } = await supabase.from('rosters')
+      .select('id').eq('teacher_id', teacher.id).limit(1);
+
+    let activeRosterId;
+    if (existingRoster?.length) {
+      activeRosterId = existingRoster[0].id;
+      console.log(`   Roster exists for ${teacher.first_name} ${teacher.last_name}`);
+    } else {
+      const { error } = await supabase.from('rosters').insert({
+        id: rosterId,
+        teacher_id: teacher.id,
+        name: `${school.name} — ${group.students[0].grade}th Grade`,
+        grade_level: group.students[0].grade,
+      });
+      if (error) {
+        console.error(`   ERROR roster for ${teacher.first_name}:`, error.message);
+        continue;
+      }
+      activeRosterId = rosterId;
+      console.log(`   ✓ Roster: ${school.name} — ${group.students[0].grade}th Grade`);
+    }
+    rosterIds.push({ teacher_id: teacher.id, roster_id: activeRosterId, school_idx: group.roster_school_idx });
+
+    for (const student of group.students) {
+      const studentId = randomUUID();
+      const { data: existingStudent } = await supabase.from('students')
+        .select('id').eq('roster_id', activeRosterId)
+        .eq('first_name', student.first_name).eq('last_name', student.last_name).limit(1);
+      if (existingStudent?.length) continue;
+
+      const { error } = await supabase.from('students').insert({
+        id: studentId,
+        roster_id: activeRosterId,
+        first_name: student.first_name,
+        last_name: student.last_name,
+        grade: student.grade,
+      });
+      if (error) console.error(`     ERROR student ${student.first_name}:`, error.message);
+    }
+    const { count } = await supabase.from('students').select('*', { count: 'exact', head: true }).eq('roster_id', activeRosterId);
+    console.log(`     ${count} students enrolled`);
+  }
+
+  console.log('\n9. Creating demo trips...');
+  const tripData = [
+    {
+      id: 'aa200000-0000-0000-0000-000000000001',
+      experience_id: EXPERIENCES[0].id,
+      teacher_id: DETROIT_TEACHERS[0].id,
+      trip_date: '2026-04-15',
+      trip_time: '09:00:00',
+      student_count: 28,
+      status: 'confirmed',
+      is_free: false,
+      funding_model: 'school_funded',
+      direct_link_token: 'ja-fp-cass-' + randomUUID().substring(0, 8),
+      transportation: { type: 'school_bus', bus_count: 1, departure_time: '08:00', pickup_location: 'Cass Tech main entrance' },
+    },
+    {
+      id: 'aa200000-0000-0000-0000-000000000002',
+      experience_id: EXPERIENCES[2].id,
+      teacher_id: DETROIT_TEACHERS[5].id,
+      trip_date: '2026-04-22',
+      trip_time: '09:30:00',
+      student_count: 32,
+      status: 'confirmed',
+      is_free: false,
+      funding_model: 'parent_pay',
+      direct_link_token: 'ja-biz-marygrove-' + randomUUID().substring(0, 8),
+      transportation: { type: 'charter_bus', bus_count: 1, departure_time: '08:15', pickup_location: 'Marygrove parking lot' },
+    },
+    {
+      id: 'aa200000-0000-0000-0000-000000000003',
+      experience_id: EXPERIENCES[1].id,
+      teacher_id: DETROIT_TEACHERS[2].id,
+      trip_date: '2026-05-06',
+      trip_time: '09:00:00',
+      student_count: 25,
+      status: 'pending',
+      is_free: false,
+      funding_model: 'split_funded',
+      assistance_fund_cents: 50000,
+      direct_link_token: 'ja-adv-southeastern-' + randomUUID().substring(0, 8),
+      transportation: { type: 'school_bus', bus_count: 1, departure_time: '07:45', pickup_location: 'Southeastern bus loop' },
+    },
+    {
+      id: 'aa200000-0000-0000-0000-000000000004',
+      experience_id: EXPERIENCES[0].id,
+      teacher_id: DETROIT_TEACHERS[3].id,
+      trip_date: '2026-05-20',
+      trip_time: '10:00:00',
+      student_count: 45,
+      status: 'pending',
+      is_free: false,
+      funding_model: 'parent_pay',
+      direct_link_token: 'ja-fp-renaissance-' + randomUUID().substring(0, 8),
+      transportation: { type: 'school_bus', bus_count: 2, departure_time: '08:30', pickup_location: 'Renaissance south entrance' },
+    },
+    {
+      id: 'aa200000-0000-0000-0000-000000000005',
+      experience_id: EXPERIENCES[3].id,
+      teacher_id: DETROIT_TEACHERS[1].id,
+      trip_date: '2026-03-25',
+      trip_time: '13:00:00',
+      student_count: 60,
+      status: 'completed',
+      is_free: true,
+      funding_model: 'school_funded',
+      direct_link_token: 'ja-career-virtual-' + randomUUID().substring(0, 8),
+      transportation: { type: 'none', notes: 'JA speakers visit DPSCD Virtual campus — no student transportation needed' },
+    },
+    {
+      id: 'aa200000-0000-0000-0000-000000000006',
+      experience_id: EXPERIENCES[0].id,
+      teacher_id: DETROIT_TEACHERS[4].id,
+      trip_date: '2026-02-12',
+      trip_time: '09:00:00',
+      student_count: 30,
+      status: 'completed',
+      is_free: false,
+      funding_model: 'parent_pay',
+      direct_link_token: 'ja-fp-henryford-' + randomUUID().substring(0, 8),
+      transportation: { type: 'school_bus', bus_count: 1, departure_time: '08:00', pickup_location: 'Henry Ford Academy front circle' },
+    },
+    {
+      id: 'aa200000-0000-0000-0000-000000000007',
+      experience_id: EXPERIENCES[2].id,
+      teacher_id: DETROIT_TEACHERS[0].id,
+      trip_date: '2026-01-28',
+      trip_time: '09:30:00',
+      student_count: 48,
+      status: 'completed',
+      is_free: false,
+      funding_model: 'school_funded',
+      direct_link_token: 'ja-biz-cass-' + randomUUID().substring(0, 8),
+      transportation: { type: 'charter_bus', bus_count: 1, departure_time: '08:00', pickup_location: 'Cass Tech north lot' },
+    },
+  ];
+
+  for (const trip of tripData) {
+    const { error } = await supabase.from('trips').upsert(trip, { onConflict: 'id' });
+    const exp = EXPERIENCES.find(e => e.id === trip.experience_id);
+    const teacher = DETROIT_TEACHERS.find(t => t.id === trip.teacher_id);
+    const school = DETROIT_SCHOOLS.find(s => s.id === teacher?.school_id);
+    if (error) console.error(`   ERROR trip ${trip.trip_date}:`, error.message);
+    else console.log(`   ✓ ${exp?.title?.substring(0, 25)}... — ${school?.name} (${trip.status})`);
+  }
+
+  console.log('\n10. Creating venue bookings...');
+  const bookings = [
+    {
+      id: 'aa300000-0000-0000-0000-000000000001',
+      trip_id: tripData[0].id,
+      venue_id: JA_VENUE_ID,
+      experience_id: tripData[0].experience_id,
+      scheduled_date: tripData[0].trip_date,
+      start_time: '09:00:00',
+      end_time: '13:00:00',
+      student_count: tripData[0].student_count,
+      chaperone_count: 4,
+      status: 'confirmed',
+      confirmation_number: 'JA-FP-2026-0415',
+      quoted_price_cents: 28 * 1500,
+      paid_cents: 28 * 1500,
+      venue_notes: 'Cass Tech 11th grade group, 28 students. Completed all 12 pre-visit sessions. 4 chaperones confirmed.',
+      confirmed_at: '2026-03-15T10:00:00Z',
+    },
+    {
+      id: 'aa300000-0000-0000-0000-000000000002',
+      trip_id: tripData[1].id,
+      venue_id: JA_VENUE_ID,
+      experience_id: tripData[1].experience_id,
+      scheduled_date: tripData[1].trip_date,
+      start_time: '09:30:00',
+      end_time: '14:30:00',
+      student_count: tripData[1].student_count,
+      chaperone_count: 5,
+      status: 'confirmed',
+      confirmation_number: 'JA-BT-2026-0422',
+      quoted_price_cents: 32 * 1400,
+      paid_cents: 0,
+      venue_notes: 'Marygrove/CMA 7th grade BizTown experience. 32 students, 5 chaperones. Pre-visit curriculum complete.',
+      confirmed_at: '2026-03-20T14:30:00Z',
+    },
+    {
+      id: 'aa300000-0000-0000-0000-000000000003',
+      trip_id: tripData[2].id,
+      venue_id: JA_VENUE_ID,
+      experience_id: tripData[2].experience_id,
+      scheduled_date: tripData[2].trip_date,
+      start_time: '09:00:00',
+      end_time: '14:00:00',
+      student_count: tripData[2].student_count,
+      chaperone_count: 3,
+      status: 'pending',
+      confirmation_number: 'JA-FPA-2026-0506',
+      quoted_price_cents: 25 * 1800,
+      paid_cents: 0,
+      venue_notes: 'Southeastern 10th grade Advanced Finance Park. Partial scholarship funding. Awaiting school approval.',
+    },
+    {
+      id: 'aa300000-0000-0000-0000-000000000004',
+      trip_id: tripData[3].id,
+      venue_id: JA_VENUE_ID,
+      experience_id: tripData[3].experience_id,
+      scheduled_date: tripData[3].trip_date,
+      start_time: '10:00:00',
+      end_time: '14:00:00',
+      student_count: tripData[3].student_count,
+      chaperone_count: 6,
+      status: 'pending',
+      confirmation_number: 'JA-FP-2026-0520',
+      quoted_price_cents: 45 * 1200,
+      paid_cents: 0,
+      venue_notes: 'Renaissance High School 9th grade, 45 students. Requesting AM slot. 6 chaperones needed.',
+    },
+    {
+      id: 'aa300000-0000-0000-0000-000000000005',
+      trip_id: tripData[4].id,
+      venue_id: JA_VENUE_ID,
+      experience_id: tripData[4].experience_id,
+      scheduled_date: tripData[4].trip_date,
+      start_time: '13:00:00',
+      end_time: '14:30:00',
+      student_count: tripData[4].student_count,
+      chaperone_count: 2,
+      status: 'completed',
+      confirmation_number: 'JA-CS-2026-0325',
+      quoted_price_cents: 0,
+      paid_cents: 0,
+      venue_notes: 'Free career speaker session at DPSCD Virtual. 3 speakers from finance, healthcare, and tech.',
+      confirmed_at: '2026-03-10T09:00:00Z',
+      completed_at: '2026-03-25T14:30:00Z',
+    },
+    {
+      id: 'aa300000-0000-0000-0000-000000000006',
+      trip_id: tripData[5].id,
+      venue_id: JA_VENUE_ID,
+      experience_id: tripData[5].experience_id,
+      scheduled_date: tripData[5].trip_date,
+      start_time: '09:00:00',
+      end_time: '13:00:00',
+      student_count: tripData[5].student_count,
+      chaperone_count: 4,
+      status: 'completed',
+      confirmation_number: 'JA-FP-2026-0212',
+      quoted_price_cents: 30 * 1500,
+      paid_cents: 30 * 1500,
+      venue_notes: 'Henry Ford Academy completed successfully. Teacher feedback: "Students loved it — best field trip of the year!"',
+      confirmed_at: '2026-01-20T11:00:00Z',
+      completed_at: '2026-02-12T13:00:00Z',
+    },
+    {
+      id: 'aa300000-0000-0000-0000-000000000007',
+      trip_id: tripData[6].id,
+      venue_id: JA_VENUE_ID,
+      experience_id: tripData[6].experience_id,
+      scheduled_date: tripData[6].trip_date,
+      start_time: '09:30:00',
+      end_time: '14:30:00',
+      student_count: tripData[6].student_count,
+      chaperone_count: 6,
+      status: 'completed',
+      confirmation_number: 'JA-BT-2026-0128',
+      quoted_price_cents: 48 * 1400,
+      paid_cents: 48 * 1400,
+      venue_notes: 'Cass Tech BizTown experience. 48 students, 6 chaperones. Outstanding group — organized and engaged.',
+      confirmed_at: '2026-01-05T09:00:00Z',
+      completed_at: '2026-01-28T14:30:00Z',
+    },
+  ];
+
+  for (const booking of bookings) {
+    const { error } = await supabase.from('venue_bookings').upsert(booking, { onConflict: 'id' });
+    if (error) console.error(`   ERROR booking ${booking.confirmation_number}:`, error.message);
+    else console.log(`   ✓ Booking ${booking.confirmation_number} (${booking.status})`);
+  }
+
+  console.log('\n11. Creating permission slips...');
+  let slipCount = 0;
+  const activeTrips = tripData.filter(t => t.status === 'completed' || t.status === 'confirmed');
+
+  for (const trip of activeTrips) {
+    const { data: existingSlips } = await supabase.from('permission_slips')
+      .select('id').eq('trip_id', trip.id).limit(1);
+    if (existingSlips?.length) {
+      console.log(`   Slips already exist for trip ${trip.trip_date}`);
+      continue;
+    }
+
+    const { data: roster } = await supabase.from('rosters')
+      .select('id').eq('teacher_id', trip.teacher_id).limit(1);
+    let studentIds = [];
+    if (roster?.length) {
+      const { data: students } = await supabase.from('students')
+        .select('id').eq('roster_id', roster[0].id).limit(trip.student_count);
+      studentIds = students?.map(s => s.id) || [];
+    }
+
+    const slipStatus = trip.status === 'completed' ? 'paid' : 'signed';
+    const numSlips = Math.max(studentIds.length, Math.min(trip.student_count, 30));
+
+    for (let i = 0; i < numSlips; i++) {
+      const slipId = randomUUID();
+      const { error } = await supabase.from('permission_slips').insert({
+        id: slipId,
+        trip_id: trip.id,
+        student_id: studentIds[i] || null,
+        status: slipStatus,
+        form_data: {
+          parent_name: `Parent ${i + 1}`,
+          parent_email: `parent${i + 1}@example.com`,
+          parent_phone: `313-555-${String(1000 + i).padStart(4, '0')}`,
+          emergency_contact: `Emergency Contact ${i + 1}`,
+          emergency_phone: `313-555-${String(2000 + i).padStart(4, '0')}`,
+          allergies: i % 5 === 0 ? 'None' : i % 5 === 1 ? 'Peanuts' : i % 5 === 2 ? 'Latex' : 'None',
+          medical_notes: '',
+          consent_photo: true,
+          consent_emergency_treatment: true,
+        },
+        signed_at: new Date(Date.now() - (30 + i) * 24 * 60 * 60 * 1000).toISOString(),
+        magic_link_token: randomUUID(),
+      });
+      if (error) console.error(`   Slip error: ${error.message}`);
+      else slipCount++;
+    }
+  }
+  console.log(`   ✓ Created ${slipCount} permission slips`);
+
+  console.log('\n12. Creating payments for completed paid trips...');
+  let paymentCount = 0;
+  const paidTrips = tripData.filter(t => t.status === 'completed' && !t.is_free);
+
+  for (const trip of paidTrips) {
+    const { data: slips } = await supabase.from('permission_slips')
+      .select('id').eq('trip_id', trip.id);
+
+    if (!slips?.length) continue;
+
+    const tier = PRICING_TIERS.find(pt =>
+      pt.experience_id === trip.experience_id &&
+      trip.student_count >= pt.min_students &&
+      trip.student_count <= pt.max_students
+    );
+    const pricePerStudent = tier?.price_cents || 1500;
+
+    for (const slip of slips) {
+      const { data: existingPayment } = await supabase.from('payments')
+        .select('id').eq('permission_slip_id', slip.id).limit(1);
+      if (existingPayment?.length) continue;
+
+      const { error } = await supabase.from('payments').insert({
+        id: randomUUID(),
+        permission_slip_id: slip.id,
+        amount_cents: pricePerStudent,
+        status: 'succeeded',
+        payment_method: 'card',
+        stripe_payment_intent_id: `pi_ja_${randomUUID().substring(0, 16)}`,
+        paid_at: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      if (!error) paymentCount++;
+    }
+  }
+  console.log(`   ✓ Created ${paymentCount} payments`);
+
+  console.log('\n=== JA FINANCE PARK — DETROIT DEMO VERIFICATION ===');
+
+  const { data: jaVenue } = await supabase.from('venues').select('name, rating, review_count, address').eq('id', JA_VENUE_ID).single();
+  console.log(`Venue: ${jaVenue?.name} — ${jaVenue?.address?.street}, ${jaVenue?.address?.city}, ${jaVenue?.address?.state}`);
 
   const { count: expCount } = await supabase.from('experiences').select('*', { count: 'exact', head: true }).eq('venue_id', JA_VENUE_ID);
   console.log(`Experiences: ${expCount}`);
@@ -650,6 +805,14 @@ async function seed() {
   const { count: teamCount } = await supabase.from('venue_users').select('*', { count: 'exact', head: true }).eq('venue_id', JA_VENUE_ID);
   console.log(`Team Members: ${teamCount}`);
 
+  const { count: schoolCount } = await supabase.from('schools').select('*', { count: 'exact', head: true })
+    .in('id', DETROIT_SCHOOLS.map(s => s.id));
+  console.log(`Detroit Schools: ${schoolCount}`);
+
+  const { count: teacherCount } = await supabase.from('teachers').select('*', { count: 'exact', head: true })
+    .in('id', DETROIT_TEACHERS.map(t => t.id));
+  console.log(`Detroit Teachers: ${teacherCount}`);
+
   const { count: bookingTotal } = await supabase.from('venue_bookings').select('*', { count: 'exact', head: true }).eq('venue_id', JA_VENUE_ID);
   console.log(`Bookings: ${bookingTotal}`);
 
@@ -659,14 +822,21 @@ async function seed() {
   const totalPaid = bookingRevenue?.reduce((s, b) => s + b.paid_cents, 0) || 0;
   console.log(`Revenue: $${(totalQuoted / 100).toFixed(2)} quoted, $${(totalPaid / 100).toFixed(2)} paid`);
 
-  console.log(`\n✅ JA Finance Park demo is ready!`);
-  console.log(`\nLogin at /venue with:`);
+  console.log(`\n✅ JA Finance Park — Detroit demo is ready!`);
+  console.log(`\nDetroit Schools:`);
+  for (const school of DETROIT_SCHOOLS) {
+    const teacher = DETROIT_TEACHERS.find(t => t.school_id === school.id);
+    console.log(`  ${school.name} — ${teacher?.first_name} ${teacher?.last_name} (${teacher?.email})`);
+  }
+  console.log(`\nVenue Login at /venue:`);
   console.log(`  Email: ${JA_ADMIN.email}`);
   console.log(`  Password: ${PASSWORD}`);
-  console.log(`\nTeam members can also login:`);
-  for (const member of JA_TEAM) {
-    console.log(`  ${member.email} (${member.role})`);
+  console.log(`\nTeacher Login at /teacher:`);
+  for (const teacher of DETROIT_TEACHERS) {
+    const school = DETROIT_SCHOOLS.find(s => s.id === teacher.school_id);
+    console.log(`  ${teacher.email} — ${school?.name}`);
   }
+  console.log(`\nAll passwords: ${PASSWORD}`);
 }
 
 seed().catch(err => {

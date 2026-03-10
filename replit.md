@@ -142,7 +142,7 @@ Three seed scripts, run in order:
 
 Final totals: 4 schools, 8 teachers, 9 rosters, 185 students, 22 trips (all statuses), 251 permission slips, 88 payments, 76 parent-student links, 12 venue bookings, 10 parent accounts.
 
-4. **`node scripts/seed-ja-financial-district.mjs`** — JA Finance Park demo: 1 venue (JA Finance Park, Chicago), 4 experiences (Finance Park Entry/Advanced, BizTown, Career Speaker Series), 10 pricing tiers, 3 team members (1 admin + 1 admin + 1 editor), 7 trips (2 confirmed, 2 pending, 3 completed), 7 venue bookings, 180 permission slips, 70 payments. Login: sarah.mitchell@jachicago.org / TripSlip2026!
+4. **`node scripts/seed-ja-financial-district.mjs`** — JA Finance Park Detroit demo: 1 venue (JA Finance Park, 1 Kennedy Square, Detroit Financial District), 4 experiences, 10 pricing tiers, 3 venue team members, 6 Detroit DPSCD schools (Cass Tech, DPSCD Virtual, Southeastern, Renaissance, Henry Ford Academy, Marygrove/CMA), 6 teachers, students with rosters, 7 trips, 7 venue bookings, permission slips, payments. Login: sarah.mitchell@jadetroit.org / TripSlip2026!
 
 All scripts use `upsert`/existence checks and are idempotent.
 
@@ -295,6 +295,12 @@ All demo accounts use password: **TripSlip2026!**
 | mike.johnson@lincolnelementary.edu | Mike Johnson | Lincoln Elementary | 3 trips, 20 students |
 | rachel.kim@riverside.edu | Rachel Kim | Riverside Middle | 4 trips, 44 students |
 | david.martinez@sunset.edu | David Martinez | Sunset Elementary | 4 trips, 22 students |
+| rodriguez@cass.dpscd.org | Rosa Rodriguez | Cass Technical High School (Detroit) | JA trips |
+| thompson@virtual.dpscd.org | James Thompson | DPSCD Virtual Academy (Detroit) | JA trips |
+| williams@se.dpscd.org | Denise Williams | Southeastern High School (Detroit) | JA trips |
+| davis@ren.dpscd.org | Marcus Davis | Renaissance High School (Detroit) | JA trips |
+| chen@hfa.edu | Linda Chen | Henry Ford Academy (Dearborn) | JA trips |
+| johnson@marygrove.edu | Angela Johnson | Marygrove / CMA (Detroit) | JA trips |
 
 ### School Admins (login at `/school`)
 | Email | Name | School |
@@ -307,9 +313,9 @@ All demo accounts use password: **TripSlip2026!**
 |-------|------|-------|
 | james.park@sciencediscovery.org | James Park | Museum of Science and Industry |
 | lisa.wong@artinstitute.org | Lisa Wong | Art Institute of Chicago |
-| sarah.mitchell@jachicago.org | Sarah Mitchell | JA Finance Park |
-| marcus.rivera@jachicago.org | Marcus Rivera | JA Finance Park (admin) |
-| aisha.johnson@jachicago.org | Aisha Johnson | JA Finance Park (editor) |
+| sarah.mitchell@jadetroit.org | Sarah Mitchell | JA Finance Park, Detroit |
+| marcus.rivera@jadetroit.org | Marcus Rivera | JA Finance Park, Detroit (admin) |
+| aisha.johnson@jadetroit.org | Aisha Johnson | JA Finance Park, Detroit (editor) |
 
 ### Parents (login at `/parent`)
 | Email | Name | Children | Language |
