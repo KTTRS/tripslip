@@ -12,7 +12,7 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 const PASSWORD = 'TripSlip2026!';
 
-const JA_VENUE_ID = 'ja000000-0000-0000-0000-000000000001';
+const JA_VENUE_ID = 'aa000000-0000-0000-0000-000000000001';
 
 const JA_VENUE = {
   id: JA_VENUE_ID,
@@ -58,7 +58,7 @@ const JA_VENUE = {
 
 const EXPERIENCES = [
   {
-    id: 'ja100000-0000-0000-0000-000000000001',
+    id: 'aa100000-0000-0000-0000-000000000001',
     venue_id: JA_VENUE_ID,
     title: 'JA Finance Park — Entry Level',
     description: 'Students take on a simulated adult identity and navigate a realistic community making financial decisions about housing, transportation, food, clothing, and more. Through this immersive 4-hour experience, middle school students learn to create and manage a personal budget, understand the difference between needs and wants, explore career options, and practice critical thinking about money. Aligned with Common Core math and social studies standards. Includes pre-visit classroom curriculum (12 teacher-led sessions) and a follow-up reflection session.',
@@ -88,7 +88,7 @@ const EXPERIENCES = [
     },
   },
   {
-    id: 'ja100000-0000-0000-0000-000000000002',
+    id: 'aa100000-0000-0000-0000-000000000002',
     venue_id: JA_VENUE_ID,
     title: 'JA Finance Park — Advanced',
     description: 'The advanced Finance Park experience challenges high school students to think critically about long-term financial planning. Students select career and education pathways, define future lifestyle goals, and create comprehensive budgets that account for student loans, retirement savings, investments, and emergency funds. This simulation goes beyond basic budgeting to explore the financial consequences of major life decisions. Students leave with a personalized financial plan they can reference as they transition into adulthood.',
@@ -118,7 +118,7 @@ const EXPERIENCES = [
     },
   },
   {
-    id: 'ja100000-0000-0000-0000-000000000003',
+    id: 'aa100000-0000-0000-0000-000000000003',
     venue_id: JA_VENUE_ID,
     title: 'JA BizTown',
     description: 'JA BizTown transforms 4th-6th graders into business owners, bankers, and citizens of a miniature working town. Students operate life-sized businesses, earn paychecks, write checks, manage bank accounts, vote for mayor, and are challenged to earn a profit for their business — all within a 5-hour immersive simulation. This experience brings economics and civics to life through hands-on entrepreneurship. Students develop teamwork, leadership, and financial skills they\'ll use for the rest of their lives.',
@@ -148,7 +148,7 @@ const EXPERIENCES = [
     },
   },
   {
-    id: 'ja100000-0000-0000-0000-000000000004',
+    id: 'aa100000-0000-0000-0000-000000000004',
     venue_id: JA_VENUE_ID,
     title: 'JA Career Speaker Series',
     description: 'Local business professionals visit your school to share real-world career insights with students. This 90-minute interactive session features 3-4 professionals from diverse industries (finance, healthcare, technology, trades) who share their career journeys, daily responsibilities, and advice for students. Includes Q&A, a career exploration worksheet, and take-home resources. Perfect as a standalone event or complement to JA curriculum programs.',
@@ -314,7 +314,7 @@ async function seed() {
   } else {
     const tripData = [
       {
-        id: 'ja200000-0000-0000-0000-000000000001',
+        id: 'aa200000-0000-0000-0000-000000000001',
         experience_id: EXPERIENCES[0].id,
         teacher_id: teachers[0].id,
         trip_date: '2026-04-15',
@@ -327,7 +327,7 @@ async function seed() {
         transportation: { type: 'school_bus', bus_count: 1, departure_time: '08:00', pickup_location: 'School front entrance' },
       },
       {
-        id: 'ja200000-0000-0000-0000-000000000002',
+        id: 'aa200000-0000-0000-0000-000000000002',
         experience_id: EXPERIENCES[2].id,
         teacher_id: teachers.length > 1 ? teachers[1].id : teachers[0].id,
         trip_date: '2026-04-22',
@@ -340,7 +340,7 @@ async function seed() {
         transportation: { type: 'charter_bus', bus_count: 1, departure_time: '08:15', pickup_location: 'Main parking lot' },
       },
       {
-        id: 'ja200000-0000-0000-0000-000000000003',
+        id: 'aa200000-0000-0000-0000-000000000003',
         experience_id: EXPERIENCES[1].id,
         teacher_id: teachers.length > 2 ? teachers[2].id : teachers[0].id,
         trip_date: '2026-05-06',
@@ -354,7 +354,7 @@ async function seed() {
         transportation: { type: 'school_bus', bus_count: 1, departure_time: '07:45', pickup_location: 'Bus loop' },
       },
       {
-        id: 'ja200000-0000-0000-0000-000000000004',
+        id: 'aa200000-0000-0000-0000-000000000004',
         experience_id: EXPERIENCES[0].id,
         teacher_id: teachers.length > 3 ? teachers[3].id : teachers[0].id,
         trip_date: '2026-05-20',
@@ -367,7 +367,7 @@ async function seed() {
         transportation: { type: 'school_bus', bus_count: 2, departure_time: '08:30', pickup_location: 'South entrance' },
       },
       {
-        id: 'ja200000-0000-0000-0000-000000000005',
+        id: 'aa200000-0000-0000-0000-000000000005',
         experience_id: EXPERIENCES[3].id,
         teacher_id: teachers[0].id,
         trip_date: '2026-03-25',
@@ -380,7 +380,7 @@ async function seed() {
         transportation: { type: 'none', notes: 'Speakers visit school — no transportation needed' },
       },
       {
-        id: 'ja200000-0000-0000-0000-000000000006',
+        id: 'aa200000-0000-0000-0000-000000000006',
         experience_id: EXPERIENCES[0].id,
         teacher_id: teachers.length > 1 ? teachers[1].id : teachers[0].id,
         trip_date: '2026-02-12',
@@ -393,7 +393,7 @@ async function seed() {
         transportation: { type: 'school_bus', bus_count: 1, departure_time: '08:00', pickup_location: 'Front circle' },
       },
       {
-        id: 'ja200000-0000-0000-0000-000000000007',
+        id: 'aa200000-0000-0000-0000-000000000007',
         experience_id: EXPERIENCES[2].id,
         teacher_id: teachers.length > 2 ? teachers[2].id : teachers[0].id,
         trip_date: '2026-01-28',
@@ -417,7 +417,7 @@ async function seed() {
     console.log('\n7. Creating venue bookings...');
     const bookings = [
       {
-        id: 'ja300000-0000-0000-0000-000000000001',
+        id: 'aa300000-0000-0000-0000-000000000001',
         trip_id: tripData[0].id,
         venue_id: JA_VENUE_ID,
         experience_id: tripData[0].experience_id,
@@ -434,7 +434,7 @@ async function seed() {
         confirmed_at: '2026-03-15T10:00:00Z',
       },
       {
-        id: 'ja300000-0000-0000-0000-000000000002',
+        id: 'aa300000-0000-0000-0000-000000000002',
         trip_id: tripData[1].id,
         venue_id: JA_VENUE_ID,
         experience_id: tripData[1].experience_id,
@@ -451,7 +451,7 @@ async function seed() {
         confirmed_at: '2026-03-20T14:30:00Z',
       },
       {
-        id: 'ja300000-0000-0000-0000-000000000003',
+        id: 'aa300000-0000-0000-0000-000000000003',
         trip_id: tripData[2].id,
         venue_id: JA_VENUE_ID,
         experience_id: tripData[2].experience_id,
@@ -467,7 +467,7 @@ async function seed() {
         venue_notes: '10th grade Advanced Finance Park. Partial scholarship funding. Awaiting school approval.',
       },
       {
-        id: 'ja300000-0000-0000-0000-000000000004',
+        id: 'aa300000-0000-0000-0000-000000000004',
         trip_id: tripData[3].id,
         venue_id: JA_VENUE_ID,
         experience_id: tripData[3].experience_id,
@@ -483,7 +483,7 @@ async function seed() {
         venue_notes: 'Large 8th grade group, 45 students. Requesting AM slot. 6 chaperones needed.',
       },
       {
-        id: 'ja300000-0000-0000-0000-000000000005',
+        id: 'aa300000-0000-0000-0000-000000000005',
         trip_id: tripData[4].id,
         venue_id: JA_VENUE_ID,
         experience_id: tripData[4].experience_id,
@@ -501,7 +501,7 @@ async function seed() {
         completed_at: '2026-03-25T14:30:00Z',
       },
       {
-        id: 'ja300000-0000-0000-0000-000000000006',
+        id: 'aa300000-0000-0000-0000-000000000006',
         trip_id: tripData[5].id,
         venue_id: JA_VENUE_ID,
         experience_id: tripData[5].experience_id,
@@ -519,7 +519,7 @@ async function seed() {
         completed_at: '2026-02-12T13:00:00Z',
       },
       {
-        id: 'ja300000-0000-0000-0000-000000000007',
+        id: 'aa300000-0000-0000-0000-000000000007',
         trip_id: tripData[6].id,
         venue_id: JA_VENUE_ID,
         experience_id: tripData[6].experience_id,
@@ -591,7 +591,8 @@ async function seed() {
           signed_at: new Date(Date.now() - (30 + i) * 24 * 60 * 60 * 1000).toISOString(),
           magic_link_token: randomUUID(),
         });
-        if (!error) slipCount++;
+        if (error) console.error(`   Slip error: ${error.message}`);
+        else slipCount++;
       }
     }
     console.log(`   ✓ Created ${slipCount} permission slips`);
