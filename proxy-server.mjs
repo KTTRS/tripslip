@@ -828,6 +828,207 @@ async function handleSignupLinkVenueUser(req, res) {
   }
 }
 
+async function handleVenueUploadExperienceForm(req, res) {
+  try {
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const body = Buffer.concat(chunks);
+    const contentType = req.headers['content-type'] || '';
+
+    if (!contentType.includes('multipart/form-data')) {
+      return sendJSON(res, 400, { error: 'Expected multipart/form-data' });
+    }
+
+    const boundaryMatch = contentType.match(/boundary=(.+)/);
+    if (!boundaryMatch) {
+      return sendJSON(res, 400, { error: 'No boundary found' });
+    }
+
+    const boundary = boundaryMatch[1];
+    const parts = body.toString('binary').split('--' + boundary);
+    let fileBuffer = null;
+    let fileName = '';
+    let fileContentType = 'application/octet-stream';
+    const fields = {};
+
+    for (const part of parts) {
+      if (part.includes('filename=')) {
+        const nameMatch = part.match(/filename="([^"]+)"/);
+        const typeMatch = part.match(/Content-Type:\s*(.+)/i);
+        fileName = nameMatch ? nameMatch[1] : 'upload';
+        fileContentType = typeMatch ? typeMatch[1].trim() : 'application/octet-stream';
+        const dataStart = part.indexOf('\r\n\r\n') + 4;
+        const dataEnd = part.lastIndexOf('\r\n');
+        fileBuffer = Buffer.from(part.substring(dataStart, dataEnd), 'binary');
+      } else if (part.includes('name=')) {
+        const nameMatch = part.match(/name="([^"]+)"/);
+        if (nameMatch) {
+          const dataStart = part.indexOf('\r\n\r\n') + 4;
+          const dataEnd = part.lastIndexOf('\r\n');
+          fields[nameMatch[1]] = part.substring(dataStart, dataEnd).trim();
+        }
+      }
+    }
+
+    if (!fileBuffer) {
+      return sendJSON(res, 400, { error: 'No file found in upload' });
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (fileBuffer.length > maxSize) {
+      return sendJSON(res, 400, { error: 'File too large. Maximum size is 10MB.' });
+    }
+
+    const allowedExts = ['pdf', 'doc', 'docx', 'txt'];
+    const fileExt = (fileName.split('.').pop() || '').toLowerCase();
+    if (!allowedExts.includes(fileExt)) {
+      return sendJSON(res, 400, { error: 'Invalid file type. Accepted: PDF, DOC, DOCX, TXT.' });
+    }
+
+    const { venue_id, experience_id, form_name, category } = fields;
+    if (!venue_id || !experience_id) {
+      return sendJSON(res, 400, { error: 'venue_id and experience_id required' });
+    }
+
+    const supabase = getSupabase();
+    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `venue-forms/${venue_id}/${Date.now()}_${safeName}`;
+
+    let fileUrl = '';
+    const { error: uploadErr } = await supabase.storage
+      .from('trip-forms')
+      .upload(storagePath, fileBuffer, { contentType: fileContentType });
+
+    if (uploadErr) {
+      const localDir = path.join(__dirname, 'public', 'uploads', 'venue-forms');
+      if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true });
+      const localPath = path.join(localDir, `${Date.now()}_${safeName}`);
+      fs.writeFileSync(localPath, fileBuffer);
+      fileUrl = `/public/uploads/venue-forms/${path.basename(localPath)}`;
+    } else {
+      const { data: urlData } = supabase.storage
+        .from('trip-forms')
+        .getPublicUrl(storagePath);
+      fileUrl = urlData?.publicUrl || storagePath;
+    }
+
+    const { data: venueForm, error: formErr } = await supabase
+      .from('venue_forms')
+      .insert({
+        venue_id,
+        name: (form_name || fileName).trim(),
+        category: category || 'waiver',
+        file_url: fileUrl,
+        file_size_bytes: fileBuffer.length,
+        required: true,
+      })
+      .select()
+      .single();
+
+    if (formErr) throw new Error(formErr.message);
+
+    const { error: linkErr } = await supabase
+      .from('experience_forms')
+      .insert({
+        experience_id,
+        form_id: venueForm.id,
+        required: true,
+      });
+
+    if (linkErr) throw new Error(linkErr.message);
+
+    sendJSON(res, 200, { form: venueForm });
+  } catch (err) {
+    console.error('Venue upload experience form error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleVenueDeleteExperienceForm(req, res) {
+  const supabase = getSupabase();
+  try {
+    const body = await parseBody(req);
+    const { form_id, experience_id } = body;
+    if (!form_id || !experience_id) return sendJSON(res, 400, { error: 'form_id and experience_id required' });
+
+    await supabase.from('experience_forms').delete().eq('form_id', form_id).eq('experience_id', experience_id);
+    await supabase.from('venue_forms').delete().eq('id', form_id);
+
+    sendJSON(res, 200, { success: true });
+  } catch (err) {
+    console.error('Delete experience form error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleVenueGetExperienceForms(req, res) {
+  const supabase = getSupabase();
+  try {
+    const body = await parseBody(req);
+    const { experience_id } = body;
+    if (!experience_id) return sendJSON(res, 400, { error: 'experience_id required' });
+
+    const { data, error } = await supabase
+      .from('experience_forms')
+      .select('form_id, required, venue_form:venue_forms(id, name, category, file_url, file_size_bytes)')
+      .eq('experience_id', experience_id);
+
+    if (error) throw new Error(error.message);
+
+    const forms = (data || []).map(ef => ({
+      id: ef.venue_form?.id,
+      name: ef.venue_form?.name,
+      category: ef.venue_form?.category,
+      file_url: ef.venue_form?.file_url,
+      file_size_bytes: ef.venue_form?.file_size_bytes,
+      required: ef.required,
+    })).filter(f => f.id);
+
+    sendJSON(res, 200, { forms });
+  } catch (err) {
+    console.error('Get experience forms error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleVenueGetExperienceResponses(req, res) {
+  const supabase = getSupabase();
+  try {
+    const body = await parseBody(req);
+    const { experience_id } = body;
+    if (!experience_id) return sendJSON(res, 400, { error: 'experience_id required' });
+
+    const { data: trips } = await supabase
+      .from('trips')
+      .select('id, trip_date, direct_link_token, status')
+      .eq('experience_id', experience_id)
+      .order('trip_date', { ascending: false });
+
+    if (!trips || trips.length === 0) {
+      return sendJSON(res, 200, { trips: [] });
+    }
+
+    const tripIds = trips.map(t => t.id);
+    const { data: slips } = await supabase
+      .from('permission_slips')
+      .select('id, trip_id, status, student_name, parent_name, parent_email, parent_phone, form_data, signed_at')
+      .in('trip_id', tripIds)
+      .order('signed_at', { ascending: false });
+
+    const tripsWithSlips = trips.map(t => ({
+      ...t,
+      slips: (slips || []).filter(s => s.trip_id === t.id),
+    }));
+
+    sendJSON(res, 200, { trips: tripsWithSlips });
+  } catch (err) {
+    console.error('Get experience responses error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 async function handleVenueSendTeacherLink(req, res) {
   try {
     const body = await parseBody(req);
@@ -1275,6 +1476,10 @@ const apiHandlers = {
   'POST /api/discovery/geocode': handleDiscoveryGeocode,
   'POST /api/discovery/search': handleDiscoverySearch,
   'POST /api/venue/lookup-user': handleVenueLookupUser,
+  'POST /api/venue/upload-experience-form': handleVenueUploadExperienceForm,
+  'POST /api/venue/delete-experience-form': handleVenueDeleteExperienceForm,
+  'POST /api/venue/get-experience-forms': handleVenueGetExperienceForms,
+  'POST /api/venue/get-experience-responses': handleVenueGetExperienceResponses,
   'POST /api/venue/send-teacher-link': handleVenueSendTeacherLink,
   'POST /api/trip/lookup': handleTripLookup,
   'POST /api/trip/submit-consent': handleTripSubmitConsent,

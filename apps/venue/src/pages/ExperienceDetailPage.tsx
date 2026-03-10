@@ -8,7 +8,7 @@ import { Switch } from '@tripslip/ui/components/switch';
 import { Label } from '@tripslip/ui/components/label';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { ArrowLeft, Edit, Eye, Clock, Users, Link2, Copy, Check, Plus } from 'lucide-react';
+import { ArrowLeft, Edit, Eye, Clock, Users, Link2, Copy, Check, Plus, ChevronDown } from 'lucide-react';
 import { SendTeacherLinkModal } from '../components/SendTeacherLinkModal';
 
 interface Experience {
@@ -44,6 +44,9 @@ export default function ExperienceDetailPage() {
     teacher_email?: string;
   }>>([]);
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const [tripResponses, setTripResponses] = useState<any[]>([]);
+  const [expandedSlip, setExpandedSlip] = useState<string | null>(null);
+  const [responsesLoading, setResponsesLoading] = useState(false);
   
   useEffect(() => {
     if (id) {
@@ -80,6 +83,25 @@ export default function ExperienceDetailPage() {
         .order('created_at', { ascending: false });
       if (tripsData) {
         setGeneratedTrips(tripsData.filter((t: any) => t.direct_link_token));
+      }
+
+      try {
+        setResponsesLoading(true);
+        const { data: session } = await supabase.auth.getSession();
+        const respResult = await fetch('/api/venue/get-experience-responses', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session?.access_token}`,
+          },
+          body: JSON.stringify({ experience_id: id }),
+        });
+        const respData = await respResult.json();
+        if (respData.trips) setTripResponses(respData.trips);
+      } catch (e) {
+        console.error('Error loading responses:', e);
+      } finally {
+        setResponsesLoading(false);
       }
     } catch (error) {
       console.error('Error loading experience:', error);
@@ -157,6 +179,15 @@ export default function ExperienceDetailPage() {
       minute: '2-digit'
     });
   };
+
+  const formatDateTime = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+      hour: 'numeric', minute: '2-digit', hour12: true,
+    });
+  };
+
+  const totalResponses = tripResponses.reduce((sum, t) => sum + (t.slips?.length || 0), 0);
   
   if (loading) {
     return (
@@ -347,6 +378,102 @@ export default function ExperienceDetailPage() {
           </Card>
         )}
         
+        {/* Parent Responses */}
+        {generatedTrips.length > 0 && (
+          <Card className="border-2 border-[#0A0A0A] shadow-[4px_4px_0px_0px_rgba(10,10,10,1)]">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Parent Responses</CardTitle>
+                <Badge variant={totalResponses > 0 ? 'success' : 'secondary'}>
+                  {totalResponses} returned
+                </Badge>
+              </div>
+              <CardDescription>
+                Permission slips submitted by parents across all trips for this experience.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {responsesLoading ? (
+                <p className="text-gray-500 text-sm">Loading responses...</p>
+              ) : totalResponses === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-400 text-sm">No permission slips returned yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {tripResponses.filter(t => t.slips?.length > 0).map((trip: any) => {
+                    const tripDateFormatted = new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', {
+                      weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+                    });
+                    return (
+                      <div key={trip.id} className="border border-gray-200 rounded-lg">
+                        <div className="px-4 py-2 bg-gray-50 rounded-t-lg flex items-center justify-between">
+                          <span className="text-sm font-bold text-[#0A0A0A]">{tripDateFormatted}</span>
+                          <span className="text-xs text-gray-500">{trip.slips.length} response{trip.slips.length !== 1 ? 's' : ''}</span>
+                        </div>
+                        <div className="divide-y divide-gray-100">
+                          {trip.slips.map((slip: any) => (
+                            <div key={slip.id}>
+                              <button
+                                onClick={() => setExpandedSlip(expandedSlip === slip.id ? null : slip.id)}
+                                className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between"
+                              >
+                                <div className="flex items-center gap-4">
+                                  <div>
+                                    <p className="text-sm font-semibold text-[#0A0A0A]">{slip.student_name}</p>
+                                    <p className="text-xs text-gray-500">{slip.parent_name} &middot; {slip.parent_email}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-400">{slip.signed_at ? formatDateTime(slip.signed_at) : ''}</span>
+                                  <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${expandedSlip === slip.id ? 'rotate-180' : ''}`} />
+                                </div>
+                              </button>
+                              {expandedSlip === slip.id && (
+                                <div className="px-4 pb-4 pt-1 bg-gray-50 border-t border-gray-100">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <p className="font-bold text-xs uppercase tracking-wider text-[#0A0A0A] mb-1">Student</p>
+                                      <p><span className="text-gray-500">Name:</span> {slip.student_name}</p>
+                                      {slip.form_data?.studentGrade && <p><span className="text-gray-500">Grade:</span> {slip.form_data.studentGrade}</p>}
+                                      {slip.form_data?.schoolOrganization && <p><span className="text-gray-500">School:</span> {slip.form_data.schoolOrganization}</p>}
+                                      {slip.form_data?.studentAddress && <p><span className="text-gray-500">Address:</span> {slip.form_data.studentAddress}</p>}
+                                      {slip.form_data?.studentCityStateZip && <p><span className="text-gray-500">City/State/Zip:</span> {slip.form_data.studentCityStateZip}</p>}
+                                      {slip.form_data?.studentAllergies && (
+                                        <p><span className="text-gray-500">Allergies:</span> <span className="text-red-600 font-medium">{slip.form_data.studentAllergies}</span></p>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="font-bold text-xs uppercase tracking-wider text-[#0A0A0A] mb-1">Parent/Guardian</p>
+                                      <p><span className="text-gray-500">Name:</span> {slip.parent_name}</p>
+                                      <p><span className="text-gray-500">Email:</span> {slip.parent_email}</p>
+                                      <p><span className="text-gray-500">Phone:</span> {slip.parent_phone}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-bold text-xs uppercase tracking-wider text-[#0A0A0A] mb-1">Emergency Contact</p>
+                                      <p><span className="text-gray-500">Name:</span> {slip.form_data?.emergencyContactName || '—'}</p>
+                                      <p><span className="text-gray-500">Phone:</span> {slip.form_data?.emergencyContactPhone || '—'}</p>
+                                      <p><span className="text-gray-500">Relationship:</span> {slip.form_data?.emergencyContactRelationship || '—'}</p>
+                                    </div>
+                                    <div>
+                                      <p className="font-bold text-xs uppercase tracking-wider text-[#0A0A0A] mb-1">Signed</p>
+                                      <p>{slip.signed_at ? formatDateTime(slip.signed_at) : '—'}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Basic Information */}
         <Card>
           <CardHeader>

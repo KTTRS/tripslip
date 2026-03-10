@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { Layout } from '../components/Layout';
@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from '@tripslip/ui/components/alert';
 import { supabase } from '../lib/supabase';
 import { useVenue } from '../contexts/AuthContext';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Upload, FileText, Trash2 } from 'lucide-react';
 
 interface ExperienceFormData {
   title: string;
@@ -35,6 +35,14 @@ interface Photo {
   order: number;
 }
 
+interface RequiredForm {
+  id: string;
+  name: string;
+  category: string;
+  file_url: string;
+  file_size_bytes?: number;
+}
+
 export default function ExperienceEditorPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,6 +53,11 @@ export default function ExperienceEditorPage() {
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
   const [blackoutDates, setBlackoutDates] = useState<BlackoutDate[]>([]);
+  const [requiredForms, setRequiredForms] = useState<RequiredForm[]>([]);
+  const [uploadingForm, setUploadingForm] = useState(false);
+  const [formUploadName, setFormUploadName] = useState('');
+  const [formUploadCategory, setFormUploadCategory] = useState('waiver');
+  const formFileRef = useRef<HTMLInputElement>(null);
   
   const {
     register,
@@ -112,6 +125,23 @@ export default function ExperienceEditorPage() {
         })));
       }
       
+      // Load required forms
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        const formResp = await fetch('/api/venue/get-experience-forms', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session?.access_token}`,
+          },
+          body: JSON.stringify({ experience_id: id }),
+        });
+        const formResult = await formResp.json();
+        if (formResult.forms) setRequiredForms(formResult.forms);
+      } catch (e) {
+        console.error('Error loading forms:', e);
+      }
+
       // Load availability slots
       const { data: availabilityData, error: availabilityError } = await supabase
         .from('availability')
@@ -137,6 +167,60 @@ export default function ExperienceEditorPage() {
     }
   };
   
+  const handleUploadRequiredForm = async (experienceId: string) => {
+    const file = formFileRef.current?.files?.[0];
+    if (!file || !venueId) return;
+    setUploadingForm(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('venue_id', venueId);
+      fd.append('experience_id', experienceId);
+      fd.append('form_name', formUploadName.trim() || file.name);
+      fd.append('category', formUploadCategory);
+
+      const resp = await fetch('/api/venue/upload-experience-form', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session.session?.access_token}` },
+        body: fd,
+      });
+      const result = await resp.json();
+      if (!resp.ok) throw new Error(result.error);
+      if (result.form) {
+        setRequiredForms(prev => [...prev, result.form]);
+        setFormUploadName('');
+        setFormUploadCategory('waiver');
+        if (formFileRef.current) formFileRef.current.value = '';
+        toast.success('Form uploaded successfully');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to upload form');
+    } finally {
+      setUploadingForm(false);
+    }
+  };
+
+  const handleDeleteRequiredForm = async (formId: string) => {
+    if (!id) return;
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const resp = await fetch('/api/venue/delete-experience-form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.session?.access_token}`,
+        },
+        body: JSON.stringify({ form_id: formId, experience_id: id }),
+      });
+      if (!resp.ok) throw new Error('Failed');
+      setRequiredForms(prev => prev.filter(f => f.id !== formId));
+      toast.success('Form removed');
+    } catch {
+      toast.error('Failed to remove form');
+    }
+  };
+
   const onSubmit = async (data: ExperienceFormData) => {
     if (!venueId) {
       toast.error('Venue ID not found');
@@ -448,6 +532,117 @@ export default function ExperienceEditorPage() {
             </CardContent>
           </Card>
           
+          {/* Required Forms / Consent Documents */}
+          {id && (
+            <Card className="border-2 border-[#F5C518] shadow-[4px_4px_0px_0px_rgba(10,10,10,1)]">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Required Forms & Consent Documents
+                </CardTitle>
+                <CardDescription>
+                  Upload consent forms, waivers, or any documents parents need to read and sign. These will be shown to parents when they receive the permission slip.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {requiredForms.length > 0 && (
+                  <div className="space-y-2">
+                    {requiredForms.map((form) => (
+                      <div key={form.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <FileText className="h-5 w-5 text-[#F5C518] shrink-0" />
+                          <div className="min-w-0">
+                            <p className="font-semibold text-sm text-[#0A0A0A] truncate">{form.name}</p>
+                            <p className="text-xs text-gray-500 capitalize">{form.category.replace(/_/g, ' ')}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {form.file_url && (
+                            <a
+                              href={form.file_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:underline"
+                            >
+                              View
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRequiredForm(form.id)}
+                            className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-sm">Document Name</Label>
+                      <Input
+                        value={formUploadName}
+                        onChange={(e) => setFormUploadName(e.target.value)}
+                        placeholder="e.g. Participation Consent Form"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm">Category</Label>
+                      <select
+                        value={formUploadCategory}
+                        onChange={(e) => setFormUploadCategory(e.target.value)}
+                        className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#F5C518]"
+                      >
+                        <option value="waiver">Waiver / Release</option>
+                        <option value="consent">Consent Form</option>
+                        <option value="media_release">Media Release</option>
+                        <option value="medical">Medical / Health</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm">Upload Document</Label>
+                    <input
+                      ref={formFileRef}
+                      type="file"
+                      accept=".pdf,.doc,.docx,.txt"
+                      className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm bg-white file:mr-3 file:px-3 file:py-1 file:border-0 file:rounded file:bg-[#F5C518] file:font-semibold file:text-sm file:cursor-pointer"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">PDF, DOC, DOCX, or TXT (max 10MB)</p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => handleUploadRequiredForm(id)}
+                    disabled={uploadingForm || !formFileRef.current?.files?.length}
+                    className="bg-[#F5C518] hover:bg-[#F5C518]/90 text-black border-2 border-black"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    {uploadingForm ? 'Uploading...' : 'Upload Form'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {!id && (
+            <Card className="border-2 border-gray-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-gray-500">
+                  <FileText className="h-5 w-5" />
+                  Required Forms & Consent Documents
+                </CardTitle>
+                <CardDescription>
+                  Save the experience first, then you can upload consent forms and other required documents.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+
           {/* Photo Upload */}
           <Card>
             <CardHeader>

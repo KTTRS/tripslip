@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useParams, useNavigate, Link } from 'react-router';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { TripDetails } from '../components/permission-slip/TripDetails';
 import { SignatureCapture } from '../components/permission-slip/SignatureCapture';
@@ -869,6 +869,34 @@ export function TripLookupPage() {
             </div>
           )}
         </form>
+
+        <div className="mt-8 bg-gradient-to-br from-[#F5C518]/5 to-[#F5C518]/15 border-2 border-[#F5C518]/30 rounded-xl p-6 text-center">
+          <h3 className="text-lg font-bold text-[#0A0A0A] mb-2">Save Time on Future Trips</h3>
+          <ul className="text-sm text-gray-600 space-y-1.5 mb-4 text-left max-w-xs mx-auto">
+            <li className="flex items-start gap-2">
+              <span className="text-[#F5C518] font-bold mt-0.5">&#10003;</span>
+              <span>Auto-fill your info on future permission slips</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-[#F5C518] font-bold mt-0.5">&#10003;</span>
+              <span>Track upcoming trips in one place</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-[#F5C518] font-bold mt-0.5">&#10003;</span>
+              <span>Get reminders before deadlines</span>
+            </li>
+          </ul>
+          <Link
+            to="/signup"
+            className="inline-block px-6 py-3 bg-[#F5C518] text-[#0A0A0A] font-bold rounded-lg border-2 border-[#0A0A0A] shadow-[3px_3px_0px_#0A0A0A] hover:shadow-[5px_5px_0px_#0A0A0A] hover:-translate-x-0.5 hover:-translate-y-0.5 active:shadow-none active:translate-x-[3px] active:translate-y-[3px] transition-all duration-150"
+          >
+            Create Free Parent Account
+          </Link>
+          <p className="text-xs text-gray-500 mt-3">
+            Already have an account?{' '}
+            <Link to="/login" className="text-[#0A0A0A] font-semibold hover:underline">Sign in</Link>
+          </p>
+        </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
           Having trouble? Contact your child's teacher for help.
