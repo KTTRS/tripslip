@@ -1,8 +1,3 @@
-/**
- * Teacher Signup Page
- * Allows teachers to create an account and select their school
- */
-
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
@@ -19,7 +14,7 @@ export default function SignupPage() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    schoolId: '',
+    schoolName: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,30 +23,26 @@ export default function SignupPage() {
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    // Email validation
     if (!formData.email) {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
 
-    // Password validation
     if (!formData.password) {
       errors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       errors.password = 'Password must be at least 8 characters long';
     }
 
-    // Confirm password validation
     if (!formData.confirmPassword) {
       errors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
 
-    // School validation
-    if (!formData.schoolId) {
-      errors.schoolId = 'Please select a school';
+    if (!formData.schoolName || formData.schoolName.trim().length < 2) {
+      errors.schoolName = 'Please enter your school name';
     }
 
     setFieldErrors(errors);
@@ -70,13 +61,22 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // Sign up with RBAC auth service
+      const orgRes = await fetch('/api/signup/find-or-create-school', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: formData.schoolName.trim() }),
+      });
+      const orgData = await orgRes.json();
+      if (!orgRes.ok) {
+        throw new Error(orgData.error || 'Failed to set up school');
+      }
+
       const result = await authService.signUp({
         email: formData.email,
         password: formData.password,
         role: 'teacher',
         organization_type: 'school',
-        organization_id: formData.schoolId,
+        organization_id: orgData.id,
         metadata: {
           first_name: formData.firstName,
           last_name: formData.lastName,
@@ -86,7 +86,7 @@ export default function SignupPage() {
       const { error: teacherError } = await (supabase as any)
         .rpc('create_teacher_on_signup', {
           p_user_id: result.user.id,
-          p_school_id: formData.schoolId,
+          p_school_id: orgData.id,
           p_first_name: formData.firstName,
           p_last_name: formData.lastName,
           p_email: formData.email,
@@ -96,7 +96,6 @@ export default function SignupPage() {
         console.error('Failed to create teacher record:', teacherError);
       }
 
-      // Redirect to email verification notice
       navigate('/verify-email', {
         state: {
           email: formData.email,
@@ -106,7 +105,6 @@ export default function SignupPage() {
     } catch (err: any) {
       console.error('Signup error:', err);
       
-      // Handle specific error cases
       if (err.message?.includes('already registered') || err.message?.includes('already exists')) {
         setError('An account with this email already exists. Please sign in instead.');
       } else if (err.message?.includes('Invalid email')) {
@@ -192,9 +190,9 @@ export default function SignupPage() {
 
             <SchoolSelector
               supabase={supabase}
-              value={formData.schoolId}
-              onChange={(schoolId: string) => setFormData({ ...formData, schoolId })}
-              error={fieldErrors.schoolId}
+              value={formData.schoolName}
+              onChange={(schoolName: string) => setFormData({ ...formData, schoolName })}
+              error={fieldErrors.schoolName}
             />
 
             <div>

@@ -1,8 +1,3 @@
-/**
- * School/District Admin Signup Page
- * Allows school and district administrators to create accounts
- */
-
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
@@ -23,8 +18,8 @@ export default function SignupPage() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    schoolId: '',
-    districtId: '',
+    schoolName: '',
+    districtName: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,32 +28,28 @@ export default function SignupPage() {
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    // Email validation
     if (!formData.email) {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
 
-    // Password validation
     if (!formData.password) {
       errors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       errors.password = 'Password must be at least 8 characters long';
     }
 
-    // Confirm password validation
     if (!formData.confirmPassword) {
       errors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
 
-    // Organization validation
-    if (adminRole === 'school_admin' && !formData.schoolId) {
-      errors.schoolId = 'Please select a school';
-    } else if (adminRole === 'district_admin' && !formData.districtId) {
-      errors.districtId = 'Please select a district';
+    if (adminRole === 'school_admin' && (!formData.schoolName || formData.schoolName.trim().length < 2)) {
+      errors.schoolName = 'Please enter your school name';
+    } else if (adminRole === 'district_admin' && (!formData.districtName || formData.districtName.trim().length < 2)) {
+      errors.districtName = 'Please enter your district name';
     }
 
     setFieldErrors(errors);
@@ -78,22 +69,33 @@ export default function SignupPage() {
 
     try {
       const organizationType = adminRole === 'school_admin' ? 'school' : 'district';
-      const organizationId = adminRole === 'school_admin' ? formData.schoolId : formData.districtId;
+      const endpoint = adminRole === 'school_admin'
+        ? '/api/signup/find-or-create-school'
+        : '/api/signup/find-or-create-district';
+      const orgName = adminRole === 'school_admin' ? formData.schoolName : formData.districtName;
 
-      // Sign up with RBAC auth service
+      const orgRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: orgName.trim() }),
+      });
+      const orgData = await orgRes.json();
+      if (!orgRes.ok) {
+        throw new Error(orgData.error || 'Failed to set up organization');
+      }
+
       const result = await authService.signUp({
         email: formData.email,
         password: formData.password,
         role: adminRole,
         organization_type: organizationType,
-        organization_id: organizationId,
+        organization_id: orgData.id,
         metadata: {
           first_name: formData.firstName,
           last_name: formData.lastName,
         },
       });
 
-      // Redirect to email verification notice
       navigate('/verify-email', {
         state: {
           email: formData.email,
@@ -104,7 +106,6 @@ export default function SignupPage() {
     } catch (err: any) {
       console.error('Signup error:', err);
       
-      // Handle specific error cases
       if (err.message?.includes('already registered') || err.message?.includes('already exists')) {
         setError('An account with this email already exists. Please sign in instead.');
       } else if (err.message?.includes('Invalid email')) {
@@ -138,7 +139,6 @@ export default function SignupPage() {
               </div>
             )}
 
-            {/* Role Selection */}
             <div>
               <label className="block text-sm font-medium mb-2">
                 Administrator Type *
@@ -224,20 +224,19 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* Organization Selection */}
             {adminRole === 'school_admin' ? (
               <SchoolSelector
                 supabase={supabase}
-                value={formData.schoolId}
-                onChange={(schoolId: string) => setFormData({ ...formData, schoolId })}
-                error={fieldErrors.schoolId}
+                value={formData.schoolName}
+                onChange={(schoolName: string) => setFormData({ ...formData, schoolName })}
+                error={fieldErrors.schoolName}
               />
             ) : (
               <DistrictSelector
                 supabase={supabase}
-                value={formData.districtId}
-                onChange={(districtId: string) => setFormData({ ...formData, districtId })}
-                error={fieldErrors.districtId}
+                value={formData.districtName}
+                onChange={(districtName: string) => setFormData({ ...formData, districtName })}
+                error={fieldErrors.districtName}
               />
             )}
 

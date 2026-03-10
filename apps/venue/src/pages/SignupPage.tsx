@@ -1,8 +1,3 @@
-/**
- * Venue Admin Signup Page
- * Allows venue administrators to create accounts
- */
-
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@tripslip/ui';
@@ -19,7 +14,7 @@ export default function SignupPage() {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    venueId: '',
+    venueName: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,30 +23,26 @@ export default function SignupPage() {
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
 
-    // Email validation
     if (!formData.email) {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Please enter a valid email address';
     }
 
-    // Password validation
     if (!formData.password) {
       errors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       errors.password = 'Password must be at least 8 characters long';
     }
 
-    // Confirm password validation
     if (!formData.confirmPassword) {
       errors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
 
-    // Venue validation
-    if (!formData.venueId) {
-      errors.venueId = 'Please select a venue';
+    if (!formData.venueName || formData.venueName.trim().length < 2) {
+      errors.venueName = 'Please enter your venue name';
     }
 
     setFieldErrors(errors);
@@ -70,20 +61,43 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // Sign up with RBAC auth service
+      const orgRes = await fetch('/api/signup/find-or-create-venue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.venueName.trim(),
+          contactEmail: formData.email.trim(),
+        }),
+      });
+      const orgData = await orgRes.json();
+      if (!orgRes.ok) {
+        throw new Error(orgData.error || 'Failed to set up venue');
+      }
+
       const result = await authService.signUp({
         email: formData.email,
         password: formData.password,
         role: 'venue_admin',
         organization_type: 'venue',
-        organization_id: formData.venueId,
+        organization_id: orgData.id,
         metadata: {
           first_name: formData.firstName,
           last_name: formData.lastName,
         },
       });
 
-      // Redirect to email verification notice
+      const linkRes = await fetch('/api/signup/link-venue-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: result.user.id,
+          venueId: orgData.id,
+        }),
+      });
+      if (!linkRes.ok) {
+        console.error('Failed to link venue user:', await linkRes.text());
+      }
+
       navigate('/verify-email', {
         state: {
           email: formData.email,
@@ -93,7 +107,6 @@ export default function SignupPage() {
     } catch (err: any) {
       console.error('Signup error:', err);
       
-      // Handle specific error cases
       if (err.message?.includes('already registered') || err.message?.includes('already exists')) {
         setError('An account with this email already exists. Please sign in instead.');
       } else if (err.message?.includes('Invalid email')) {
@@ -179,9 +192,9 @@ export default function SignupPage() {
 
             <VenueSelector
               supabase={supabase}
-              value={formData.venueId}
-              onChange={(venueId: string) => setFormData({ ...formData, venueId })}
-              error={fieldErrors.venueId}
+              value={formData.venueName}
+              onChange={(venueName: string) => setFormData({ ...formData, venueName })}
+              error={fieldErrors.venueName}
             />
 
             <div>

@@ -655,6 +655,172 @@ async function handleVenueLookupUser(req, res) {
   }
 }
 
+async function handleSignupFindOrCreateSchool(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { name } = body;
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      return sendJSON(res, 400, { error: 'School name is required (at least 2 characters)' });
+    }
+    const trimmed = name.trim();
+
+    const { data: existing } = await supabase
+      .from('schools')
+      .select('id, name')
+      .ilike('name', trimmed)
+      .limit(1)
+      .single();
+
+    if (existing) {
+      return sendJSON(res, 200, { id: existing.id, name: existing.name, created: false });
+    }
+
+    const { data: created, error } = await supabase
+      .from('schools')
+      .insert({ name: trimmed })
+      .select('id, name')
+      .single();
+
+    if (error) {
+      console.error('Create school error:', error.message);
+      return sendJSON(res, 500, { error: 'Failed to create school' });
+    }
+
+    sendJSON(res, 200, { id: created.id, name: created.name, created: true });
+  } catch (err) {
+    console.error('Find/create school error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleSignupFindOrCreateDistrict(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { name } = body;
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      return sendJSON(res, 400, { error: 'District name is required (at least 2 characters)' });
+    }
+    const trimmed = name.trim();
+
+    const { data: existing } = await supabase
+      .from('districts')
+      .select('id, name')
+      .ilike('name', trimmed)
+      .limit(1)
+      .single();
+
+    if (existing) {
+      return sendJSON(res, 200, { id: existing.id, name: existing.name, created: false });
+    }
+
+    const { data: created, error } = await supabase
+      .from('districts')
+      .insert({ name: trimmed })
+      .select('id, name')
+      .single();
+
+    if (error) {
+      console.error('Create district error:', error.message);
+      return sendJSON(res, 500, { error: 'Failed to create district' });
+    }
+
+    sendJSON(res, 200, { id: created.id, name: created.name, created: true });
+  } catch (err) {
+    console.error('Find/create district error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleSignupFindOrCreateVenue(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { name, contactEmail } = body;
+    if (!name || typeof name !== 'string' || name.trim().length < 2) {
+      return sendJSON(res, 400, { error: 'Venue name is required (at least 2 characters)' });
+    }
+    if (!contactEmail || typeof contactEmail !== 'string') {
+      return sendJSON(res, 400, { error: 'Contact email is required' });
+    }
+    const trimmed = name.trim();
+
+    const { data: existing } = await supabase
+      .from('venues')
+      .select('id, name')
+      .ilike('name', trimmed)
+      .limit(1)
+      .single();
+
+    if (existing) {
+      return sendJSON(res, 200, { id: existing.id, name: existing.name, created: false });
+    }
+
+    const { data: created, error } = await supabase
+      .from('venues')
+      .insert({ name: trimmed, contact_email: contactEmail.trim() })
+      .select('id, name')
+      .single();
+
+    if (error) {
+      console.error('Create venue error:', error.message);
+      return sendJSON(res, 500, { error: 'Failed to create venue' });
+    }
+
+    sendJSON(res, 200, { id: created.id, name: created.name, created: true });
+  } catch (err) {
+    console.error('Find/create venue error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleSignupLinkVenueUser(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { userId, venueId } = body;
+    if (!userId || !venueId) {
+      return sendJSON(res, 400, { error: 'userId and venueId are required' });
+    }
+
+    const { data: existing } = await supabase
+      .from('venue_users')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('venue_id', venueId)
+      .maybeSingle();
+
+    if (existing) {
+      return sendJSON(res, 200, { linked: true, existing: true });
+    }
+
+    const { error: vuError } = await supabase
+      .from('venue_users')
+      .insert({
+        user_id: userId,
+        venue_id: venueId,
+        role: 'administrator',
+      });
+
+    if (vuError) {
+      console.error('Create venue_users error:', vuError.message);
+      return sendJSON(res, 500, { error: 'Failed to link user to venue' });
+    }
+
+    await supabase
+      .from('venues')
+      .update({
+        claimed: true,
+        claimed_by: userId,
+        claimed_at: new Date().toISOString(),
+      })
+      .eq('id', venueId)
+      .is('claimed_by', null);
+
+    sendJSON(res, 200, { linked: true, existing: false });
+  } catch (err) {
+    console.error('Link venue user error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 const apiHandlers = {
   'POST /api/send-sms': handleSendSMS,
   'POST /api/send-email': handleSendEmail,
@@ -666,6 +832,10 @@ const apiHandlers = {
   'POST /api/discovery/geocode': handleDiscoveryGeocode,
   'POST /api/discovery/search': handleDiscoverySearch,
   'POST /api/venue/lookup-user': handleVenueLookupUser,
+  'POST /api/signup/find-or-create-school': handleSignupFindOrCreateSchool,
+  'POST /api/signup/find-or-create-district': handleSignupFindOrCreateDistrict,
+  'POST /api/signup/find-or-create-venue': handleSignupFindOrCreateVenue,
+  'POST /api/signup/link-venue-user': handleSignupLinkVenueUser,
 };
 
 const server = http.createServer(async (req, res) => {
@@ -688,7 +858,11 @@ const server = http.createServer(async (req, res) => {
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
     const endpoint = req.url?.split('?')[0] || '';
 
-    if (endpoint.startsWith('/api/send-') || endpoint.startsWith('/api/discovery/') || endpoint.startsWith('/api/venue/')) {
+    if (endpoint.startsWith('/api/signup/')) {
+      if (!checkRateLimit(clientIp, endpoint)) {
+        return sendJSON(res, 429, { error: 'Too many requests. Please try again later.' });
+      }
+    } else if (endpoint.startsWith('/api/send-') || endpoint.startsWith('/api/discovery/') || endpoint.startsWith('/api/venue/')) {
       const authed = await verifyAuth(req);
       if (!authed) {
         return sendJSON(res, 401, { error: 'Authentication required' });
@@ -757,6 +931,10 @@ server.listen(5000, '0.0.0.0', () => {
   console.log('  POST /api/discovery/geocode');
   console.log('  POST /api/discovery/search');
   console.log('  POST /api/venue/lookup-user');
+  console.log('  POST /api/signup/find-or-create-school');
+  console.log('  POST /api/signup/find-or-create-district');
+  console.log('  POST /api/signup/find-or-create-venue');
+  console.log('  POST /api/signup/link-venue-user');
   console.log('App Routes:');
   console.log('  /          -> landing  (port 3000)');
   console.log('  /venue/*   -> venue    (port 3001)');
