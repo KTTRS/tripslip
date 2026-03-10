@@ -166,12 +166,34 @@ The `signIn` flow wraps role-loading in try/catch and falls back to a default `t
 3. Parent opens `/parent/trip/{token}` → TripLookupPage shows full form
 4. Parent fills in: child name/grade/allergies, parent contact, emergency contact, signature
 5. On submit: creates `permission_slips` record with `student_id = NULL`, data in `form_data` JSONB
-6. Status: `signed_pending_payment` (if payment needed) or `signed` (free/assistance)
-7. If payment needed: redirects to PaymentPage → Stripe checkout → PaymentSuccessPage
-8. If no payment: redirects to PermissionSlipSuccessPage
-9. Both success pages show "Create Free Account" prompt (unless already logged in)
-10. Teacher sees slip appear in real-time on PermissionSlipTrackingPage
-11. Teacher views trip manifest for day-of attendance at `/trips/:tripId/manifest`
+6. Status: `signed` (payment is greyed out as "Coming Soon")
+7. Redirects to PermissionSlipSuccessPage
+8. Success page shows "Create Free Account" prompt (unless already logged in)
+9. Teacher sees slip appear in real-time on PermissionSlipTrackingPage
+10. Teacher views trip manifest for day-of attendance at `/trips/:tripId/manifest`
+
+## Venue → Teacher → Parent Consent Flow (No Signup Required)
+The JA Finance Park "Stock Market Challenge" flow demonstrates the consent/indemnification pipeline:
+1. **Venue** (JA admin) goes to Experience Detail page → clicks "Send Consent Link to Teacher"
+2. `SendTeacherLinkModal` collects teacher email + trip date → `POST /api/venue/send-teacher-link` creates trip + trip_form records with indemnification text
+3. **Teacher** receives link `/teacher/trip/{token}/review` — NO login required (public route outside ProtectedRoute)
+4. Teacher sees venue's indemnification form, can optionally add more requirements via `POST /api/trip/add-form`
+5. Teacher clicks "Copy Parent Link" → gets `/parent/trip/{token}` URL to share with parents
+6. **Parent** opens link — NO login required. Sees trip details, consent forms with checkboxes, fills in student/parent/emergency info
+7. Parent signs and submits via `POST /api/trip/submit-consent` → permission_slips record created with all form_data
+8. Both teacher (review page) and venue (ConsentTracker component) can see completion status
+
+### Public Proxy Endpoints (no auth required, rate-limited)
+- `POST /api/trip/lookup` — Fetch trip + forms + slips by `direct_link_token`
+- `POST /api/trip/submit-consent` — Submit parent consent form (creates/updates permission_slip)
+- `POST /api/trip/add-form` — Teacher adds additional requirement to trip
+- `POST /api/trip/remove-form` — Teacher removes their added requirement
+
+### Key Files for Consent Flow
+- `apps/venue/src/components/SendTeacherLinkModal.tsx` — Venue sends link to teacher
+- `apps/teacher/src/pages/TripConsentReviewPage.tsx` — Teacher reviews & forwards (no auth)
+- `apps/parent/src/pages/TripLookupPage.tsx` — Parent fills out consent (no auth)
+- `apps/venue/src/components/ConsentTracker.tsx` — Venue sees consent completion status
 
 ### Parent Account Flow (Optional Sign-Up)
 - After completing a permission slip (free or paid), parent sees account creation prompt
