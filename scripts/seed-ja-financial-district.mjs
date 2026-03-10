@@ -16,8 +16,8 @@ const JA_VENUE_ID = 'aa000000-0000-0000-0000-000000000001';
 
 const JA_VENUE = {
   id: JA_VENUE_ID,
-  name: 'JA Finance Park',
-  description: 'JA Finance Park is Junior Achievement\'s flagship experiential learning facility in Detroit\'s Financial District where students step into a realistic simulated city to practice real-world financial decision-making. Through immersive role-play, students manage personal budgets, make spending decisions on housing, transportation, food, and insurance, and learn the fundamentals of financial literacy that will serve them for life. Our 10,000+ square foot facility features life-sized storefronts including a bank, insurance office, retail shops, and a housing center — all designed to give students hands-on experience with money management, career planning, and civic responsibility.',
+  name: 'Junior Achievement of Michigan',
+  description: 'Junior Achievement of Michigan empowers young people to own their economic success through hands-on programs in financial literacy, work readiness, and entrepreneurship. Our experiential learning programs, including JA Finance Park and the JA Stock Market Challenge, give students real-world experience with money management, investing, career planning, and civic responsibility.',
   address: {
     street: '1 Kennedy Square',
     city: 'Detroit',
@@ -244,7 +244,7 @@ const JA_VENUE_FORMS = [
     venue_id: JA_VENUE_ID,
     name: 'JA Stock Market Challenge — Participation Indemnification & Consent',
     category: 'waiver',
-    file_url: '',
+    file_url: '/public/forms/JA_SMC_Consent_Form.docx',
     required: true,
     version: 1,
   },

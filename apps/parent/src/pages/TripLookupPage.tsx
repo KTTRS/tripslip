@@ -16,8 +16,6 @@ interface TripInfo {
   configured_addons?: Array<{
     name: string;
     description?: string;
-    price_cents?: number;
-    priceCents?: number;
     required?: boolean;
     category?: string;
   }>;
@@ -30,7 +28,6 @@ interface TripInfo {
       name: string;
       address: any;
     };
-    pricing_tiers?: Array<{ price_cents: number }>;
   };
 }
 
@@ -323,12 +320,6 @@ export function TripLookupPage() {
     }
   };
 
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat(i18n.language, {
-      style: 'currency',
-      currency: 'USD',
-    }).format(cents / 100);
-  };
 
   if (loading) {
     return (
@@ -361,11 +352,6 @@ export function TripLookupPage() {
 
   if (!trip) return null;
 
-  const costCents = trip.experience?.pricing_tiers?.[0]?.price_cents || 0;
-  const tripHasCost = !trip.is_free &&
-    trip.funding_model !== 'school_funded' &&
-    trip.funding_model !== 'sponsored' &&
-    costCents > 0;
   const hasConsentForms = tripForms.length > 0;
 
   const rawTransport = trip.transportation as Record<string, unknown> | null;
@@ -640,7 +626,15 @@ export function TripLookupPage() {
                             <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Teacher Required</span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-700 leading-relaxed">{f.description}</p>
+                        <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3 bg-white">
+                          <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{f.description}</p>
+                        </div>
+                        {f.file_url && (
+                          <a href={f.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-2 inline-flex items-center gap-1">
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            Download Full Document
+                          </a>
+                        )}
                       </div>
                     )}
                     <div className="flex items-start gap-3 p-4 pt-2">
@@ -659,7 +653,7 @@ export function TripLookupPage() {
                         {!f.description && (
                           <p className="text-xs text-gray-500 capitalize mt-0.5">{f.form_type.replace(/_/g, ' ')}</p>
                         )}
-                        {f.file_url && (
+                        {!f.description && f.file_url && (
                           <a href={f.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">
                             View Full Document
                           </a>
@@ -676,19 +670,6 @@ export function TripLookupPage() {
             </div>
           )}
 
-          {tripHasCost && (
-            <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-6 space-y-3 opacity-60">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-400">Trip Cost</h2>
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 bg-gray-200 rounded-full px-3 py-1">Coming Soon</span>
-              </div>
-              <div className="flex items-center justify-between p-4 bg-gray-200/50 rounded-lg border border-gray-300">
-                <span className="font-medium text-gray-400">Cost per Student</span>
-                <span className="text-2xl font-bold text-gray-400">{formatCurrency(costCents)}</span>
-              </div>
-              <p className="text-sm text-gray-400 text-center">Online payment collection is coming soon. Your school will coordinate payment separately.</p>
-            </div>
-          )}
 
           <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 space-y-6">
             <h2 className="text-xl font-bold text-[#0A0A0A]">Parent / Guardian Information</h2>

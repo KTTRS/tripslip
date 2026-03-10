@@ -8,7 +8,7 @@ values (
   '6-week experiential program — student teams manage virtual portfolios competing across Detroit schools.',
   '2026-03-15',
   '9:00 AM – 2:30 PM',
-  'JA Finance Park, Detroit',
+  'Junior Achievement of Michigan, Detroit',
   1500,
   'Bus transportation fee',
   'Every dollar goes directly to the TripSlip Field Trip Fund — ensuring no student misses out because of cost.'

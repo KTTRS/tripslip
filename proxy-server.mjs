@@ -29,6 +29,9 @@ const MIME_TYPES = {
   '.webm': 'video/webm',
   '.mp4': 'video/mp4',
   '.map': 'application/json',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.doc': 'application/msword',
+  '.txt': 'text/plain',
 };
 
 const APP_DIST_DIRS = {
@@ -886,7 +889,7 @@ async function handleVenueSendTeacherLink(req, res) {
       trip_time: '09:00:00',
       student_count: student_count || 30,
       status: 'pending',
-      is_free: false,
+      is_free: true,
       direct_link_token: directLinkToken,
     };
 
@@ -910,11 +913,20 @@ async function handleVenueSendTeacherLink(req, res) {
       for (const ef of expForms) {
         const vf = ef.venue_form;
         if (!vf) continue;
+
+        let consentText = vf.description || '';
+        if (vf.file_url && vf.file_url.includes('JA_SMC_Consent')) {
+          const consentTxtPath = path.join(__dirname, 'public', 'forms', 'JA_SMC_Consent_Text.txt');
+          if (fs.existsSync(consentTxtPath)) {
+            consentText = fs.readFileSync(consentTxtPath, 'utf-8');
+          }
+        }
+
         await supabase.from('trip_forms').insert({
           trip_id: trip.id,
-          form_type: 'indemnification',
+          form_type: vf.category || 'indemnification',
           title: vf.name,
-          description: body.consent_text || `Required by ${experience.title}. Category: ${vf.category}.`,
+          description: consentText,
           file_url: vf.file_url || '',
           required: ef.required,
           source: 'venue',
@@ -943,7 +955,7 @@ async function handleTripLookup(req, res) {
   const supabase = getSupabase();
   try {
     const body = await parseBody(req);
-    const { token } = body;
+    const { token, role } = body;
     if (!token) return sendJSON(res, 400, { error: 'Token is required' });
 
     const { data: tripData, error: tripError } = await supabase
@@ -967,9 +979,6 @@ async function handleTripLookup(req, res) {
           venue:venues (
             name,
             address
-          ),
-          pricing_tiers (
-            price_cents
           )
         )
       `)
@@ -985,15 +994,20 @@ async function handleTripLookup(req, res) {
       .select('id, title, form_type, description, file_url, required, source')
       .eq('trip_id', tripData.id);
 
-    const { data: slips } = await supabase
-      .from('permission_slips')
-      .select('id, status, student_name, form_data, signed_at')
-      .eq('trip_id', tripData.id);
+    let slips = [];
+    if (role === 'teacher') {
+      const { data: slipData } = await supabase
+        .from('permission_slips')
+        .select('id, status, student_name, parent_name, parent_email, parent_phone, signature, form_data, signed_at')
+        .eq('trip_id', tripData.id)
+        .order('signed_at', { ascending: false });
+      slips = slipData || [];
+    }
 
     sendJSON(res, 200, {
       trip: tripData,
       forms: forms || [],
-      slips: slips || [],
+      slips,
     });
   } catch (err) {
     console.error('Trip lookup error:', err.message);
@@ -1105,6 +1119,122 @@ async function handleTripAddForm(req, res) {
   }
 }
 
+async function handleTripUploadForm(req, res) {
+  try {
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const body = Buffer.concat(chunks);
+    const contentType = req.headers['content-type'] || '';
+
+    if (!contentType.includes('multipart/form-data')) {
+      return sendJSON(res, 400, { error: 'Expected multipart/form-data' });
+    }
+
+    const boundaryMatch = contentType.match(/boundary=(.+)/);
+    if (!boundaryMatch) {
+      return sendJSON(res, 400, { error: 'No boundary found' });
+    }
+
+    const boundary = boundaryMatch[1];
+    const parts = body.toString('binary').split('--' + boundary);
+    let fileBuffer = null;
+    let fileName = '';
+    let fileContentType = 'application/octet-stream';
+    const fields = {};
+
+    for (const part of parts) {
+      if (part.includes('filename=')) {
+        const nameMatch = part.match(/filename="([^"]+)"/);
+        const typeMatch = part.match(/Content-Type:\s*(.+)/i);
+        fileName = nameMatch ? nameMatch[1] : 'upload';
+        fileContentType = typeMatch ? typeMatch[1].trim() : 'application/octet-stream';
+        const dataStart = part.indexOf('\r\n\r\n') + 4;
+        const dataEnd = part.lastIndexOf('\r\n');
+        fileBuffer = Buffer.from(part.substring(dataStart, dataEnd), 'binary');
+      } else if (part.includes('name=')) {
+        const nameMatch = part.match(/name="([^"]+)"/);
+        if (nameMatch) {
+          const dataStart = part.indexOf('\r\n\r\n') + 4;
+          const dataEnd = part.lastIndexOf('\r\n');
+          fields[nameMatch[1]] = part.substring(dataStart, dataEnd).trim();
+        }
+      }
+    }
+
+    if (!fileBuffer) {
+      return sendJSON(res, 400, { error: 'No file found in upload' });
+    }
+
+    const maxSize = 10 * 1024 * 1024;
+    if (fileBuffer.length > maxSize) {
+      return sendJSON(res, 400, { error: 'File too large. Maximum size is 10MB.' });
+    }
+
+    const allowedExts = ['pdf', 'doc', 'docx', 'txt'];
+    const fileExt = (fileName.split('.').pop() || '').toLowerCase();
+    if (!allowedExts.includes(fileExt)) {
+      return sendJSON(res, 400, { error: 'Invalid file type. Accepted: PDF, DOC, DOCX, TXT.' });
+    }
+
+    const { token, title } = fields;
+    if (!token) return sendJSON(res, 400, { error: 'Token required' });
+
+    const supabase = getSupabase();
+
+    const { data: tripData } = await supabase
+      .from('trips')
+      .select('id')
+      .eq('direct_link_token', token)
+      .single();
+
+    if (!tripData) return sendJSON(res, 404, { error: 'Trip not found' });
+
+    const ext = fileName.split('.').pop() || 'pdf';
+    const safeName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `${tripData.id}/${Date.now()}_${safeName}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from('trip-forms')
+      .upload(storagePath, fileBuffer, { contentType: fileContentType });
+
+    let fileUrl = '';
+    if (uploadErr) {
+      const localDir = path.join(__dirname, 'public', 'uploads');
+      if (!fs.existsSync(localDir)) fs.mkdirSync(localDir, { recursive: true });
+      const localPath = path.join(localDir, `${Date.now()}_${safeName}`);
+      fs.writeFileSync(localPath, fileBuffer);
+      fileUrl = `/public/uploads/${path.basename(localPath)}`;
+    } else {
+      const { data: urlData } = supabase.storage
+        .from('trip-forms')
+        .getPublicUrl(storagePath);
+      fileUrl = urlData?.publicUrl || storagePath;
+    }
+
+    const { data: formRecord, error: insertErr } = await supabase
+      .from('trip_forms')
+      .insert({
+        trip_id: tripData.id,
+        title: (title || fileName).trim(),
+        form_type: 'teacher_requirement',
+        description: fields.description || '',
+        file_url: fileUrl,
+        required: true,
+        source: 'teacher',
+      })
+      .select('id, title, form_type, description, file_url, required, source')
+      .single();
+
+    if (insertErr) throw new Error(insertErr.message);
+    sendJSON(res, 200, { form: formRecord });
+  } catch (err) {
+    console.error('Trip upload form error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 async function handleTripRemoveForm(req, res) {
   const supabase = getSupabase();
   try {
@@ -1149,6 +1279,7 @@ const apiHandlers = {
   'POST /api/trip/lookup': handleTripLookup,
   'POST /api/trip/submit-consent': handleTripSubmitConsent,
   'POST /api/trip/add-form': handleTripAddForm,
+  'POST /api/trip/upload-form': handleTripUploadForm,
   'POST /api/trip/remove-form': handleTripRemoveForm,
   'POST /api/signup/find-or-create-school': handleSignupFindOrCreateSchool,
   'POST /api/signup/find-or-create-district': handleSignupFindOrCreateDistrict,
@@ -1169,6 +1300,14 @@ const server = http.createServer(async (req, res) => {
   if (req.url === '/healthz' || (req.url === '/' && req.method === 'HEAD')) {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     return res.end('ok');
+  }
+
+  if (req.url?.startsWith('/public/') && req.method === 'GET') {
+    const safePath = req.url.split('?')[0].replace(/\.\./g, '');
+    const filePath = path.join(import.meta.dirname || '.', safePath);
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      return serveStatic(res, filePath);
+    }
   }
 
   const routeKey = `${req.method} ${req.url?.split('?')[0]}`;

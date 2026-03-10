@@ -8,9 +8,6 @@ interface TripDetailsProps {
     trip_time?: string;
     departure_time?: string;
     return_time?: string;
-    estimated_cost_cents?: number;
-    is_free?: boolean;
-    funding_model?: string;
     experience?: {
       title: string;
       description: string;
@@ -18,7 +15,6 @@ interface TripDetailsProps {
         name: string;
         address: any;
       } | null;
-      pricing_tiers?: Array<{ price_cents: number }>;
     } | null;
     experiences?: {
       title: string;
@@ -33,17 +29,6 @@ interface TripDetailsProps {
 
 export function TripDetails({ trip }: TripDetailsProps) {
   const { t, i18n } = useTranslation();
-
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat(i18n.language, {
-      style: 'currency',
-      currency: 'USD',
-    }).format(cents / 100);
-  };
-
-  const costCents = trip.estimated_cost_cents || trip.experience?.pricing_tiers?.[0]?.price_cents || 0;
-  const isFree = trip.is_free || costCents === 0 ||
-    trip.funding_model === 'school_funded' || trip.funding_model === 'sponsored';
 
   const experienceTitle = trip.experience?.title || trip.experiences?.title;
   const experienceDescription = trip.experience?.description || trip.experiences?.description;
@@ -115,15 +100,6 @@ export function TripDetails({ trip }: TripDetailsProps) {
               <p className="text-[#0A0A0A]">{trip.return_time}</p>
             </div>
           )}
-
-          <div>
-            <p className="text-sm font-medium text-gray-500">
-              {t('permissionSlip.cost')}
-            </p>
-            <p className="text-lg font-bold text-[#0A0A0A]">
-              {isFree ? 'Free' : formatCurrency(costCents)}
-            </p>
-          </div>
         </div>
       </div>
     </div>
