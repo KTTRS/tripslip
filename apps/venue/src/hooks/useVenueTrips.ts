@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useVenue } from '../contexts/AuthContext'
 
 export interface VenueTrip {
   id: string
@@ -39,33 +39,23 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
   const [trips, setTrips] = useState<VenueTrip[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { user } = useAuth()
+  const { venueId, venueLoading } = useVenue()
 
   useEffect(() => {
-    if (!user) {
+    if (venueLoading) return
+    if (!venueId) {
+      setTrips([])
       setLoading(false)
       return
     }
-
     fetchTrips()
-  }, [user, options.status, options.experienceId, options.startDate, options.endDate])
+  }, [venueId, venueLoading, options.status, options.experienceId, options.startDate, options.endDate])
 
   const fetchTrips = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // First get the venue_id for the current user
-      const { data: venueUser, error: venueError } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user!.id)
-        .single()
-
-      if (venueError) throw venueError
-      if (!venueUser) throw new Error('Venue not found for user')
-
-      // Build query for trips
       let query = supabase
         .from('trips')
         .select(`
@@ -92,28 +82,23 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
             )
           )
         `)
-        .eq('experiences.venue_id', venueUser.venue_id)
+        .eq('experiences.venue_id', venueId!)
         .order('trip_date', { ascending: true })
 
-      // Apply filters
       if (options.status) {
         query = query.eq('status', options.status)
       }
-
       if (options.experienceId) {
         query = query.eq('experience_id', options.experienceId)
       }
-
       if (options.startDate) {
         query = query.gte('trip_date', options.startDate)
       }
-
       if (options.endDate) {
         query = query.lte('trip_date', options.endDate)
       }
 
       const { data, error: tripsError } = await query
-
       if (tripsError) throw tripsError
 
       setTrips(data as VenueTrip[])
@@ -127,11 +112,9 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
 
   const confirmTrip = async (tripId: string) => {
     try {
-      // Get the trip details first
       const trip = trips.find(t => t.id === tripId)
       if (!trip) throw new Error('Trip not found')
 
-      // Check for double-booking on the same date/time
       const { data: existingTrips, error: checkError } = await supabase
         .from('trips')
         .select('id, trip_date, trip_time, experience_id')
@@ -141,7 +124,6 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
 
       if (checkError) throw checkError
 
-      // Check if there's already a confirmed trip at the same time
       if (existingTrips && existingTrips.length > 0) {
         const sameTimeTrip = existingTrips.find(t => t.trip_time === trip.trip_time)
         if (sameTimeTrip) {
@@ -158,28 +140,7 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
         .eq('id', tripId)
 
       if (error) throw error
-
-      // Refresh trips
       await fetchTrips()
-
-      // Send confirmation email via Edge Function
-      try {
-        await supabase.functions.invoke('send-notification', {
-          body: { 
-            type: 'trip_confirmed', 
-            tripId,
-            teacherEmail: trip.teacher.email,
-            teacherName: `${trip.teacher.first_name} ${trip.teacher.last_name}`,
-            experienceTitle: trip.experience.title,
-            tripDate: trip.trip_date,
-            tripTime: trip.trip_time
-          }
-        })
-      } catch (emailError) {
-        console.error('Failed to send confirmation email:', emailError)
-        // Don't fail the confirmation if email fails
-      }
-
       return { success: true }
     } catch (err) {
       console.error('Error confirming trip:', err)
@@ -189,43 +150,16 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
 
   const declineTrip = async (tripId: string, reason: string) => {
     try {
-      // Get the trip details first
-      const trip = trips.find(t => t.id === tripId)
-      if (!trip) throw new Error('Trip not found')
-
       const { error } = await supabase
         .from('trips')
         .update({ 
           status: 'cancelled',
-          // Store reason in transportation JSONB field for now
           transportation: { cancellation_reason: reason }
         })
         .eq('id', tripId)
 
       if (error) throw error
-
-      // Refresh trips
       await fetchTrips()
-
-      // Send decline notification via Edge Function
-      try {
-        await supabase.functions.invoke('send-notification', {
-          body: { 
-            type: 'trip_declined', 
-            tripId,
-            reason,
-            teacherEmail: trip.teacher.email,
-            teacherName: `${trip.teacher.first_name} ${trip.teacher.last_name}`,
-            experienceTitle: trip.experience.title,
-            tripDate: trip.trip_date,
-            tripTime: trip.trip_time
-          }
-        })
-      } catch (emailError) {
-        console.error('Failed to send decline notification:', emailError)
-        // Don't fail the decline if email fails
-      }
-
       return { success: true }
     } catch (err) {
       console.error('Error declining trip:', err)
@@ -235,7 +169,6 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
 
   const addNote = async (tripId: string, note: string) => {
     try {
-      // Store note in transportation JSONB field
       const trip = trips.find(t => t.id === tripId)
       if (!trip) throw new Error('Trip not found')
 
@@ -250,10 +183,7 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
         .eq('id', tripId)
 
       if (error) throw error
-
-      // Refresh trips
       await fetchTrips()
-
       return { success: true }
     } catch (err) {
       console.error('Error adding note:', err)
@@ -261,13 +191,5 @@ export function useVenueTrips(options: UseVenueTripsOptions = {}) {
     }
   }
 
-  return {
-    trips,
-    loading,
-    error,
-    confirmTrip,
-    declineTrip,
-    addNote,
-    refetch: fetchTrips
-  }
+  return { trips, loading, error, confirmTrip, declineTrip, addNote, refetch: fetchTrips }
 }

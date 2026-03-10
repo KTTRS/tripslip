@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useVenue } from '../contexts/AuthContext'
 
 export interface VenueAnalytics {
   totalRevenue: number
@@ -29,30 +29,22 @@ export function useVenueAnalytics(dateRange?: DateRange, experienceId?: string) 
   const [analytics, setAnalytics] = useState<VenueAnalytics | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { user } = useAuth()
+  const { venueId, venueLoading } = useVenue()
 
   useEffect(() => {
-    if (!user) {
+    if (venueLoading) return
+    if (!venueId) {
+      setAnalytics(null)
       setLoading(false)
       return
     }
-
     fetchAnalytics()
-  }, [user, dateRange, experienceId])
+  }, [venueId, venueLoading, dateRange, experienceId])
 
   async function fetchAnalytics() {
     try {
       setLoading(true)
       setError(null)
-
-      const { data: venueUser, error: venueError } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user!.id)
-        .single()
-
-      if (venueError) throw venueError
-      if (!venueUser) throw new Error('Venue not found for user')
 
       let query = supabase
         .from('trips')
@@ -77,16 +69,14 @@ export function useVenueAnalytics(dateRange?: DateRange, experienceId?: string) 
             )
           )
         `)
-        .eq('experiences.venue_id', venueUser.venue_id)
+        .eq('experiences.venue_id', venueId!)
 
-      // Apply date range filter if provided
       if (dateRange) {
         query = query
           .gte('trip_date', dateRange.start.toISOString().split('T')[0])
           .lte('trip_date', dateRange.end.toISOString().split('T')[0])
       }
 
-      // Apply experience filter if provided
       if (experienceId) {
         query = query.eq('experience_id', experienceId)
       }
@@ -95,7 +85,6 @@ export function useVenueAnalytics(dateRange?: DateRange, experienceId?: string) 
 
       if (tripsError) throw tripsError
 
-      // Calculate analytics
       const now = new Date()
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
       const yearStart = new Date(now.getFullYear(), 0, 1)
@@ -117,46 +106,36 @@ export function useVenueAnalytics(dateRange?: DateRange, experienceId?: string) 
       }>()
 
       trips?.forEach(trip => {
-        // Count bookings by status
         if (trip.status === 'confirmed') confirmedBookings++
         if (trip.status === 'pending') pendingBookings++
         if (trip.status === 'completed') completedBookings++
 
         totalStudents += trip.student_count
 
-        // Calculate revenue from payments
-        const payments = trip.permission_slips?.flatMap(slip => slip.payments || []) || []
+        const payments = trip.permission_slips?.flatMap((slip: any) => slip.payments || []) || []
         const tripRevenue = payments
-          .filter(p => p.status === 'succeeded')
-          .reduce((sum, p) => sum + p.amount_cents, 0)
+          .filter((p: any) => p.status === 'succeeded')
+          .reduce((sum: number, p: any) => sum + p.amount_cents, 0)
 
         totalRevenue += tripRevenue
 
-        // Calculate monthly revenue
         const tripDate = new Date(trip.trip_date)
         if (tripDate >= monthStart) {
           monthlyRevenue += tripRevenue
         }
-
-        // Calculate yearly revenue
         if (tripDate >= yearStart) {
           yearlyRevenue += tripRevenue
         }
 
-        // Track by experience
-        const expId = trip.experience.id
-        const expTitle = trip.experience.title
+        const exp = (trip as any).experience
+        const expId = exp.id
+        const expTitle = exp.title
         if (!experienceMap.has(expId)) {
-          experienceMap.set(expId, {
-            id: expId,
-            title: expTitle,
-            revenue: 0,
-            bookingCount: 0
-          })
+          experienceMap.set(expId, { id: expId, title: expTitle, revenue: 0, bookingCount: 0 })
         }
-        const exp = experienceMap.get(expId)!
-        exp.revenue += tripRevenue
-        exp.bookingCount++
+        const entry = experienceMap.get(expId)!
+        entry.revenue += tripRevenue
+        entry.bookingCount++
       })
 
       const topExperiences = Array.from(experienceMap.values())
@@ -167,16 +146,9 @@ export function useVenueAnalytics(dateRange?: DateRange, experienceId?: string) 
       const averageStudentCount = totalBookings > 0 ? totalStudents / totalBookings : 0
 
       setAnalytics({
-        totalRevenue,
-        monthlyRevenue,
-        yearlyRevenue,
-        totalBookings,
-        confirmedBookings,
-        pendingBookings,
-        completedBookings,
-        topExperiences,
-        averageBookingValue,
-        averageStudentCount
+        totalRevenue, monthlyRevenue, yearlyRevenue,
+        totalBookings, confirmedBookings, pendingBookings, completedBookings,
+        topExperiences, averageBookingValue, averageStudentCount
       })
     } catch (err) {
       console.error('Error fetching venue analytics:', err)

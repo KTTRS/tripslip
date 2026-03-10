@@ -12,6 +12,7 @@ import { Label } from '@tripslip/ui/components/label';
 import { Textarea } from '@tripslip/ui/components/textarea';
 import { Alert, AlertDescription } from '@tripslip/ui/components/alert';
 import { supabase } from '../lib/supabase';
+import { useVenue } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 
@@ -37,8 +38,9 @@ interface Photo {
 export default function ExperienceEditorPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { venueId: contextVenueId } = useVenue();
   const [loading, setLoading] = useState(false);
-  const [venueId, setVenueId] = useState<string | null>(null);
+  const venueId = contextVenueId;
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
@@ -68,39 +70,10 @@ export default function ExperienceEditorPage() {
   const maxStudents = watch('max_students');
   
   useEffect(() => {
-    loadVenueId();
     if (id) {
       loadExperience();
     }
   }, [id]);
-  
-  const loadVenueId = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('You must be logged in');
-        navigate('/login');
-        return;
-      }
-      
-      // Get venue_id from venue_users table
-      const { data: venueUser, error } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (error || !venueUser) {
-        toast.error('Could not find venue association');
-        return;
-      }
-      
-      setVenueId(venueUser.venue_id);
-    } catch (error) {
-      console.error('Error loading venue ID:', error);
-      toast.error('Failed to load venue information');
-    }
-  };
   
   const loadExperience = async () => {
     if (!id) return;

@@ -602,6 +602,59 @@ async function handleDiscoveryGeocode(req, res) {
   }
 }
 
+async function handleVenueLookupUser(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { email } = body;
+    if (!email) {
+      return sendJSON(res, 400, { error: 'Email is required' });
+    }
+
+    const token = (req.headers.authorization || '').replace('Bearer ', '');
+    const supabase = getSupabase();
+
+    const { data: { user: requester }, error: authErr } = await supabase.auth.getUser(token);
+    if (authErr || !requester) {
+      return sendJSON(res, 401, { error: 'Authentication required' });
+    }
+
+    const { data: venueUser, error: vuErr } = await supabase
+      .from('venue_users')
+      .select('venue_id, role')
+      .eq('user_id', requester.id)
+      .is('deactivated_at', null)
+      .single();
+
+    if (vuErr || !venueUser || venueUser.role !== 'administrator') {
+      return sendJSON(res, 403, { error: 'Only venue administrators can look up users' });
+    }
+
+    let allUsers = [];
+    let page = 1;
+    const perPage = 1000;
+    while (true) {
+      const { data: { users }, error } = await supabase.auth.admin.listUsers({ page, perPage });
+      if (error) {
+        console.error('Admin listUsers error:', error.message);
+        return sendJSON(res, 500, { error: 'Failed to look up user' });
+      }
+      allUsers = allUsers.concat(users || []);
+      if (!users || users.length < perPage) break;
+      page++;
+    }
+
+    const found = allUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    if (!found) {
+      return sendJSON(res, 404, { error: 'User not found' });
+    }
+
+    sendJSON(res, 200, { userId: found.id, email: found.email });
+  } catch (err) {
+    console.error('Lookup user error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 const apiHandlers = {
   'POST /api/send-sms': handleSendSMS,
   'POST /api/send-email': handleSendEmail,
@@ -612,6 +665,7 @@ const apiHandlers = {
   'POST /api/discovery/nearby': handleDiscoveryNearby,
   'POST /api/discovery/geocode': handleDiscoveryGeocode,
   'POST /api/discovery/search': handleDiscoverySearch,
+  'POST /api/venue/lookup-user': handleVenueLookupUser,
 };
 
 const server = http.createServer(async (req, res) => {
@@ -634,7 +688,7 @@ const server = http.createServer(async (req, res) => {
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
     const endpoint = req.url?.split('?')[0] || '';
 
-    if (endpoint.startsWith('/api/send-') || endpoint.startsWith('/api/discovery/')) {
+    if (endpoint.startsWith('/api/send-') || endpoint.startsWith('/api/discovery/') || endpoint.startsWith('/api/venue/')) {
       const authed = await verifyAuth(req);
       if (!authed) {
         return sendJSON(res, 401, { error: 'Authentication required' });
@@ -702,6 +756,7 @@ server.listen(5000, '0.0.0.0', () => {
   console.log('  POST /api/discovery/nearby');
   console.log('  POST /api/discovery/geocode');
   console.log('  POST /api/discovery/search');
+  console.log('  POST /api/venue/lookup-user');
   console.log('App Routes:');
   console.log('  /          -> landing  (port 3000)');
   console.log('  /venue/*   -> venue    (port 3001)');

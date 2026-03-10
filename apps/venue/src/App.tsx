@@ -16,6 +16,7 @@ import BookingManagementPage from './pages/BookingManagementPage'
 import FinancialsPage from './pages/FinancialsPage'
 import { BookingRosterPage } from './pages/BookingRosterPage'
 import { EmployeesPage } from './pages/EmployeesPage'
+import VenueProfilePage from './pages/VenueProfilePage'
 
 export default function App() {
   return (
@@ -104,6 +105,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <EmployeesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <VenueProfilePage />
             </ProtectedRoute>
           }
         />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useVenue } from '../contexts/AuthContext'
 
 interface AnalyticsFiltersProps {
   onDateRangeChange: (range: { start: Date; end: Date } | undefined) => void
@@ -17,30 +17,20 @@ export function AnalyticsFilters({ onDateRangeChange, onExperienceChange }: Anal
   const [endDate, setEndDate] = useState('')
   const [selectedExperience, setSelectedExperience] = useState('')
   const [experiences, setExperiences] = useState<Experience[]>([])
-  const { user } = useAuth()
+  const { venueId } = useVenue()
 
   useEffect(() => {
-    if (user) {
+    if (venueId) {
       fetchExperiences()
     }
-  }, [user])
+  }, [venueId])
 
   async function fetchExperiences() {
     try {
-      // Get venue_id for current user
-      const { data: venueUser } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user!.id)
-        .single()
-
-      if (!venueUser) return
-
-      // Fetch experiences for this venue
       const { data: exps } = await supabase
         .from('experiences')
         .select('id, title')
-        .eq('venue_id', venueUser.venue_id)
+        .eq('venue_id', venueId!)
         .order('title')
 
       setExperiences(exps || [])

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useVenue } from '../contexts/AuthContext'
 
 export interface PaymentData {
   id: string
@@ -48,33 +48,23 @@ export function useVenuePayments(filters?: PaymentFilters) {
   const [summary, setSummary] = useState<PaymentSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { user } = useAuth()
+  const { venueId, venueLoading } = useVenue()
 
   useEffect(() => {
-    if (!user) {
+    if (venueLoading) return
+    if (!venueId) {
+      setPayments([])
+      setSummary(null)
       setLoading(false)
       return
     }
-
     fetchPayments()
-  }, [user, filters])
+  }, [venueId, venueLoading, filters])
 
   async function fetchPayments() {
     try {
       setLoading(true)
       setError(null)
-
-      // Get venue_id for current user
-      const { data: venueUser, error: venueError } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user!.id)
-        .single()
-
-      if (venueError) throw venueError
-      if (!venueUser) throw new Error('Venue not found for user')
-
-      const venueId = venueUser.venue_id
 
       // Build query for payments
       let query = supabase

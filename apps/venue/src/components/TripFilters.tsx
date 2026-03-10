@@ -10,7 +10,7 @@ import {
   Button
 } from '@tripslip/ui'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useVenue } from '../contexts/AuthContext'
 
 interface TripFiltersProps {
   onFilterChange: (filters: {
@@ -27,16 +27,15 @@ export function TripFilters({ onFilterChange }: TripFiltersProps) {
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
   const [experiences, setExperiences] = useState<Array<{ id: string; title: string }>>([])
-  const { user } = useAuth()
+  const { venueId } = useVenue()
 
   useEffect(() => {
-    if (user) {
+    if (venueId) {
       fetchExperiences()
     }
-  }, [user])
+  }, [venueId])
 
   useEffect(() => {
-    // Apply filters
     onFilterChange({
       status: status || undefined,
       experienceId: experienceId || undefined,
@@ -47,20 +46,10 @@ export function TripFilters({ onFilterChange }: TripFiltersProps) {
 
   const fetchExperiences = async () => {
     try {
-      // Get venue_id for current user
-      const { data: venueUser } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user!.id)
-        .single()
-
-      if (!venueUser) return
-
-      // Fetch experiences for this venue
       const { data } = await supabase
         .from('experiences')
         .select('id, title')
-        .eq('venue_id', venueUser.venue_id)
+        .eq('venue_id', venueId!)
         .eq('published', true)
         .order('title')
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useVenue } from '../contexts/AuthContext'
 
 export interface RefundData {
   id: string
@@ -30,33 +30,22 @@ export function useVenueRefunds() {
   const [refunds, setRefunds] = useState<RefundData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { user } = useAuth()
+  const { venueId, venueLoading } = useVenue()
 
   useEffect(() => {
-    if (!user) {
+    if (venueLoading) return
+    if (!venueId) {
+      setRefunds([])
       setLoading(false)
       return
     }
-
     fetchRefunds()
-  }, [user])
+  }, [venueId, venueLoading])
 
   async function fetchRefunds() {
     try {
       setLoading(true)
       setError(null)
-
-      // Get venue_id for current user
-      const { data: venueUser, error: venueError } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user!.id)
-        .single()
-
-      if (venueError) throw venueError
-      if (!venueUser) throw new Error('Venue not found for user')
-
-      const venueId = venueUser.venue_id
 
       // Fetch refunds
       const { data: refundsData, error: refundsError } = await supabase

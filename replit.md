@@ -225,7 +225,7 @@ Navigation is defined in `packages/auth/src/components/Navigation.tsx`:
 - **School Admin**: Dashboard, Approvals, Teachers
 - **District Admin**: Dashboard, District Overview
 - **TripSlip Admin**: Dashboard, Admin Panel
-- **Venue Admin**: Uses its own `VenueNavigation` component in `apps/venue/src/components/VenueNavigation.tsx` (Dashboard, Experiences, Bookings, Trips, Financials, Employees)
+- **Venue Admin**: Uses its own `VenueNavigation` component in `apps/venue/src/components/VenueNavigation.tsx` (Dashboard, Experiences, Bookings, Trips, Financials, Employees, Profile). Auth context loads venue data once via `useVenue()` hook — all hooks/pages use shared `venueId` instead of querying `venue_users` individually. Financials shows real payment/revenue data with filters and charts. Employees shows team members with role management and invite flow (via `/api/venue/lookup-user` proxy endpoint).
 
 Active nav state uses `startsWith()` for sub-paths (except Dashboard which is exact match).
 

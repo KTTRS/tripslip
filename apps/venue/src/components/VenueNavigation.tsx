@@ -12,7 +12,8 @@ import {
   Menu, 
   X,
   LogOut,
-  Settings
+  Settings,
+  User
 } from 'lucide-react';
 
 export function VenueNavigation() {
@@ -50,6 +51,11 @@ export function VenueNavigation() {
       name: 'Employees',
       href: '/employees',
       icon: Users,
+    },
+    {
+      name: 'Profile',
+      href: '/profile',
+      icon: User,
     },
   ];
 

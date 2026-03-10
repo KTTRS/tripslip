@@ -1,194 +1,205 @@
 import { useState } from 'react'
 import { Layout } from '../components/Layout'
-import { MetricCard } from '@tripslip/ui'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@tripslip/ui/components/tabs'
-import { useVenuePayments } from '../hooks/useVenuePayments'
+import { useVenuePayments, type PaymentFilters as PaymentFilterType } from '../hooks/useVenuePayments'
 import { useVenueRefunds } from '../hooks/useVenueRefunds'
-import { useStripePayouts } from '../hooks/useStripePayouts'
-import { useStripePaymentSync } from '../hooks/useStripePaymentSync'
+import { useVenue } from '../contexts/AuthContext'
+import { RevenueTrendChart } from '../components/RevenueTrendChart'
 import { PaymentList } from '../components/PaymentList'
 import { PaymentFilters } from '../components/PaymentFilters'
 import { RefundHistory } from '../components/RefundHistory'
-import { StripePayouts } from '../components/StripePayouts'
-import { StripeConnectSetup } from '../components/StripeConnectSetup'
-import { exportPaymentsToCSV, exportRefundsToCSV } from '../utils/csvExport'
-import type { PaymentFilters as PaymentFiltersType } from '../hooks/useVenuePayments'
+import { DollarSign, Clock, RotateCcw, CheckCircle } from 'lucide-react'
 
 export default function FinancialsPage() {
-  const [filters, setFilters] = useState<PaymentFiltersType>({})
-  const [activeTab, setActiveTab] = useState<'overview' | 'payments' | 'refunds' | 'payouts' | 'setup'>('overview')
-  const { payments, summary, loading, refetch: refetchPayments } = useVenuePayments(filters)
-  const { refunds, loading: refundsLoading } = useVenueRefunds()
-  const { payouts, balance, loading: payoutsLoading } = useStripePayouts()
-  const { syncAllPayments, syncing } = useStripePaymentSync()
+  const { venueId, venueLoading } = useVenue()
+  const [filters, setFilters] = useState<PaymentFilterType>({})
+  const { payments, summary, loading: paymentsLoading, error: paymentsError } = useVenuePayments(filters)
+  const { refunds, loading: refundsLoading, error: refundsError } = useVenueRefunds()
+  const [activeTab, setActiveTab] = useState<'payments' | 'refunds'>('payments')
 
-  const handleExportPayments = () => {
-    const dateRange = filters.startDate && filters.endDate 
-      ? { start: filters.startDate, end: filters.endDate }
-      : undefined
-    exportPaymentsToCSV(payments, dateRange)
+  const formatCurrency = (cents: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(cents / 100)
   }
 
-  const handleExportRefunds = () => {
-    exportRefundsToCSV(refunds)
+  if (venueLoading || (paymentsLoading && !summary)) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#F5C518] border-t-[#0A0A0A]"></div>
+          <p className="text-gray-600 font-semibold font-['Plus_Jakarta_Sans']">Loading financials...</p>
+        </div>
+      </Layout>
+    )
   }
 
-  const handleSyncPayments = async () => {
-    try {
-      await syncAllPayments()
-      await refetchPayments()
-    } catch (err) {
-      console.error('Failed to sync payments:', err)
-    }
+  if (!venueId) {
+    return (
+      <Layout>
+        <div className="max-w-2xl mx-auto py-12">
+          <div className="border-2 border-[#0A0A0A] rounded-2xl shadow-[4px_4px_0px_#0A0A0A] p-8 text-center bg-white">
+            <div className="text-6xl mb-6">💰</div>
+            <h2 className="text-3xl font-bold font-['Fraunces'] text-[#0A0A0A] mb-3">No Venue Linked</h2>
+            <p className="text-gray-600 font-['Plus_Jakarta_Sans']">
+              Your account isn't linked to a venue yet. Contact support to get set up.
+            </p>
+          </div>
+        </div>
+      </Layout>
+    )
   }
+
+  if (paymentsError) {
+    return (
+      <Layout>
+        <div className="max-w-2xl mx-auto py-12">
+          <div className="border-2 border-red-300 rounded-2xl shadow-[4px_4px_0px_rgba(239,68,68,0.3)] p-8 text-center bg-red-50">
+            <div className="text-6xl mb-6">⚠️</div>
+            <h2 className="text-2xl font-bold font-['Fraunces'] text-red-700 mb-3">Error Loading Financials</h2>
+            <p className="text-red-600 font-['Plus_Jakarta_Sans']">{paymentsError}</p>
+          </div>
+        </div>
+      </Layout>
+    )
+  }
+
+  const noPayments = payments.length === 0 && !filters.startDate && !filters.endDate && !filters.status
 
   return (
     <Layout>
       <div className="space-y-8">
-        <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-3xl font-bold font-['Fraunces']">Financials</h2>
-            <p className="text-gray-600 mt-2 font-['Plus_Jakarta_Sans']">
-              Track revenue, payments, and manage your Stripe integration
+        <div className="relative rounded-2xl border-2 border-black bg-gradient-to-r from-[#F5C518]/10 via-white to-emerald-50 p-6 shadow-[4px_4px_0px_0px_rgba(10,10,10,1)]">
+          <div className="flex items-center gap-5">
+            <img
+              src="/images/icon-payment.png"
+              alt=""
+              className="w-14 h-14 hidden sm:block object-contain"
+            />
+            <div>
+              <h1 className="text-3xl font-bold font-['Fraunces']">Financials</h1>
+              <p className="text-gray-600 mt-1 font-['Plus_Jakarta_Sans']">Track payments, revenue, and refunds for your venue.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <SummaryCard
+            icon={<DollarSign className="h-6 w-6 text-emerald-600" />}
+            label="Total Revenue"
+            value={formatCurrency(summary?.totalRevenue ?? 0)}
+            bgColor="bg-emerald-50"
+            borderColor="border-emerald-200"
+          />
+          <SummaryCard
+            icon={<Clock className="h-6 w-6 text-yellow-600" />}
+            label="Pending Payments"
+            value={formatCurrency(summary?.pendingPayments ?? 0)}
+            subtitle={`${summary?.pendingCount ?? 0} pending`}
+            bgColor="bg-yellow-50"
+            borderColor="border-yellow-200"
+          />
+          <SummaryCard
+            icon={<RotateCcw className="h-6 w-6 text-red-600" />}
+            label="Refunded Amount"
+            value={formatCurrency(summary?.refundedAmount ?? 0)}
+            subtitle={`${summary?.refundedCount ?? 0} refunds`}
+            bgColor="bg-red-50"
+            borderColor="border-red-200"
+          />
+          <SummaryCard
+            icon={<CheckCircle className="h-6 w-6 text-blue-600" />}
+            label="Successful Payments"
+            value={String(summary?.successfulPayments ?? 0)}
+            bgColor="bg-blue-50"
+            borderColor="border-blue-200"
+          />
+        </div>
+
+        {noPayments ? (
+          <div className="border-2 border-[#0A0A0A] rounded-2xl shadow-[4px_4px_0px_#0A0A0A] p-12 text-center bg-white">
+            <img src="/images/icon-payment.png" alt="" className="w-20 h-20 mx-auto mb-4 object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]" />
+            <h3 className="text-2xl font-bold font-['Fraunces'] text-[#0A0A0A] mb-2">No payments recorded yet</h3>
+            <p className="text-gray-600 font-['Plus_Jakarta_Sans'] max-w-md mx-auto">
+              When teachers book trips to your venue and parents make payments, they'll appear here.
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleSyncPayments}
-              disabled={syncing}
-              className="px-4 py-2 bg-black text-white font-semibold rounded hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-2 border-black font-['Plus_Jakarta_Sans']"
-            >
-              {syncing ? 'Syncing...' : 'Sync with Stripe'}
-            </button>
-            <button
-              onClick={handleExportPayments}
-              disabled={loading || payments.length === 0}
-              className="px-4 py-2 border-2 border-black font-semibold rounded hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-['Plus_Jakarta_Sans']"
-            >
-              Export Payments
-            </button>
-            <button
-              onClick={handleExportRefunds}
-              disabled={refundsLoading || refunds.length === 0}
-              className="px-4 py-2 border-2 border-black font-semibold rounded hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-['Plus_Jakarta_Sans']"
-            >
-              Export Refunds
-            </button>
-          </div>
-        </div>
+        ) : (
+          <>
+            <RevenueTrendChart />
 
-        {/* Financial Overview */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <MetricCard
-            label="Total Revenue"
-            value={loading ? '...' : `$${((summary?.totalRevenue || 0) / 100).toFixed(2)}`}
-            sub={`${summary?.successfulPayments || 0} successful payments`}
-          />
-          <MetricCard
-            label="Pending Payments"
-            value={loading ? '...' : `$${((summary?.pendingPayments || 0) / 100).toFixed(2)}`}
-            sub={`${summary?.pendingCount || 0} pending`}
-          />
-          <MetricCard
-            label="Refunds Issued"
-            value={loading ? '...' : `$${((summary?.refundedAmount || 0) / 100).toFixed(2)}`}
-            sub={`${summary?.refundedCount || 0} refunds`}
-          />
-        </div>
+            <PaymentFilters onFilterChange={setFilters} />
 
-        {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="space-y-4">
-          <TabsList className="border-2 border-black">
-            <TabsTrigger value="overview" className="font-['Plus_Jakarta_Sans'] font-semibold">
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="font-['Plus_Jakarta_Sans'] font-semibold">
-              Payment History
-            </TabsTrigger>
-            <TabsTrigger value="refunds" className="font-['Plus_Jakarta_Sans'] font-semibold">
-              Refund History
-            </TabsTrigger>
-            <TabsTrigger value="payouts" className="font-['Plus_Jakarta_Sans'] font-semibold">
-              Stripe Payouts
-            </TabsTrigger>
-            <TabsTrigger value="setup" className="font-['Plus_Jakarta_Sans'] font-semibold">
-              Stripe Setup
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Stripe Balance */}
-              <div className="p-6 border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] bg-white">
-                <h3 className="text-lg font-bold mb-4 font-['Fraunces']">Stripe Balance</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 font-['Plus_Jakarta_Sans']">Available Balance</span>
-                    <span className="text-xl font-bold font-['Space_Mono']">
-                      ${((balance?.available || 0) / 100).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600 font-['Plus_Jakarta_Sans']">Pending Balance</span>
-                    <span className="text-lg font-semibold font-['Space_Mono']">
-                      ${((balance?.pending || 0) / 100).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="p-6 border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] bg-white">
-                <h3 className="text-lg font-bold mb-4 font-['Fraunces']">Recent Activity</h3>
-                <div className="space-y-3">
-                  <div className="text-sm text-gray-600 font-['Plus_Jakarta_Sans']">
-                    Last 30 days activity summary
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-['Plus_Jakarta_Sans']">New Payments</span>
-                    <span className="font-semibold font-['Space_Mono']">
-                      {payments.filter(p => {
-                        const paymentDate = new Date(p.created_at);
-                        const thirtyDaysAgo = new Date();
-                        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                        return paymentDate >= thirtyDaysAgo;
-                      }).length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-['Plus_Jakarta_Sans']">New Refunds</span>
-                    <span className="font-semibold font-['Space_Mono']">
-                      {refunds.filter(r => {
-                        const refundDate = new Date(r.created_at);
-                        const thirtyDaysAgo = new Date();
-                        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                        return refundDate >= thirtyDaysAgo;
-                      }).length}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div className="flex gap-2 border-b-2 border-[#0A0A0A]">
+              <button
+                onClick={() => setActiveTab('payments')}
+                className={`px-6 py-3 font-bold font-['Plus_Jakarta_Sans'] border-2 border-b-0 border-[#0A0A0A] rounded-t-xl transition-all ${
+                  activeTab === 'payments'
+                    ? 'bg-[#F5C518] text-[#0A0A0A] shadow-[2px_-2px_0px_#0A0A0A]'
+                    : 'bg-white text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                Payments ({payments.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('refunds')}
+                className={`px-6 py-3 font-bold font-['Plus_Jakarta_Sans'] border-2 border-b-0 border-[#0A0A0A] rounded-t-xl transition-all ${
+                  activeTab === 'refunds'
+                    ? 'bg-[#F5C518] text-[#0A0A0A] shadow-[2px_-2px_0px_#0A0A0A]'
+                    : 'bg-white text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                Refunds ({refunds.length})
+              </button>
             </div>
-          </TabsContent>
 
-          <TabsContent value="payments">
-            {activeTab === 'payments' && <PaymentFilters onFilterChange={setFilters} />}
-            <PaymentList payments={payments} loading={loading} />
-          </TabsContent>
+            {activeTab === 'payments' && (
+              <PaymentList payments={payments} loading={paymentsLoading} />
+            )}
 
-          <TabsContent value="refunds">
-            <RefundHistory refunds={refunds} loading={refundsLoading} />
-          </TabsContent>
+            {activeTab === 'refunds' && (
+              <RefundHistory refunds={refunds} loading={refundsLoading} />
+            )}
 
-          <TabsContent value="payouts">
-            <StripePayouts payouts={payouts} balance={balance} loading={payoutsLoading} />
-          </TabsContent>
-
-          <TabsContent value="setup">
-            <StripeConnectSetup />
-          </TabsContent>
-        </Tabs>
+            {refundsError && (
+              <div className="p-4 bg-red-50 border-2 border-red-300 rounded-xl text-red-700 font-['Plus_Jakarta_Sans']">
+                Error loading refunds: {refundsError}
+              </div>
+            )}
+          </>
+        )}
       </div>
     </Layout>
+  )
+}
+
+function SummaryCard({
+  icon,
+  label,
+  value,
+  subtitle,
+  bgColor,
+  borderColor,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string
+  subtitle?: string
+  bgColor: string
+  borderColor: string
+}) {
+  return (
+    <div className={`${bgColor} border-2 border-[#0A0A0A] rounded-2xl shadow-[4px_4px_0px_#0A0A0A] p-6`}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`p-2 ${borderColor} border-2 rounded-xl bg-white`}>
+          {icon}
+        </div>
+        <span className="text-sm font-semibold text-gray-600 font-['Plus_Jakarta_Sans']">{label}</span>
+      </div>
+      <p className="text-2xl font-bold font-['Fraunces'] text-[#0A0A0A]">{value}</p>
+      {subtitle && (
+        <p className="text-xs text-gray-500 mt-1 font-['Plus_Jakarta_Sans']">{subtitle}</p>
+      )}
+    </div>
   )
 }

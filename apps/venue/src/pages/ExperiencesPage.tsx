@@ -4,6 +4,7 @@ import { Layout } from '../components/Layout';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '@tripslip/ui';
 import { Badge } from '@tripslip/ui/components/badge';
 import { supabase } from '../lib/supabase';
+import { useVenue } from '../contexts/AuthContext';
 import { toast } from 'sonner';
 import { Plus, Edit, Eye } from 'lucide-react';
 
@@ -22,39 +23,27 @@ interface Experience {
 
 export default function ExperiencesPage() {
   const navigate = useNavigate();
+  const { venueId, venueLoading } = useVenue();
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    if (venueLoading) return;
+    if (!venueId) {
+      setLoading(false);
+      return;
+    }
     loadExperiences();
-  }, []);
+  }, [venueId, venueLoading]);
   
   const loadExperiences = async () => {
     try {
       setLoading(true);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error('You must be logged in');
-        navigate('/login');
-        return;
-      }
-      
-      const { data: venueUser, error: venueError } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (venueError || !venueUser) {
-        toast.error('Could not find venue association');
-        return;
-      }
-      
       const { data, error } = await supabase
         .from('experiences')
         .select('*')
-        .eq('venue_id', venueUser.venue_id)
+        .eq('venue_id', venueId!)
         .order('created_at', { ascending: false });
       
       if (error) throw error;

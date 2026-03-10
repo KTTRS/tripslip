@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../contexts/AuthContext'
+import { useVenue } from '../contexts/AuthContext'
 
 export interface UpcomingBooking {
   id: string
@@ -25,30 +25,22 @@ export function useUpcomingBookings(limit: number = 10) {
   const [bookings, setBookings] = useState<UpcomingBooking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { user } = useAuth()
+  const { venueId, venueLoading } = useVenue()
 
   useEffect(() => {
-    if (!user) {
+    if (venueLoading) return
+    if (!venueId) {
+      setBookings([])
       setLoading(false)
       return
     }
-
     fetchUpcomingBookings()
-  }, [user, limit])
+  }, [venueId, venueLoading, limit])
 
   async function fetchUpcomingBookings() {
     try {
       setLoading(true)
       setError(null)
-
-      const { data: venueUser, error: venueError } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user!.id)
-        .single()
-
-      if (venueError) throw venueError
-      if (!venueUser) throw new Error('Venue not found for user')
 
       const today = new Date().toISOString().split('T')[0]
       
@@ -73,7 +65,7 @@ export function useUpcomingBookings(limit: number = 10) {
             )
           )
         `)
-        .eq('experiences.venue_id', venueUser.venue_id)
+        .eq('experiences.venue_id', venueId!)
         .gte('trip_date', today)
         .order('trip_date', { ascending: true })
         .order('trip_time', { ascending: true })
@@ -81,7 +73,7 @@ export function useUpcomingBookings(limit: number = 10) {
 
       if (tripsError) throw tripsError
 
-      const formattedBookings: UpcomingBooking[] = trips?.map(trip => ({
+      const formattedBookings: UpcomingBooking[] = trips?.map((trip: any) => ({
         id: trip.id,
         tripDate: trip.trip_date,
         tripTime: trip.trip_time,

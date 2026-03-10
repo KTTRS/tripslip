@@ -5,7 +5,7 @@ import { Input } from '@tripslip/ui/components/input';
 import { Label } from '@tripslip/ui/components/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@tripslip/ui/components/select';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
+import { useVenue } from '../contexts/AuthContext';
 import { X } from 'lucide-react';
 
 interface BookingFiltersProps {
@@ -23,7 +23,7 @@ interface Experience {
 }
 
 export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
-  const { user } = useAuth();
+  const { venueId } = useVenue();
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [filters, setFilters] = useState({
     status: '',
@@ -33,29 +33,17 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
   });
 
   useEffect(() => {
-    if (user) {
+    if (venueId) {
       loadExperiences();
     }
-  }, [user]);
+  }, [venueId]);
 
   const loadExperiences = async () => {
     try {
-      // Get venue_id for current user
-      const { data: venueUser, error: venueError } = await supabase
-        .from('venue_users')
-        .select('venue_id')
-        .eq('user_id', user!.id)
-        .single();
-
-      if (venueError) throw venueError;
-      if (!venueUser) return;
-
-      // Load experiences for this venue
       const { data, error } = await supabase
         .from('experiences')
         .select('id, title')
-        .eq('venue_id', venueUser.venue_id)
-        .eq('active', true)
+        .eq('venue_id', venueId!)
         .order('title');
 
       if (error) throw error;
