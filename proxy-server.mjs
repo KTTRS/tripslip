@@ -7,7 +7,10 @@ import { createClient } from '@supabase/supabase-js';
 import { geocodeAddress, searchVenuesLive, discoverNearbyVenues, deduplicateVenues, runDiscoveryForSchool } from './services/venue-discovery.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const IS_PRODUCTION = process.env.NODE_ENV === 'production' || process.env.REPL_DEPLOYMENT === '1';
+const IS_PRODUCTION = process.env.NODE_ENV === 'production'
+  || process.env.REPL_DEPLOYMENT === '1'
+  || process.env.REPLIT_DEPLOYMENT === '1'
+  || !!process.env.WEB_REPL_RENEWAL;
 
 const proxy = IS_PRODUCTION ? null : httpProxy.createProxyServer({ ws: true });
 
