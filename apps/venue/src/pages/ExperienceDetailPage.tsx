@@ -8,7 +8,7 @@ import { Switch } from '@tripslip/ui/components/switch';
 import { Label } from '@tripslip/ui/components/label';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { ArrowLeft, Edit, Eye, Clock, Users, DollarSign, Send } from 'lucide-react';
+import { ArrowLeft, Edit, Eye, Clock, Users, Send, Link2, Copy, Check } from 'lucide-react';
 import { SendTeacherLinkModal } from '../components/SendTeacherLinkModal';
 
 interface Experience {
@@ -26,23 +26,24 @@ interface Experience {
   updated_at: string;
 }
 
-interface PricingTier {
-  id: string;
-  min_students: number;
-  max_students: number;
-  price_cents: number;
-  free_chaperones: number;
-}
 
 export default function ExperienceDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [experience, setExperience] = useState<Experience | null>(null);
-  const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showSendModal, setShowSendModal] = useState(false);
   const [hasLinkedForms, setHasLinkedForms] = useState(false);
+  const [generatedTrips, setGeneratedTrips] = useState<Array<{
+    id: string;
+    trip_date: string;
+    direct_link_token: string;
+    student_count: number;
+    status: string;
+    teacher_email?: string;
+  }>>([]);
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
   
   useEffect(() => {
     if (id) {
@@ -66,22 +67,20 @@ export default function ExperienceDetailPage() {
       if (expError) throw expError;
       setExperience(expData);
       
-      // Load pricing tiers
-      const { data: pricingData, error: pricingError } = await supabase
-        .from('pricing_tiers')
-        .select('*')
-        .eq('experience_id', id)
-        .order('min_students');
-      
-      if (!pricingError && pricingData) {
-        setPricingTiers(pricingData);
-      }
-
       const { data: linkedForms } = await supabase
         .from('experience_forms')
         .select('form_id')
         .eq('experience_id', id);
       setHasLinkedForms(!!(linkedForms && linkedForms.length > 0));
+
+      const { data: tripsData } = await supabase
+        .from('trips')
+        .select('id, trip_date, direct_link_token, student_count, status')
+        .eq('experience_id', id)
+        .order('created_at', { ascending: false });
+      if (tripsData) {
+        setGeneratedTrips(tripsData.filter((t: any) => t.direct_link_token));
+      }
     } catch (error) {
       console.error('Error loading experience:', error);
       toast.error('Failed to load experience');
@@ -130,13 +129,14 @@ export default function ExperienceDetailPage() {
     }
   };
   
-  const formatCurrency = (cents: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(cents / 100);
+  const handleCopyLink = async (link: string, id: string) => {
+    const fullUrl = `${window.location.origin}${link}`;
+    await navigator.clipboard.writeText(fullUrl);
+    setCopiedLink(id);
+    toast.success('Link copied to clipboard');
+    setTimeout(() => setCopiedLink(null), 2000);
   };
-  
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'long',
@@ -316,40 +316,79 @@ export default function ExperienceDetailPage() {
           </Card>
         )}
         
-        {/* Pricing */}
-        {pricingTiers.length > 0 && (
-          <Card>
+        {generatedTrips.length > 0 && (
+          <Card className="border-2 border-black shadow-offset">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
-                Pricing Tiers
+                <Link2 className="h-5 w-5" />
+                Generated Consent Links
               </CardTitle>
+              <CardDescription>
+                Links you've generated for this experience. Share these with teachers or directly with parents.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {pricingTiers.map((tier) => (
-                  <div
-                    key={tier.id}
-                    className="flex justify-between items-center p-4 bg-gray-50 rounded"
-                  >
-                    <div>
-                      <p className="font-semibold">
-                        {tier.min_students}-{tier.max_students} students
-                      </p>
-                      {tier.free_chaperones > 0 && (
-                        <p className="text-sm text-gray-600">
-                          {tier.free_chaperones} free chaperone(s)
+              <div className="space-y-4">
+                {generatedTrips.map((trip) => {
+                  const teacherLink = `/teacher/trip/${trip.direct_link_token}/review`;
+                  const parentLink = `/parent/trip/${trip.direct_link_token}`;
+                  const tripDateFormatted = new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  });
+                  return (
+                    <div key={trip.id} className="border-2 border-gray-200 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-semibold text-[#0A0A0A]">{tripDateFormatted}</span>
+                          <Badge variant={trip.status === 'confirmed' ? 'success' : 'secondary'} className="text-xs">
+                            {trip.status}
+                          </Badge>
+                        </div>
+                        <span className="text-sm text-gray-500">{trip.student_count} students</span>
+                      </div>
+
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Teacher Review Link</span>
+                          <button
+                            onClick={() => handleCopyLink(teacherLink, `teacher-${trip.id}`)}
+                            className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 transition-colors"
+                          >
+                            {copiedLink === `teacher-${trip.id}` ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+                            {copiedLink === `teacher-${trip.id}` ? 'Copied' : 'Copy'}
+                          </button>
+                        </div>
+                        <p className="text-sm font-mono break-all text-gray-700 select-all">
+                          {window.location.origin}{teacherLink}
                         </p>
-                      )}
+                      </div>
+
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Direct Parent Link</span>
+                          <button
+                            onClick={() => handleCopyLink(parentLink, `parent-${trip.id}`)}
+                            className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 transition-colors"
+                          >
+                            {copiedLink === `parent-${trip.id}` ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+                            {copiedLink === `parent-${trip.id}` ? 'Copied' : 'Copy'}
+                          </button>
+                        </div>
+                        <p className="text-sm font-mono break-all text-gray-700 select-all">
+                          {window.location.origin}{parentLink}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-lg font-bold">{formatCurrency(tier.price_cents)}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
         )}
-        
+
         {/* Teacher Preview */}
         <Card className="border-2 border-blue-200 bg-blue-50">
           <CardHeader>
@@ -388,14 +427,6 @@ export default function ExperienceDetailPage() {
                       {experience.min_students}-{experience.max_students} students
                     </span>
                   </div>
-                  {pricingTiers.length > 0 && (
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <DollarSign className="h-4 w-4" />
-                      <span>
-                        Starting at {formatCurrency(pricingTiers[0].price_cents)}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -406,6 +437,7 @@ export default function ExperienceDetailPage() {
       {experience && (
         <SendTeacherLinkModal
           open={showSendModal}
+          onLinkGenerated={loadExperience}
           onOpenChange={setShowSendModal}
           experienceId={experience.id}
           experienceTitle={experience.title}

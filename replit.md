@@ -1,354 +1,61 @@
-# TripSlip Monorepo
-
-A multi-app platform for managing school field trips. Includes digital permission slips, Stripe payments, and real-time parent communication.
-
-## Architecture
-
-Monorepo using npm workspaces + Turborepo with 5 Vite/React apps and shared packages, served through a reverse proxy on port 5000.
-
-### Apps (all served through proxy on port 5000)
-- `/` — Landing page (internal port 3000)
-- `/venue/` — Venue management portal (internal port 3001)
-- `/teacher/` — Teacher portal (internal port 3002)
-- `/parent/` — Parent portal (internal port 3003)
-- `/school/` — School admin portal (internal port 4200)
-
-### Packages
-- `packages/auth` — Supabase auth helpers
-- `packages/database` — Supabase DB client and types
-- `packages/i18n` — Internationalization
-- `packages/ui` — Shared component library
-- `packages/utils` — Shared utilities
-
-## Tech Stack
-- **Framework**: Vite + React 19
-- **Routing**: React Router 7
-- **Styling**: Tailwind CSS with neo-brutalist design system
-- **Auth/DB**: Supabase
-- **Payments**: Stripe
-- **Monorepo**: Turborepo + npm workspaces
-- **Runtime**: Node.js 20
-
-## Design System (Neo-Brutalist)
-- **Colors**: 60% White / 20% Black (#0A0A0A) / 20% Yellow (#F5C518)
-- **Fonts**: Fraunces (display headings, `font-display`), Plus Jakarta Sans (body, `font-sans`), Space Mono (labels, `font-mono`)
-- **Hover**: Cards/buttons lift UP (`translate(-4px,-4px)`) with shadow GROWING to 8px. NEVER shrink shadow on hover.
-- **Shadows**: Default `shadow-offset` (4px), hover `shadow-offset-lg` (8px), active = 2px
-- **Icons**: 3D glossy clay render PNGs (256x256, transparent BG) in each app's `public/images/icon-*.png`. 16 icons: backpack, bus, calendar, compass, graduation, language, magic, megaphone, payment, pencil, permission, shield, team, tracking, trophy, venue. Used standalone as `<img>` tags with `drop-shadow-[0_4px_8px_rgba(0,0,0,0.25)]`. No wrapper containers — icons float freely. Standard sizes: w-8 (xs), w-10 (sm), w-14 (md), w-20 (lg), w-24 (xl), w-32 (2xl).
-- **Borders**: 2px bold borders, `border-3` available for emphasis
-- **All app Tailwind configs** scan `packages/auth/src/` and `packages/ui/src/` and include `borderWidth: { '3': '3px' }`
-- **Characters**: Buddy (blue, Planner), Gem (purple, Organizer), Scout (green, Navigator), Sparkle (pink, Explorer), Sunny (yellow, Leader), Dash (red, Adventurer)
-
-## Running the Project
-
-### Development
-The workflow runs `bash start-dev.sh` which:
-1. Starts all 5 Vite dev servers via `turbo dev`
-2. Starts a reverse proxy (`proxy-server.mjs`) on port 5000
-
-### Production / Deployment
-Deployment uses autoscale target:
-- **Build**: Runs `vite build` for each of the 5 apps (landing, venue, teacher, parent, school), producing `dist/` directories
-- **Run**: `NODE_ENV=production node proxy-server.mjs` — serves all 5 built apps as static files via the same proxy server (no Vite dev servers needed)
-- The proxy-server.mjs detects `NODE_ENV=production` or `REPL_DEPLOYMENT=1` and switches from proxying to dev servers to serving static files from `apps/*/dist/`
-- All `VITE_*` env vars are baked into the JS bundle at build time
-- Server-side secrets (`SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `GEOAPIFY_API_KEY`) are read at runtime from environment
-- Twilio credentials are fetched from the Replit connector at runtime
-
-The landing page at `/` has an `/apps` hub page that links to all other portals.
-
-### Teacher App Pages
-- `/` `/dashboard` — Dashboard with stats, quick actions, upcoming trips
-- `/trips` — Full trip list with filters (upcoming/past/all), status badges
-- `/trips/create` — Trip creation wizard (4 steps: details+transportation, experience, students, review+forms+funding+addons)
-- `/trips/:tripId/roster` — Per-trip student roster with permission slip status + prominent shareable link (copy link / copy-with-message for parents)
-- `/trips/:tripId/slips` — Permission slip tracking with send/remind/communication modal
-- `/trips/:tripId/manifest` — Interactive attendance & manifest page with multi-point head counts (departure/arrival/return), real-time check-off, attendance history, CSV download, print-ready view. Uses existing `attendance` table with `notes` column storing JSON check data.
-- `/students` — Full student management page (add, CSV import with parent info, edit, delete, send permission slip links)
-- `/profile` — Teacher profile editing + password change
-- `/venues/search` — Live Geoapify-powered venue discovery (enter address, finds nearby museums/zoos/etc)
-- `/venues/:venueId` — Venue detail
-
-### Key Files
-- `proxy-server.mjs` — Reverse proxy + API routes (SMS, email, permission slips, file upload, venue discovery)
-- `services/venue-discovery.mjs` — Geoapify-powered venue discovery service (geocoding, POI search, dedup, ranking, DB storage)
-- `start-dev.sh` — Startup script for turbo + proxy
-- `apps/teacher/src/components/roster/SendLinksModal.tsx` — Generate ONE link per trip for all parents (copy, SMS, Remind/ClassDojo)
-- `apps/teacher/src/components/roster/CSVImportModal.tsx` — CSV import with parent contact info columns
-- `apps/teacher/src/components/roster/AddStudentModal.tsx` — Add student with parent info
-- `apps/parent/src/pages/TripLookupPage.tsx` — Self-service permission slip: parent opens trip link (`/parent/trip/:token`), fills in child info + contact + signature, creates slip in DB with form_data JSONB
-- `apps/parent/src/pages/PermissionSlipSuccessPage.tsx` — Success page with optional account creation
-- `apps/teacher/src/pages/TripManifestPage.tsx` — Interactive attendance page: multi-point head counts (departure/arrival/return tabs), checkbox check-off per student, "Mark All Present", missing student alerts, attendance history log, CSV export with attendance columns, print view with all 3 check columns
-
-### Routing
-Each sub-app uses a `basename` on its `BrowserRouter` (e.g., `/venue`, `/teacher`) and a matching `base` in its Vite config. The proxy forwards requests by path prefix to the correct internal Vite dev server.
-
-## Environment Variables
-
-Required env vars (see `.env.example`):
-- `VITE_SUPABASE_URL` — Supabase project URL (env var)
-- `VITE_SUPABASE_ANON_KEY` — Supabase anonymous key (env var)
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (secret)
-- `VITE_STRIPE_PUBLISHABLE_KEY` — Stripe publishable key (env var)
-- `STRIPE_SECRET_KEY` — Stripe secret key (secret)
-- `TWILIO_ACCOUNT_SID` — Twilio account SID (secret)
-- `TWILIO_AUTH_TOKEN` — Twilio auth token (secret)
-- `TWILIO_PHONE_NUMBER` — Twilio phone number (secret)
-- `CUSTOMERIO_API_KEY` — Customer.io API key (secret)
-
-## Replit Migration Notes
-- All vite configs bind `host: '0.0.0.0'` and `allowedHosts: true`
-- Reverse proxy on port 5000 routes to all apps by path prefix
-- Each app has `base` set in vite config and `basename` on BrowserRouter
-- Node.js upgraded from 18 to 20
-- Vercel/Netlify config files removed
-- `packages/database` updated to use `import.meta.env` with `process.env` fallback
-
-## Supabase Auth Isolation
-Since all apps run on the same domain, each app uses a unique `storageKey` for its Supabase client to prevent GoTrueClient lock conflicts:
-- Teacher: `sb-tripslip-teacher-auth` (in `apps/teacher/src/lib/supabase.ts`)
-- Venue: `sb-tripslip-venue-auth` (in `apps/venue/src/lib/supabase.ts`)
-- Parent: `sb-tripslip-parent-auth` (in `apps/parent/src/lib/supabase.ts`)
-- School: `sb-tripslip-school-auth` (in `apps/school/src/lib/supabase.ts`)
-- Landing: `sb-tripslip-landing-auth` (in `apps/landing/src/lib/supabase.ts`)
-
-The default `supabase` export from `@tripslip/database` is lazy-initialized (via Proxy) to prevent duplicate GoTrueClient instances during HMR. The `@tripslip/auth` shared package exposes `supabaseClient` through the auth context so child components don't need to create new clients.
-
-**Important**: The `onAuthStateChange` callback in `packages/auth/src/context.tsx` defers database queries via `setTimeout(fn, 0)` to avoid deadlocking with Supabase GoTrueClient's internal Web Lock (which is held during `signInWithPassword`). Do NOT make `supabase.from()` calls directly inside `onAuthStateChange`.
-
-## Supabase RLS & Signup
-
-Migration `supabase/migrations/20250304000001_fix_rbac_signup_policies.sql` must be applied to Supabase. It adds:
-- `assign_user_role()` RPC (SECURITY DEFINER) for role assignment during signup
-- `create_teacher_on_signup()` RPC (SECURITY DEFINER) for creating teacher records
-- `list_schools_for_signup()` RPC for school selector (public access)
-
-**IMPORTANT**: The `assign_user_role()` RPC allows `teacher`, `parent`, `venue_admin`, `school_admin`, and `district_admin` self-assignment. It enforces `auth.uid()` so users can only assign roles to themselves. The `tripslip_admin` role cannot be self-assigned. Migration `20250308000001_fix_school_admin_signup.sql` added the admin roles and uid check.
-
-**Supabase DB connection**: Use session pooler at `aws-1-us-east-2.pooler.supabase.com:5432` with user `postgres.yvzpgbhinxibebgeevcu` and `SUPABASE_DB_PASSWORD` secret. Transaction pooler (port 6543) does NOT work for DDL.
-- INSERT/UPDATE/DELETE policies on `active_role_context` (user self-management)
-- Public read policy on `schools` table for signup form
-- `is_active` column and unique `user_id` index on `teachers` table
-
-The signup flow uses RPC functions instead of direct table inserts to bypass RLS safely.
-
-## Database Seeding
-
-Three seed scripts, run in order:
-
-1. **`node scripts/seed-demo-data.mjs`** — Base data: 6 venues, 12 experiences, 15 pricing tiers, 1 school, 15 students
-2. **`node scripts/seed-demo-scenarios.mjs`** — Core scenarios: 3 schools, 4 teachers, 6 rosters, 100+ students, 11 trips, 4 parents, 2 venue admin links, venue bookings
-3. **`node scripts/seed-expanded-demos.mjs`** — Expanded variety: 6 more parents (multi-language), parent-student links, 8 more trips (free, cancelled, split-funded, big assistance funds), 139+ more permission slips across all statuses, 88+ payment records, 7 more venue bookings
-
-Final totals: 4 schools, 8 teachers, 9 rosters, 185 students, 22 trips (all statuses), 251 permission slips, 88 payments, 76 parent-student links, 12 venue bookings, 10 parent accounts.
-
-4. **`node scripts/seed-ja-financial-district.mjs`** — JA Finance Park Detroit demo: 1 venue (JA Finance Park, 1 Kennedy Square, Detroit Financial District), 4 experiences, 10 pricing tiers, 3 venue team members, 6 Detroit DPSCD schools (Cass Tech, DPSCD Virtual, Southeastern, Renaissance, Henry Ford Academy, Marygrove/CMA), 6 teachers, students with rosters, 7 trips, 7 venue bookings, permission slips, payments. Login: sarah.mitchell@jadetroit.org / TripSlip2026!
-
-All scripts use `upsert`/existence checks and are idempotent.
-
-## Real Database Integration
-
-The teacher app queries **real Supabase data** (no mock fallbacks):
-- **Dashboard**: Queries `trips` joined with `experiences` and `venues` for the logged-in teacher. Shows empty welcome state if no trips exist.
-- **Step 2 (Experiences)**: Queries `experiences` joined with `venues` and `pricing_tiers`. Shows venue name, duration, grade levels, and pricing.
-- **Step 3 (Students)**: Queries `students` via the teacher's `rosters`. Falls back to all students (scoped to authenticated user) if no roster found.
-- **Step 4 (Review/Submit)**: Fetches `pricing_tiers` for cost calculation, `venues` for location display. Creates real trip record in DB.
-
-Trip creation drafts are stored in **localStorage** (not the `trip_drafts` DB table, which doesn't exist). The `useAutoSave` hook saves drafts every 30 seconds via localStorage keyed by teacher ID.
-
-The `ProtectedRoute` in the teacher app only requires `user` auth — it does not require a `teachers` table record, which allows demo login without DB seeding.
-
-The `signIn` flow wraps role-loading in try/catch and falls back to a default `teacher` role if no `role_assignments` records exist.
-
-## Permission Slip Flow
-1. Teacher generates ONE link per trip via `trips.direct_link_token` (SendLinksModal)
-2. Teacher shares link via SMS bulk send, copy-with-message, or Remind/ClassDojo
-3. Parent opens `/parent/trip/{token}` → TripLookupPage shows full form
-4. Parent fills in: child name/grade/allergies, parent contact, emergency contact, signature
-5. On submit: creates `permission_slips` record with `student_id = NULL`, data in `form_data` JSONB
-6. Status: `signed` (payment is greyed out as "Coming Soon")
-7. Redirects to PermissionSlipSuccessPage
-8. Success page shows "Create Free Account" prompt (unless already logged in)
-9. Teacher sees slip appear in real-time on PermissionSlipTrackingPage
-10. Teacher views trip manifest for day-of attendance at `/trips/:tripId/manifest`
-
-## Venue → Teacher → Parent Consent Flow (No Signup Required)
-The JA Finance Park "Stock Market Challenge" flow demonstrates the consent/indemnification pipeline:
-1. **Venue** (JA admin) goes to Experience Detail page → clicks "Send Consent Link to Teacher"
-2. `SendTeacherLinkModal` collects teacher email + trip date → `POST /api/venue/send-teacher-link` creates trip + trip_form records with indemnification text
-3. **Teacher** receives link `/teacher/trip/{token}/review` — NO login required (public route outside ProtectedRoute)
-4. Teacher sees venue's indemnification form, can optionally add more requirements via `POST /api/trip/add-form`
-5. Teacher clicks "Copy Parent Link" → gets `/parent/trip/{token}` URL to share with parents
-6. **Parent** opens link — NO login required. Sees trip details, consent forms with checkboxes, fills in student/parent/emergency info
-7. Parent signs and submits via `POST /api/trip/submit-consent` → permission_slips record created with all form_data
-8. Both teacher (review page) and venue (ConsentTracker component) can see completion status
-
-### Public Proxy Endpoints (no auth required, rate-limited)
-- `POST /api/trip/lookup` — Fetch trip + forms + slips by `direct_link_token`
-- `POST /api/trip/submit-consent` — Submit parent consent form (creates/updates permission_slip)
-- `POST /api/trip/add-form` — Teacher adds additional requirement to trip
-- `POST /api/trip/remove-form` — Teacher removes their added requirement
-
-### Key Files for Consent Flow
-- `apps/venue/src/components/SendTeacherLinkModal.tsx` — Venue sends link to teacher
-- `apps/teacher/src/pages/TripConsentReviewPage.tsx` — Teacher reviews & forwards (no auth)
-- `apps/parent/src/pages/TripLookupPage.tsx` — Parent fills out consent (no auth)
-- `apps/venue/src/components/ConsentTracker.tsx` — Venue sees consent completion status
-
-### Parent Account Flow (Optional Sign-Up)
-- After completing a permission slip (free or paid), parent sees account creation prompt
-- Two sign-up methods: email+password OR phone+OTP verification
-- Sign-up links auth user to existing `parents` record via `user_id`
-- If no parent record exists, creates one from slip `form_data`
-- Logged-in parents see their dashboard at `/parent/dashboard`
-
-### Parent App Routes
-| Path | Page | Auth Required |
-|---|---|---|
-| `/` `/login` | ParentLoginPage | No |
-| `/signup` | ParentSignupPage (email or phone) | No |
-| `/dashboard` | ParentDashboardPage (trips, children, payments) | Yes |
-| `/trip/:token` | TripLookupPage (guest slip filling) | No |
-| `/slip/:slipId` | PermissionSlipPage | Token |
-| `/permission-slip/success` | PermissionSlipSuccessPage | Token |
-| `/payment` | PaymentPage | Token |
-| `/payment/success` | PaymentSuccessPage | Token |
-
-### Status Values for permission_slips
-`pending` → `sent` → `signed` / `signed_pending_payment` → `paid` / `cancelled`
-
-### localStorage
-- `tripslip_parent_info` — Stores parent+child info for pre-filling on future trips
-
-## Design System
-
-TripSlip uses a neo-brutalist design language with premium 3D claymorphic visual elements:
-- Primary yellow: `#F5C518`
-- Primary black: `#0A0A0A`
-- Card borders: `border-2 border-[#0A0A0A]`
-- Drop shadows: `shadow-[4px_4px_0px_#0A0A0A]` (offset) / `shadow-[8px_8px_0px_#0A0A0A]` (offset-lg)
-- Hover effect: `hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px]`
-- Accent background: `bg-[#FFFDE7]`
-- Fonts: Fraunces (display), Plus Jakarta Sans (body), Space Mono (mono)
-- Animations: float, bounce-slow, fade-in, slide-up (defined in tailwind.config.ts)
-
-### Visual Assets (deployed to all apps in public/images/)
-- **TripSlip Logo**: `tripslip-logo.png` (yellow ticket icon + "tripslip" wordmark, white background — used in all headers/navs), `tripslip-logo-dark.png` (black background variant), `tripslip-logo-large.png` (larger version for hero/splash contexts). All deployed to every app's `public/images/`.
-- **Stock photos**: hero-fieldtrip, students-museum, science-lab, zoo-visit, teacher-leading, art-workshop (AI-generated field trip scenes)
-- **3D Claymorphic icons**: icon-permission, icon-payment, icon-magic, icon-venue, icon-tracking, icon-language, icon-bus, icon-backpack, icon-compass, icon-calendar, icon-shield, icon-megaphone, icon-pencil, icon-trophy, icon-team, icon-graduation (transparent PNGs, used throughout all apps)
-- **Claymation characters**: char-pink-heart, char-blue-square, char-green-octagon, char-purple-diamond, char-yellow-star, char-red-pill (individual animated mascots used in headers/sidebars)
-- **Brand characters**: brand-characters.png (mascot crew)
-
-### Landing Page Sections (HomePage.tsx)
-Header → Hero (photo + live dashboard overlay) → PhotoShowcase (5-photo gallery) → HowItWorks (4 steps) → FeatureGrid (6 features with claymorphic icons) → BrandCharacters (mascot crew) → Testimonials → CTASection → Footer (dark)
-
-## Navigation Structure
-
-Navigation is defined in `packages/auth/src/components/Navigation.tsx`:
-- **Teacher**: Dashboard, Trips, Venues, Students, Profile
-- **School Admin**: Dashboard, Approvals, Teachers
-- **District Admin**: Dashboard, District Overview
-- **TripSlip Admin**: Dashboard, Admin Panel
-- **Venue Admin**: Uses its own `VenueNavigation` component in `apps/venue/src/components/VenueNavigation.tsx` (Dashboard, Experiences, Bookings, Trips, Financials, Employees, Profile). Auth context loads venue data once via `useVenue()` hook — all hooks/pages use shared `venueId` instead of querying `venue_users` individually. Financials shows real payment/revenue data with filters and charts. Employees shows team members with role management and invite flow (via `/api/venue/lookup-user` proxy endpoint).
-
-Active nav state uses `startsWith()` for sub-paths (except Dashboard which is exact match).
-
-## Venue Discovery (Geoapify)
-
-The venue search uses Geoapify Places API for live discovery. The `GEOAPIFY_API_KEY` env var is required.
-
-### Correct Geoapify Categories (v2/places API)
-- `entertainment.museum` — museums
-- `entertainment.zoo` — zoos  
-- `entertainment.aquarium` — aquariums
-- `entertainment.planetarium` — planetariums
-- `entertainment.culture.arts_centre` — arts/science centers
-- `heritage` — historic sites
-- `tourism.attraction` — general attractions
-- `leisure.park.nature_reserve` — nature reserves
-- `leisure.park.garden` — botanical gardens
-- `national_park` — national parks
-- `natural.protected_area` — protected areas
-- `commercial.food_and_drink.farm` — farms
-
-NOTE: Categories like `tourism.museum`, `tourism.zoo`, `tourism.aquarium` do NOT exist in the Geoapify API — they return 400 errors.
-
-### Discovery + Growing Database
-Every search ALWAYS runs both DB lookup AND Geoapify discovery in parallel. New venues not yet in our database get enriched with Wikipedia images/descriptions and stored automatically. The database grows with every teacher search — eventually becoming the primary source with ratings, reviews, and experiences that Geoapify doesn't have.
-
-Response includes `db_count` (venues from our DB) and `new_discovered` (freshly found venues being stored). DB venues get priority in ranking (they have richer data, experiences, reviews). Discovered venues stored with: name, description (from Wikipedia or generated), address JSON with lat/lon, website, phone, primary_photo_url (Wikipedia or Unsplash stock by type), source='geoapify'.
-
-### API Endpoints
-- `POST /api/discovery/search` — DB-cached Geoapify search: `{address, radiusMiles, venueTypes?, searchText?}` → checks DB first, falls back to Geoapify, enriches with Wikipedia, stores in DB, returns ranked results with photos/descriptions
-- `POST /api/discovery/nearby` — Same as search but accepts lat/lon directly: `{lat, lon, radius_miles}`
-- `POST /api/discovery/geocode` — Geocode only: `{address}` → `{lat, lon, formatted}`
-- `POST /api/discovery/run` — Full pipeline for a school: `{school_id}` → discover + store in DB
-
-## Critical DB Facts (for querying)
-
-- `trips` has NO `title`, NO `school_id` — use experience title; filter by teacher_id
-- `teachers` has `first_name` + `last_name`, NOT `name`; has `school_id`
-- `venues.address` is JSON: `{city, state, street, zipCode}`
-- FK patterns: trips → `experience:experiences(...)`, experiences → `venue:venues(...)`; NO direct trips→venues FK
-- `venue_users` table (NOT `venue_employees`): columns are id, venue_id, user_id, role
-- `pricing_tiers` has NO `tier_name`; belongs to experience via `experience_id`
-- `experiences` has NO `pricing_per_student`
-- Trip statuses: `draft`, `pending`, `pending_approval`, `approved`, `confirmed`, `rejected`, `cancelled`, `completed`
-- Slip statuses: `pending` → `sent` → `signed` / `signed_pending_payment` → `paid` / `cancelled`
-
-## HCD / UX Improvements
-
-- **Global focus states**: All 5 apps have `focus-visible` ring styles using brand yellow `#F5C518`, `::selection` highlight, `prefers-reduced-motion` support. Defined in each app's `src/index.css` `@layer base`.
-- **Parent login**: Redesigned to match teacher/venue login warmth (mascot, floating icons, rounded-xl inputs, trust signals).
-- **Navigation**: `aria-current="page"` on active links, mobile menu auto-closes on route change.
-- **Dashboard**: Staggered fade-in animations on stat cards and quick actions, new-user onboarding hint, improved empty state with CTA.
-- **Trips page**: Status badges include icons, filter tabs show counts, filter-specific empty states, improved attendance button sizing.
-- **Students page**: 44px min touch targets on edit/delete, brand-yellow hover row highlight, zebra striping, CSV import summary toast.
-- **Permission slip**: Sticky progress bar (5 sections), "Secure form" trust badge, field-level green checkmarks on valid fields, improved signature area with "Clear & Redo" button and placeholder text.
-
-## Demo Accounts
-
-All demo accounts use password: **TripSlip2026!**
-
-### Teachers (login at `/teacher`)
-| Email | Name | School | Data |
-|-------|------|--------|------|
-| sarah.chen@lincolnelementary.edu | Sarah Chen | Lincoln Elementary | 10 trips, 77 students |
-| mike.johnson@lincolnelementary.edu | Mike Johnson | Lincoln Elementary | 3 trips, 20 students |
-| rachel.kim@riverside.edu | Rachel Kim | Riverside Middle | 4 trips, 44 students |
-| david.martinez@sunset.edu | David Martinez | Sunset Elementary | 4 trips, 22 students |
-| rodriguez@cass.dpscd.org | Rosa Rodriguez | Cass Technical High School (Detroit) | JA trips |
-| thompson@virtual.dpscd.org | James Thompson | DPSCD Virtual Academy (Detroit) | JA trips |
-| williams@se.dpscd.org | Denise Williams | Southeastern High School (Detroit) | JA trips |
-| davis@ren.dpscd.org | Marcus Davis | Renaissance High School (Detroit) | JA trips |
-| chen@hfa.edu | Linda Chen | Henry Ford Academy (Dearborn) | JA trips |
-| johnson@marygrove.edu | Angela Johnson | Marygrove / CMA (Detroit) | JA trips |
-
-### School Admins (login at `/school`)
-| Email | Name | School |
-|-------|------|--------|
-| patricia.reeves@lincolnelementary.edu | Patricia Reeves | Lincoln Elementary |
-| robert.taylor@riverside.edu | Robert Taylor | Riverside Middle |
-
-### Venue Admins (login at `/venue`)
-| Email | Name | Venue |
-|-------|------|-------|
-| james.park@sciencediscovery.org | James Park | Museum of Science and Industry |
-| lisa.wong@artinstitute.org | Lisa Wong | Art Institute of Chicago |
-| sarah.mitchell@jadetroit.org | Sarah Mitchell | JA Finance Park, Detroit |
-| marcus.rivera@jadetroit.org | Marcus Rivera | JA Finance Park, Detroit (admin) |
-| aisha.johnson@jadetroit.org | Aisha Johnson | JA Finance Park, Detroit (editor) |
-
-### Parents (login at `/parent`)
-| Email | Name | Children | Language |
-|-------|------|----------|----------|
-| maria.garcia@gmail.com | Maria Garcia | 5 children | English |
-| tom.wilson@gmail.com | Tom Wilson | 4 children | English |
-| amy.chen@outlook.com | Amy Chen | 3 children | English |
-| jennifer.patel@gmail.com | Jennifer Patel | 3 children | English |
-| carlos.ramirez@gmail.com | Carlos Ramirez | 5 children | Spanish |
-| fatima.hassan@gmail.com | Fatima Hassan | 3 children | Arabic |
-| samantha.brown@yahoo.com | Samantha Brown | 4 children | English |
-| kenji.tanaka@gmail.com | Kenji Tanaka | 2 children | English |
-| david.oconnor@gmail.com | David O'Connor | 2 children | English |
-| priya.sharma@outlook.com | Priya Sharma | 2 children | English |
+# TripSlip Monorepo - Compressed
+
+## Overview
+
+TripSlip is a multi-app monorepo platform designed to streamline school field trip management. It offers a comprehensive solution for schools, teachers, parents, and venues, digitalizing the entire field trip process. Key capabilities include digital permission slips, integrated Stripe payments, real-time communication tools, and robust venue discovery features. The project aims to reduce administrative burden, enhance communication, and provide a seamless experience for all stakeholders involved in organizing and participating in school excursions.
+
+## User Preferences
+
+I prefer iterative development, with a focus on delivering functional components that can be reviewed and refined.
+For styling, I prefer the neo-brutalist design system with specific color palettes and interactive elements.
+I want to be consulted before any major architectural changes or external dependency integrations.
+Ensure all UI/UX decisions adhere strictly to the defined design system.
+I expect all new features to have corresponding test coverage.
+
+## System Architecture
+
+TripSlip is structured as a monorepo utilizing npm workspaces and Turborepo, hosting five distinct Vite/React applications and several shared packages. All applications are served through a single reverse proxy on port 5000.
+
+**Applications:**
+- **Landing Page (`/`)**: Entry point for the platform.
+- **Venue Portal (`/venue/`)**: For venue management.
+- **Teacher Portal (`/teacher/`)**: For teachers to manage trips.
+- **Parent Portal (`/parent/`)**: For parents to manage permission slips and payments.
+- **School Admin Portal (`/school/`)**: For school administrators.
+
+**Shared Packages:**
+- `packages/auth`: Supabase authentication helpers.
+- `packages/database`: Supabase DB client and type definitions.
+- `packages/i18n`: Internationalization utilities.
+- `packages/ui`: Reusable UI component library.
+- `packages/utils`: General shared utilities.
+
+**Technical Implementations & Feature Specifications:**
+- **Routing**: Each React app uses React Router 7 with a `basename` for sub-path routing, managed by the reverse proxy.
+- **Styling**: Tailwind CSS with a neo-brutalist design system, featuring specific colors (White, Black, Yellow), custom fonts (Fraunces, Plus Jakarta Sans, Space Mono), and distinctive hover effects (cards/buttons lift up, shadows grow to 8px).
+- **Visual Assets**: Utilizes 3D glossy clay render PNG icons and claymation character mascots, deployed to all apps.
+- **Supabase Authentication**: Each app uses a unique `storageKey` for Supabase client isolation. Authentication flow includes RPC functions for role assignment and teacher creation during signup, bypassing RLS for initial user setup.
+- **Trip Management**: Teachers can create multi-step trip drafts (saved to localStorage), manage student rosters, track permission slip statuses, and handle interactive attendance via a manifest page.
+- **Permission Slip Flow**: Features a token-based system for parents to access and submit permission slips without requiring a login. It supports guest consent submissions and optional parent account creation post-submission.
+- **Venue Consent Flow**: A specific workflow for venues to send consent links to teachers, which teachers then forward to parents. This allows for indemnification and consent collection with no initial login required for teachers or parents.
+- **Venue Discovery**: Integrates Geoapify for live venue search, enriching results with Wikipedia data and storing new venues in the database. Prioritizes existing database venues and continuously grows the venue database.
+- **UI/UX**: Emphasizes Human-Centered Design with global focus states, `aria-current="page"` for navigation, staggered animations, clear empty states, and improved touch targets for accessibility.
+
+**Deployment Strategy**:
+- Development: `start-dev.sh` script launches all Vite dev servers via `turbo dev` and the reverse proxy.
+- Production: `vite build` creates static assets for each app, which are then served by `proxy-server.mjs` in a static file serving mode (detects `NODE_ENV=production` or `REPL_DEPLOYMENT=1`).
+
+## External Dependencies
+
+- **Database & Authentication**: Supabase (utilizing Supabase DB client, auth helpers, and PostgreSQL database with RLS policies).
+- **Payments**: Stripe (for processing payments related to trips).
+- **Venue Discovery & Geocoding**: Geoapify (for Places API, geocoding, and POI search).
+- **SMS Communication**: Twilio (for sending SMS notifications, e.g., permission slip links to parents).
+- **Email/Marketing Automation**: Customer.io (for transactional emails and marketing campaigns).
+- **Monorepo Management**: Turborepo (for build orchestration and caching).
+- **Package Management**: npm workspaces.
+- **Frontend Framework**: React 19.
+- **Build Tool**: Vite.
+- **Routing**: React Router 7.
+- **Styling**: Tailwind CSS.
+- **Runtime**: Node.js 20.

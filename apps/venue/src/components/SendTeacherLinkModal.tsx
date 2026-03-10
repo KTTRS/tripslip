@@ -17,6 +17,7 @@ import { Copy, Check, Send, Link2 } from 'lucide-react';
 interface SendTeacherLinkModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onLinkGenerated?: () => void;
   experienceId: string;
   experienceTitle: string;
 }
@@ -24,6 +25,7 @@ interface SendTeacherLinkModalProps {
 export function SendTeacherLinkModal({
   open,
   onOpenChange,
+  onLinkGenerated,
   experienceId,
   experienceTitle,
 }: SendTeacherLinkModalProps) {
@@ -74,6 +76,7 @@ export function SendTeacherLinkModal({
 
       setResult(data);
       toast.success('Consent link generated successfully');
+      onLinkGenerated?.();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Something went wrong');
     } finally {

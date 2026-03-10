@@ -275,9 +275,9 @@ const PRICING_TIERS = [
 ];
 
 const JA_ADMIN = {
-  email: 'sarah.mitchell@jadetroit.org',
-  firstName: 'Sarah',
-  lastName: 'Mitchell',
+  email: 'Mcopeland@jamichigan.org',
+  firstName: 'Marcell',
+  lastName: 'Copeland',
 };
 
 const JA_TEAM = [
@@ -465,7 +465,7 @@ async function seed() {
       role: 'administrator',
     });
     if (error) console.error('   ERROR linking admin:', error.message);
-    else console.log(`   ✓ Sarah Mitchell → administrator`);
+    else console.log(`   ✓ Marcell Copeland → administrator`);
   } else {
     console.log(`   Admin already linked`);
   }
