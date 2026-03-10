@@ -1270,7 +1270,7 @@ async function handleTripSubmitConsent(req, res) {
 
     const { data: allSlips } = await supabase
       .from('permission_slips')
-      .select('id, form_data')
+      .select('id, form_data, magic_link_token')
       .eq('trip_id', tripData.id);
     const existing = allSlips?.find(s => s.form_data?.studentName === student_name) || null;
 
@@ -1282,15 +1282,23 @@ async function handleTripSubmitConsent(req, res) {
       parentPhone: parent_phone || null,
     };
 
+    const { randomUUID: slipUUID } = await import('crypto');
+    const magicToken = slipUUID();
+
     if (existing) {
+      const updateFields = {
+        status: 'signed',
+        form_data: enrichedFormData,
+        signature_data: signature || null,
+        signed_at: new Date().toISOString(),
+      };
+      if (!existing.magic_link_token) {
+        updateFields.magic_link_token = magicToken;
+        updateFields.token_expires_at = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+      }
       const { data: updated, error: updateError } = await supabase
         .from('permission_slips')
-        .update({
-          status: 'signed',
-          form_data: enrichedFormData,
-          signature_data: signature || null,
-          signed_at: new Date().toISOString(),
-        })
+        .update(updateFields)
         .eq('id', existing.id)
         .select()
         .single();
@@ -1307,6 +1315,8 @@ async function handleTripSubmitConsent(req, res) {
         form_data: enrichedFormData,
         signature_data: signature || null,
         signed_at: new Date().toISOString(),
+        magic_link_token: magicToken,
+        token_expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       })
       .select()
       .single();

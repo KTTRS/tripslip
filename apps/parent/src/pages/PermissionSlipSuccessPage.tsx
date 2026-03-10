@@ -39,12 +39,16 @@ export function PermissionSlipSuccessPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    if (!slipId || !token) {
+    if (!slipId) {
       setError('Invalid link');
       setLoading(false);
       return;
     }
-    fetchSlip();
+    if (token) {
+      fetchSlip();
+    } else {
+      setLoading(false);
+    }
     checkAuth();
   }, [slipId, token]);
 
@@ -100,26 +104,34 @@ export function PermissionSlipSuccessPage() {
     );
   }
 
-  if (error || !slip) {
+  if (error) {
     return (
       <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center px-4">
         <div className="absolute top-4 right-4"><LanguageSelector /></div>
         <div className="max-w-md w-full bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-8 text-center">
           <div className="text-red-500 text-5xl mb-4">!</div>
           <h1 className="text-2xl font-bold text-[#0A0A0A] mb-4">Something went wrong</h1>
-          <p className="text-gray-600">{error || 'Permission slip not found'}</p>
+          <p className="text-gray-600">{error}</p>
         </div>
       </div>
     );
   }
 
-  const studentName = slip.form_data?.childName
-    || (slip.form_data?.studentFirstName && slip.form_data?.studentLastName
-      ? `${slip.form_data.studentFirstName} ${slip.form_data.studentLastName}`
-      : 'your child');
+  const savedParentInfo = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('tripslip_parent_info') || '{}');
+    } catch { return {}; }
+  })();
 
-  const tripTitle = slip.trips?.experience?.title || slip.trips?.experiences?.title || 'the field trip';
-  const tripDate = slip.trips?.trip_date
+  const studentName = slip?.form_data?.childName
+    || (slip?.form_data?.studentFirstName && slip?.form_data?.studentLastName
+      ? `${slip.form_data.studentFirstName} ${slip.form_data.studentLastName}`
+      : (savedParentInfo.studentFirstName && savedParentInfo.studentLastName
+        ? `${savedParentInfo.studentFirstName} ${savedParentInfo.studentLastName}`
+        : 'your child'));
+
+  const tripTitle = slip?.trips?.experience?.title || slip?.trips?.experiences?.title || 'the field trip';
+  const tripDate = slip?.trips?.trip_date
     ? new Date(slip.trips.trip_date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
     : '';
 
