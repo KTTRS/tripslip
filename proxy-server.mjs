@@ -657,6 +657,7 @@ async function handleVenueLookupUser(req, res) {
 
 async function handleSignupFindOrCreateSchool(req, res) {
   try {
+    const supabase = getSupabase();
     const body = await parseBody(req);
     const { name } = body;
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
@@ -695,6 +696,7 @@ async function handleSignupFindOrCreateSchool(req, res) {
 
 async function handleSignupFindOrCreateDistrict(req, res) {
   try {
+    const supabase = getSupabase();
     const body = await parseBody(req);
     const { name } = body;
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
@@ -733,6 +735,7 @@ async function handleSignupFindOrCreateDistrict(req, res) {
 
 async function handleSignupFindOrCreateVenue(req, res) {
   try {
+    const supabase = getSupabase();
     const body = await parseBody(req);
     const { name, contactEmail } = body;
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
@@ -774,6 +777,7 @@ async function handleSignupFindOrCreateVenue(req, res) {
 
 async function handleSignupLinkVenueUser(req, res) {
   try {
+    const supabase = getSupabase();
     const body = await parseBody(req);
     const { userId, venueId } = body;
     if (!userId || !venueId) {
