@@ -1018,13 +1018,13 @@ async function handleVenueGetExperienceResponses(req, res) {
     const tripIds = trips.map(t => t.id);
     const { data: slips } = await supabase
       .from('permission_slips')
-      .select('id, trip_id, status, student_name, parent_name, parent_email, parent_phone, form_data, signed_at')
+      .select('id, trip_id, status, form_data, signature_data, signed_at')
       .in('trip_id', tripIds)
       .order('signed_at', { ascending: false });
 
     const tripsWithSlips = trips.map(t => ({
       ...t,
-      slips: (slips || []).filter(s => s.trip_id === t.id),
+      slips: (slips || []).filter(s => s.trip_id === t.id).map(mapSlipForResponse),
     }));
 
     sendJSON(res, 200, { trips: tripsWithSlips });
@@ -1157,6 +1157,19 @@ async function handleVenueSendTeacherLink(req, res) {
   }
 }
 
+function mapSlipForResponse(slip) {
+  const fd = slip.form_data || {};
+  return {
+    ...slip,
+    student_name: fd.studentName || fd.student_name || null,
+    parent_name: fd.parentName || fd.parent_name || null,
+    parent_email: fd.parentEmail || fd.parent_email || null,
+    parent_phone: fd.parentPhone || fd.parent_phone || null,
+    signature: slip.signature_data || null,
+    form_data: fd,
+  };
+}
+
 async function handleTripLookup(req, res) {
   const supabase = getSupabase();
   try {
@@ -1204,16 +1217,33 @@ async function handleTripLookup(req, res) {
     if (role === 'teacher') {
       const { data: slipData } = await supabase
         .from('permission_slips')
-        .select('id, status, student_name, parent_name, parent_email, parent_phone, signature, form_data, signed_at')
+        .select('id, status, form_data, signature_data, signed_at')
         .eq('trip_id', tripData.id)
         .order('signed_at', { ascending: false });
-      slips = slipData || [];
+      slips = (slipData || []).map(mapSlipForResponse);
+    }
+
+    let teacherInfo = null;
+    if (tripData.special_requirements) {
+      try {
+        const sr = typeof tripData.special_requirements === 'string'
+          ? JSON.parse(tripData.special_requirements)
+          : tripData.special_requirements;
+        if (sr.teacher_name || sr.teacher_school || sr.teacher_class) {
+          teacherInfo = {
+            teacher_name: sr.teacher_name || null,
+            teacher_school: sr.teacher_school || null,
+            teacher_class: sr.teacher_class || null,
+          };
+        }
+      } catch { /* not JSON, ignore */ }
     }
 
     sendJSON(res, 200, {
       trip: tripData,
       forms: forms || [],
       slips,
+      teacher_info: teacherInfo,
     });
   } catch (err) {
     console.error('Trip lookup error:', err.message);
@@ -1238,50 +1268,51 @@ async function handleTripSubmitConsent(req, res) {
       return sendJSON(res, 404, { error: 'Trip not found' });
     }
 
-    const { data: existing } = await supabase
+    const { data: allSlips } = await supabase
       .from('permission_slips')
-      .select('id')
-      .eq('trip_id', tripData.id)
-      .eq('student_name', student_name)
-      .single();
+      .select('id, form_data')
+      .eq('trip_id', tripData.id);
+    const existing = allSlips?.find(s => s.form_data?.studentName === student_name) || null;
+
+    const enrichedFormData = {
+      ...(form_data || {}),
+      studentName: student_name,
+      parentName: parent_name || null,
+      parentEmail: parent_email || null,
+      parentPhone: parent_phone || null,
+    };
 
     if (existing) {
       const { data: updated, error: updateError } = await supabase
         .from('permission_slips')
         .update({
           status: 'signed',
-          form_data: form_data || {},
-          parent_name: parent_name || null,
-          parent_email: parent_email || null,
-          parent_phone: parent_phone || null,
-          signature: signature || null,
+          form_data: enrichedFormData,
+          signature_data: signature || null,
           signed_at: new Date().toISOString(),
         })
         .eq('id', existing.id)
         .select()
         .single();
       if (updateError) throw new Error(updateError.message);
-      return sendJSON(res, 200, { slip: updated });
+      const mapped = mapSlipForResponse(updated);
+      return sendJSON(res, 200, { slip: mapped });
     }
 
     const { data: slip, error: slipError } = await supabase
       .from('permission_slips')
       .insert({
         trip_id: tripData.id,
-        student_name,
         status: 'signed',
-        form_data: form_data || {},
-        parent_name: parent_name || null,
-        parent_email: parent_email || null,
-        parent_phone: parent_phone || null,
-        signature: signature || null,
+        form_data: enrichedFormData,
+        signature_data: signature || null,
         signed_at: new Date().toISOString(),
       })
       .select()
       .single();
 
     if (slipError) throw new Error(slipError.message);
-    sendJSON(res, 200, { slip });
+    sendJSON(res, 200, { slip: mapSlipForResponse(slip) });
   } catch (err) {
     console.error('Trip submit consent error:', err.message);
     sendJSON(res, 500, { error: err.message });
@@ -1445,7 +1476,7 @@ async function handleTripClone(req, res) {
   const supabase = getSupabase();
   try {
     const body = await parseBody(req);
-    const { source_token, teacher_session_id: rawSessionId, teacher_name, teacher_email } = body;
+    const { source_token, teacher_session_id: rawSessionId, teacher_name, teacher_school, teacher_class } = body;
     if (!source_token) return sendJSON(res, 400, { error: 'source_token is required' });
     if (!rawSessionId) return sendJSON(res, 400, { error: 'teacher_session_id is required' });
     const teacher_session_id = String(rawSessionId).replace(/[^a-zA-Z0-9\-]/g, '').substring(0, 36);
@@ -1483,6 +1514,19 @@ async function handleTripClone(req, res) {
     const { randomUUID } = await import('crypto');
     const newTripId = randomUUID();
 
+    const teacherInfo = {};
+    if (teacher_name) teacherInfo.teacher_name = String(teacher_name).substring(0, 200);
+    if (teacher_school) teacherInfo.teacher_school = String(teacher_school).substring(0, 200);
+    if (teacher_class) teacherInfo.teacher_class = String(teacher_class).substring(0, 200);
+
+    const specialReqs = sourceTrip.special_requirements
+      ? (typeof sourceTrip.special_requirements === 'string' ? sourceTrip.special_requirements : JSON.stringify(sourceTrip.special_requirements))
+      : null;
+
+    const mergedSpecialReqs = Object.keys(teacherInfo).length > 0
+      ? JSON.stringify({ ...teacherInfo, ...(specialReqs ? { original: specialReqs } : {}) })
+      : specialReqs;
+
     const { error: insertErr } = await supabase
       .from('trips')
       .insert({
@@ -1497,7 +1541,7 @@ async function handleTripClone(req, res) {
         funding_model: sourceTrip.funding_model,
         transportation: sourceTrip.transportation,
         configured_addons: sourceTrip.configured_addons,
-        special_requirements: sourceTrip.special_requirements,
+        special_requirements: mergedSpecialReqs,
         direct_link_token: cloneToken,
       });
 

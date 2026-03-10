@@ -71,6 +71,11 @@ export default function TripConsentReviewPage() {
   const [showManifestGate, setShowManifestGate] = useState(false);
   const [clonedToken, setClonedToken] = useState<string | null>(null);
   const [generatingLink, setGeneratingLink] = useState(false);
+  const [showTeacherForm, setShowTeacherForm] = useState(false);
+  const [teacherName, setTeacherName] = useState('');
+  const [teacherSchool, setTeacherSchool] = useState('');
+  const [teacherClass, setTeacherClass] = useState('');
+  const [teacherInfoSaved, setTeacherInfoSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const manifestGateRef = useRef<HTMLDivElement>(null);
 
@@ -81,6 +86,26 @@ export default function TripConsentReviewPage() {
       localStorage.setItem('tripslip_teacher_session', sid);
     }
     return sid;
+  };
+
+  const loadSavedTeacherInfo = () => {
+    try {
+      const saved = localStorage.getItem('tripslip_teacher_info');
+      if (saved) {
+        const info = JSON.parse(saved);
+        if (info.name) setTeacherName(info.name);
+        if (info.school) setTeacherSchool(info.school);
+        if (info.className) setTeacherClass(info.className);
+        if (info.name && info.school) setTeacherInfoSaved(true);
+      }
+    } catch { /* ignore */ }
+  };
+
+  const saveTeacherInfo = (name: string, school: string, className: string) => {
+    try {
+      localStorage.setItem('tripslip_teacher_info', JSON.stringify({ name, school, className }));
+      setTeacherInfoSaved(true);
+    } catch { /* ignore */ }
   };
 
   const getSavedCloneToken = () => {
@@ -99,6 +124,7 @@ export default function TripConsentReviewPage() {
   };
 
   useEffect(() => {
+    loadSavedTeacherInfo();
     if (token) loadTrip();
   }, [token]);
 
@@ -150,7 +176,13 @@ export default function TripConsentReviewPage() {
       const resp = await fetch('/api/trip/clone', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ source_token: token, teacher_session_id: sessionId }),
+        body: JSON.stringify({
+          source_token: token,
+          teacher_session_id: sessionId,
+          teacher_name: teacherName.trim(),
+          teacher_school: teacherSchool.trim(),
+          teacher_class: teacherClass.trim(),
+        }),
       });
       const result = await resp.json();
       if (resp.ok && result.clone_token) {
@@ -309,6 +341,85 @@ export default function TripConsentReviewPage() {
   const teacherForms = tripForms.filter(f => f.source === 'teacher');
   const signedSlips = slips.filter(s => s.status === 'signed');
 
+  if (!teacherInfoSaved) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFA]">
+        <div className="max-w-lg mx-auto px-4 py-8 sm:py-16">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center mb-4">
+              <img src="/images/tripslip-logo.png" alt="TripSlip" className="h-14 w-auto object-contain" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#0A0A0A] mb-2">
+              Welcome, Teacher!
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Before you review this trip, please tell us a bit about yourself so parents and the venue know who you are.
+            </p>
+          </div>
+
+          {trip && (
+            <div className="bg-[#F5C518]/10 border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-5 mb-6">
+              <p className="text-sm font-medium text-gray-500">Trip</p>
+              <p className="text-lg font-bold text-[#0A0A0A]">{trip.experience?.title}</p>
+              <p className="text-sm text-gray-600 mt-1">{trip.experience?.venue?.name} &middot; {formatDate(trip.trip_date)}</p>
+            </div>
+          )}
+
+          <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6">
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-[#0A0A0A] mb-1">Your Name <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={teacherName}
+                  onChange={(e) => setTeacherName(e.target.value)}
+                  placeholder="e.g. Ms. Johnson"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#F5C518] focus:outline-none text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-[#0A0A0A] mb-1">School Name <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={teacherSchool}
+                  onChange={(e) => setTeacherSchool(e.target.value)}
+                  placeholder="e.g. Detroit Academy"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#F5C518] focus:outline-none text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-[#0A0A0A] mb-1">Class / Grade</label>
+                <input
+                  type="text"
+                  value={teacherClass}
+                  onChange={(e) => setTeacherClass(e.target.value)}
+                  placeholder="e.g. 5th Grade, Period 3, Room 204"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-[#F5C518] focus:outline-none text-sm"
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  if (!teacherName.trim() || !teacherSchool.trim()) {
+                    alert('Please enter your name and school.');
+                    return;
+                  }
+                  saveTeacherInfo(teacherName.trim(), teacherSchool.trim(), teacherClass.trim());
+                }}
+                className="w-full px-4 py-4 text-sm font-bold text-black bg-[#F5C518] border-2 border-black rounded-lg shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                Continue to Trip Review
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAFA]">
       <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
@@ -322,6 +433,11 @@ export default function TripConsentReviewPage() {
           <p className="text-gray-500 text-sm">
             Review consent requirements and track parent responses.
           </p>
+          {teacherName && (
+            <p className="text-sm text-gray-600 mt-2">
+              {teacherName}{teacherSchool ? ` · ${teacherSchool}` : ''}{teacherClass ? ` · ${teacherClass}` : ''}
+            </p>
+          )}
         </div>
 
         <div className="space-y-6">

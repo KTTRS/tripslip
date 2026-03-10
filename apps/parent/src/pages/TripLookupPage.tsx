@@ -68,6 +68,7 @@ export function TripLookupPage() {
 
   const [trip, setTrip] = useState<TripInfo | null>(null);
   const [tripForms, setTripForms] = useState<TripForm[]>([]);
+  const [teacherInfo, setTeacherInfo] = useState<{ teacher_name?: string; teacher_school?: string; teacher_class?: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -146,6 +147,10 @@ export function TripLookupPage() {
       }
 
       setTrip(result.trip as unknown as TripInfo);
+
+      if (result.teacher_info) {
+        setTeacherInfo(result.teacher_info);
+      }
 
       if (result.forms && Array.isArray(result.forms) && result.forms.length > 0) {
         setTripForms(result.forms as TripForm[]);
@@ -431,7 +436,7 @@ export function TripLookupPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <TripDetails trip={trip} />
+          <TripDetails trip={trip} teacherInfo={teacherInfo} />
 
           {transportation && transportation.type && (
             <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 space-y-3">

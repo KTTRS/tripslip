@@ -1,6 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@tripslip/utils';
 
+interface TeacherInfo {
+  teacher_name?: string;
+  teacher_school?: string;
+  teacher_class?: string;
+}
+
 interface TripDetailsProps {
   trip: {
     title?: string;
@@ -25,9 +31,10 @@ interface TripDetailsProps {
       address: any;
     } | null;
   };
+  teacherInfo?: TeacherInfo | null;
 }
 
-export function TripDetails({ trip }: TripDetailsProps) {
+export function TripDetails({ trip, teacherInfo }: TripDetailsProps) {
   const { t, i18n } = useTranslation();
 
   const experienceTitle = trip.experience?.title || trip.experiences?.title;
@@ -82,6 +89,19 @@ export function TripDetails({ trip }: TripDetailsProps) {
               {formatDate(trip.trip_date, 'PPP', i18n.language)}
             </p>
           </div>
+
+          {teacherInfo?.teacher_name && (
+            <div>
+              <p className="text-sm font-medium text-gray-500">Teacher</p>
+              <p className="text-[#0A0A0A] font-medium">{teacherInfo.teacher_name}</p>
+              {teacherInfo.teacher_school && (
+                <p className="text-sm text-gray-600">{teacherInfo.teacher_school}</p>
+              )}
+              {teacherInfo.teacher_class && (
+                <p className="text-sm text-gray-600">{teacherInfo.teacher_class}</p>
+              )}
+            </div>
+          )}
 
           {(trip.departure_time || trip.trip_time) && (
             <div>
