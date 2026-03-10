@@ -1436,6 +1436,103 @@ async function handleTripUploadForm(req, res) {
   }
 }
 
+async function handleTripClone(req, res) {
+  const supabase = getSupabase();
+  try {
+    const body = await parseBody(req);
+    const { source_token, teacher_session_id: rawSessionId, teacher_name, teacher_email } = body;
+    if (!source_token) return sendJSON(res, 400, { error: 'source_token is required' });
+    if (!rawSessionId) return sendJSON(res, 400, { error: 'teacher_session_id is required' });
+    const teacher_session_id = String(rawSessionId).replace(/[^a-zA-Z0-9\-]/g, '').substring(0, 36);
+
+    const { data: sourceTrip, error: srcErr } = await supabase
+      .from('trips')
+      .select('id, experience_id, teacher_id, trip_date, trip_time, student_count, status, is_free, funding_model, transportation, configured_addons, special_requirements')
+      .eq('direct_link_token', source_token)
+      .single();
+
+    if (srcErr || !sourceTrip) {
+      return sendJSON(res, 404, { error: 'Source trip not found' });
+    }
+
+    const tokenPrefix = `t-${teacher_session_id.substring(0, 8)}`;
+    const cloneToken = `${tokenPrefix}-${Date.now().toString(36)}`;
+
+    const searchPrefix = tokenPrefix.replace(/%/g, '').replace(/_/g, '');
+    const { data: existingClones } = await supabase
+      .from('trips')
+      .select('id, direct_link_token')
+      .like('direct_link_token', `${searchPrefix}-%`)
+      .eq('experience_id', sourceTrip.experience_id)
+      .eq('trip_date', sourceTrip.trip_date)
+      .eq('teacher_id', sourceTrip.teacher_id);
+
+    if (existingClones?.length > 0) {
+      return sendJSON(res, 200, {
+        clone_token: existingClones[0].direct_link_token,
+        trip_id: existingClones[0].id,
+        already_existed: true,
+      });
+    }
+
+    const { randomUUID } = await import('crypto');
+    const newTripId = randomUUID();
+
+    const { error: insertErr } = await supabase
+      .from('trips')
+      .insert({
+        id: newTripId,
+        experience_id: sourceTrip.experience_id,
+        teacher_id: sourceTrip.teacher_id,
+        trip_date: sourceTrip.trip_date,
+        trip_time: sourceTrip.trip_time,
+        student_count: sourceTrip.student_count,
+        status: sourceTrip.status,
+        is_free: sourceTrip.is_free,
+        funding_model: sourceTrip.funding_model,
+        transportation: sourceTrip.transportation,
+        configured_addons: sourceTrip.configured_addons,
+        special_requirements: sourceTrip.special_requirements,
+        direct_link_token: cloneToken,
+      });
+
+    if (insertErr) {
+      console.error('Clone trip insert error:', insertErr.message);
+      return sendJSON(res, 500, { error: 'Failed to create cloned trip' });
+    }
+
+    const { data: sourceForms } = await supabase
+      .from('trip_forms')
+      .select('title, form_type, description, file_url, required, source')
+      .eq('trip_id', sourceTrip.id);
+
+    if (sourceForms?.length > 0) {
+      const clonedForms = sourceForms.map(f => ({
+        trip_id: newTripId,
+        title: f.title,
+        form_type: f.form_type,
+        description: f.description,
+        file_url: f.file_url,
+        required: f.required,
+        source: f.source,
+      }));
+      const { error: formErr } = await supabase.from('trip_forms').insert(clonedForms);
+      if (formErr) console.error('Clone trip forms error:', formErr.message);
+    }
+
+    console.log(`Trip cloned: ${source_token} → ${cloneToken} (teacher: ${teacher_name || 'anonymous'})`);
+
+    sendJSON(res, 200, {
+      clone_token: cloneToken,
+      trip_id: newTripId,
+      already_existed: false,
+    });
+  } catch (err) {
+    console.error('Clone trip error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 async function handleTripRemoveForm(req, res) {
   const supabase = getSupabase();
   try {
@@ -1486,6 +1583,7 @@ const apiHandlers = {
   'POST /api/trip/add-form': handleTripAddForm,
   'POST /api/trip/upload-form': handleTripUploadForm,
   'POST /api/trip/remove-form': handleTripRemoveForm,
+  'POST /api/trip/clone': handleTripClone,
   'POST /api/signup/find-or-create-school': handleSignupFindOrCreateSchool,
   'POST /api/signup/find-or-create-district': handleSignupFindOrCreateDistrict,
   'POST /api/signup/find-or-create-venue': handleSignupFindOrCreateVenue,

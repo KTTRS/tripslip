@@ -69,8 +69,34 @@ export default function TripConsentReviewPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadTitle, setUploadTitle] = useState('');
   const [showManifestGate, setShowManifestGate] = useState(false);
+  const [clonedToken, setClonedToken] = useState<string | null>(null);
+  const [generatingLink, setGeneratingLink] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const manifestGateRef = useRef<HTMLDivElement>(null);
+
+  const getTeacherSessionId = () => {
+    let sid = localStorage.getItem('tripslip_teacher_session');
+    if (!sid) {
+      sid = crypto.randomUUID();
+      localStorage.setItem('tripslip_teacher_session', sid);
+    }
+    return sid;
+  };
+
+  const getSavedCloneToken = () => {
+    try {
+      const map = JSON.parse(localStorage.getItem('tripslip_cloned_trips') || '{}');
+      return map[token || ''] || null;
+    } catch { return null; }
+  };
+
+  const saveCloneToken = (sourceToken: string, cloneToken: string) => {
+    try {
+      const map = JSON.parse(localStorage.getItem('tripslip_cloned_trips') || '{}');
+      map[sourceToken] = cloneToken;
+      localStorage.setItem('tripslip_cloned_trips', JSON.stringify(map));
+    } catch { /* ignore */ }
+  };
 
   useEffect(() => {
     if (token) loadTrip();
@@ -93,11 +119,53 @@ export default function TripConsentReviewPage() {
 
       setTrip(result.trip as TripInfo);
       if (result.forms) setTripForms(result.forms as TripForm[]);
-      if (result.slips) setSlips(result.slips as PermissionSlip[]);
+
+      const savedClone = getSavedCloneToken();
+      if (savedClone) {
+        setClonedToken(savedClone);
+        const cloneResp = await fetch('/api/trip/lookup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: savedClone, role: 'teacher' }),
+        });
+        const cloneResult = await cloneResp.json();
+        if (cloneResp.ok && cloneResult.slips) {
+          setSlips(cloneResult.slips as PermissionSlip[]);
+        }
+      } else {
+        if (result.slips) setSlips(result.slips as PermissionSlip[]);
+      }
     } catch {
       setError('Something went wrong loading the trip.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateParentLink = async () => {
+    if (!token) return;
+    setGeneratingLink(true);
+    try {
+      const sessionId = getTeacherSessionId();
+      const resp = await fetch('/api/trip/clone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source_token: token, teacher_session_id: sessionId }),
+      });
+      const result = await resp.json();
+      if (resp.ok && result.clone_token) {
+        setClonedToken(result.clone_token);
+        saveCloneToken(token, result.clone_token);
+        if (!result.already_existed) {
+          setSlips([]);
+        }
+      } else {
+        alert(result.error || 'Failed to generate parent link. Please try again.');
+      }
+    } catch {
+      alert('Failed to generate parent link. Please try again.');
+    } finally {
+      setGeneratingLink(false);
     }
   };
 
@@ -109,7 +177,7 @@ export default function TripConsentReviewPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          token,
+          token: clonedToken || token,
           title: newFormTitle.trim(),
           description: newFormDescription.trim(),
         }),
@@ -135,7 +203,7 @@ export default function TripConsentReviewPage() {
     try {
       const formData = new FormData();
       formData.append('file', uploadFile);
-      formData.append('token', token || '');
+      formData.append('token', clonedToken || token || '');
       formData.append('title', (uploadTitle.trim() || uploadFile.name));
 
       const resp = await fetch('/api/trip/upload-form', {
@@ -163,7 +231,7 @@ export default function TripConsentReviewPage() {
       const resp = await fetch('/api/trip/remove-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, form_id: formId }),
+        body: JSON.stringify({ token: clonedToken || token, form_id: formId }),
       });
       if (!resp.ok) throw new Error('Failed');
       setTripForms(prev => prev.filter(f => f.id !== formId));
@@ -173,7 +241,8 @@ export default function TripConsentReviewPage() {
   };
 
   const getParentLink = () => {
-    return `${window.location.origin}/parent/trip/${trip?.direct_link_token}`;
+    const linkToken = clonedToken || trip?.direct_link_token;
+    return `${window.location.origin}/parent/trip/${linkToken}`;
   };
 
   const copyToClipboard = async (text: string, setter: (v: boolean) => void) => {
@@ -615,36 +684,80 @@ export default function TripConsentReviewPage() {
           {/* Share with Parents */}
           <div className="bg-[#F5C518]/10 border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6">
             <h2 className="text-xl font-bold text-[#0A0A0A] mb-4">Share with Parents</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Copy the parent link below and share it with your students' parents. They will see all required consent forms and can sign digitally.
-            </p>
 
-            <div className="bg-white border-2 border-black rounded-lg p-4 mb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Parent Permission Slip Link</span>
-              </div>
-              <p className="text-sm font-mono break-all text-gray-700 mb-3">
-                {getParentLink()}
-              </p>
-              <button
-                onClick={() => copyToClipboard(getParentLink(), setParentLinkCopied)}
-                className="w-full px-4 py-3 text-sm font-bold text-black bg-[#F5C518] border-2 border-black rounded-lg shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"
-              >
-                {parentLinkCopied ? (
-                  <>
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                    Copy Parent Link
-                  </>
-                )}
-              </button>
-            </div>
+            {clonedToken ? (
+              <>
+                <p className="text-sm text-gray-600 mb-4">
+                  Copy your unique parent link below and share it with your students' parents. Responses will appear in the Parent Responses section above.
+                </p>
 
-            <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="bg-white border-2 border-black rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Your Parent Permission Slip Link</span>
+                    <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Unique to you</span>
+                  </div>
+                  <p className="text-sm font-mono break-all text-gray-700 mb-3">
+                    {getParentLink()}
+                  </p>
+                  <button
+                    onClick={() => copyToClipboard(getParentLink(), setParentLinkCopied)}
+                    className="w-full px-4 py-3 text-sm font-bold text-black bg-[#F5C518] border-2 border-black rounded-lg shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2"
+                  >
+                    {parentLinkCopied ? (
+                      <>
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                        Copy Parent Link
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-blue-700">
+                    <strong>Note:</strong> This parent link is unique to you. Each teacher who opens this review page gets their own link, so parent responses stay organized per teacher.
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-600 mb-4">
+                  Generate your own unique parent link to share with your students' parents. Each teacher gets their own link so responses stay separated.
+                </p>
+
+                <button
+                  onClick={handleGenerateParentLink}
+                  disabled={generatingLink}
+                  className="w-full px-4 py-4 text-sm font-bold text-black bg-[#F5C518] border-2 border-black rounded-lg shadow-[4px_4px_0px_#0A0A0A] hover:shadow-[2px_2px_0px_#0A0A0A] hover:translate-x-[2px] hover:translate-y-[2px] transition-all flex items-center justify-center gap-2 disabled:opacity-50 mb-4"
+                >
+                  {generatingLink ? (
+                    <>
+                      <span className="h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      Generate My Parent Link
+                    </>
+                  )}
+                </button>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-700">
+                    <strong>Why generate a link?</strong> Each teacher gets their own parent link so that permission slip responses are organized by classroom. Your parents' responses will only appear on your review page.
+                  </p>
+                </div>
+              </>
+            )}
+
+            <div className="bg-white border border-gray-200 rounded-lg p-4 mt-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">This Review Page Link</span>
               </div>
