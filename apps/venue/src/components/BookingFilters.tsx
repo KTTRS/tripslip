@@ -57,9 +57,8 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     
-    // Remove empty filters
     const cleanFilters = Object.fromEntries(
-      Object.entries(newFilters).filter(([_, v]) => v !== '')
+      Object.entries(newFilters).filter(([_, v]) => v !== '' && v !== '__all__')
     );
     
     onFilterChange(cleanFilters);
@@ -76,7 +75,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
     onFilterChange({});
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== '');
+  const hasActiveFilters = Object.values(filters).some(value => value !== '' && value !== '__all__');
 
   return (
     <Card className="border-2 border-black shadow-[4px_4px_0px_0px_rgba(10,10,10,1)]">
@@ -107,7 +106,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
                 <SelectValue placeholder="All statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="__all__">All statuses</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="completed">Completed</SelectItem>
@@ -127,7 +126,7 @@ export function BookingFilters({ onFilterChange }: BookingFiltersProps) {
                 <SelectValue placeholder="All experiences" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All experiences</SelectItem>
+                <SelectItem value="__all__">All experiences</SelectItem>
                 {experiences.map((experience) => (
                   <SelectItem key={experience.id} value={experience.id}>
                     {experience.title}

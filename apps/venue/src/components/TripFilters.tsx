@@ -22,8 +22,8 @@ interface TripFiltersProps {
 }
 
 export function TripFilters({ onFilterChange }: TripFiltersProps) {
-  const [status, setStatus] = useState<string>('')
-  const [experienceId, setExperienceId] = useState<string>('')
+  const [status, setStatus] = useState<string>('__all__')
+  const [experienceId, setExperienceId] = useState<string>('__all__')
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
   const [experiences, setExperiences] = useState<Array<{ id: string; title: string }>>([])
@@ -37,8 +37,8 @@ export function TripFilters({ onFilterChange }: TripFiltersProps) {
 
   useEffect(() => {
     onFilterChange({
-      status: status || undefined,
-      experienceId: experienceId || undefined,
+      status: status === '__all__' ? undefined : status,
+      experienceId: experienceId === '__all__' ? undefined : experienceId,
       startDate: startDate || undefined,
       endDate: endDate || undefined
     })
@@ -62,8 +62,8 @@ export function TripFilters({ onFilterChange }: TripFiltersProps) {
   }
 
   const handleReset = () => {
-    setStatus('')
-    setExperienceId('')
+    setStatus('__all__')
+    setExperienceId('__all__')
     setStartDate('')
     setEndDate('')
   }
@@ -81,7 +81,7 @@ export function TripFilters({ onFilterChange }: TripFiltersProps) {
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All statuses</SelectItem>
+              <SelectItem value="__all__">All statuses</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
               <SelectItem value="confirmed">Confirmed</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
@@ -98,7 +98,7 @@ export function TripFilters({ onFilterChange }: TripFiltersProps) {
               <SelectValue placeholder="All experiences" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All experiences</SelectItem>
+              <SelectItem value="__all__">All experiences</SelectItem>
               {experiences.map(exp => (
                 <SelectItem key={exp.id} value={exp.id}>
                   {exp.title}
