@@ -8,7 +8,7 @@ import { Switch } from '@tripslip/ui/components/switch';
 import { Label } from '@tripslip/ui/components/label';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { ArrowLeft, Edit, Eye, Clock, Users, Send, Link2, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Edit, Eye, Clock, Users, Link2, Copy, Check, Plus } from 'lucide-react';
 import { SendTeacherLinkModal } from '../components/SendTeacherLinkModal';
 
 interface Experience {
@@ -131,7 +131,18 @@ export default function ExperienceDetailPage() {
   
   const handleCopyLink = async (link: string, id: string) => {
     const fullUrl = `${window.location.origin}${link}`;
-    await navigator.clipboard.writeText(fullUrl);
+    try {
+      await navigator.clipboard.writeText(fullUrl);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = fullUrl;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
     setCopiedLink(id);
     toast.success('Link copied to clipboard');
     setTimeout(() => setCopiedLink(null), 2000);
@@ -204,8 +215,8 @@ export default function ExperienceDetailPage() {
                 onClick={() => setShowSendModal(true)}
                 className="bg-[#F5C518] hover:bg-[#F5C518]/90 text-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] hover:shadow-[2px_2px_0px_0px_rgba(10,10,10,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
               >
-                <Send className="h-4 w-4 mr-2" />
-                Send Consent Link
+                <Plus className="h-4 w-4 mr-2" />
+                Generate Consent Link
               </Button>
             )}
             <Button onClick={() => navigate(`/experiences/${id}/edit`)}>
@@ -238,6 +249,103 @@ export default function ExperienceDetailPage() {
             </div>
           </CardContent>
         </Card>
+
+        {generatedTrips.length > 0 && (
+          <Card className="border-2 border-[#F5C518] shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] bg-[#F5C518]/5">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Link2 className="h-5 w-5" />
+                Consent Links
+              </CardTitle>
+              <CardDescription>
+                Copy these links and send them to teachers. Teachers can forward the parent link, or you can send the parent link directly.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {generatedTrips.map((trip) => {
+                  const teacherLink = `/teacher/trip/${trip.direct_link_token}/review`;
+                  const parentLink = `/parent/trip/${trip.direct_link_token}`;
+                  const tripDateFormatted = new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  });
+                  return (
+                    <div key={trip.id} className="border-2 border-black rounded-lg p-5 bg-white space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-bold text-lg text-[#0A0A0A]">{tripDateFormatted}</span>
+                          <Badge variant={trip.status === 'confirmed' ? 'success' : 'secondary'}>
+                            {trip.status}
+                          </Badge>
+                        </div>
+                        <span className="text-sm text-gray-500">{trip.student_count} students</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="border-2 border-black rounded-lg p-4 bg-gray-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-bold text-[#0A0A0A]">Teacher Link</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={`${window.location.origin}${teacherLink}`}
+                              className="flex-1 text-sm font-mono bg-white border-2 border-gray-300 rounded px-3 py-2 select-all cursor-text"
+                              onClick={(e) => (e.target as HTMLInputElement).select()}
+                            />
+                            <button
+                              onClick={() => handleCopyLink(teacherLink, `teacher-${trip.id}`)}
+                              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm border-2 border-black transition-all ${
+                                copiedLink === `teacher-${trip.id}`
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-[#F5C518] text-black hover:bg-[#F5C518]/80 shadow-[2px_2px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px]'
+                              }`}
+                            >
+                              {copiedLink === `teacher-${trip.id}` ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                              {copiedLink === `teacher-${trip.id}` ? 'Copied!' : 'Copy'}
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2">Send to the teacher. They review the form and forward a parent link.</p>
+                        </div>
+
+                        <div className="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-bold text-[#0A0A0A]">Parent Link</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              readOnly
+                              value={`${window.location.origin}${parentLink}`}
+                              className="flex-1 text-sm font-mono bg-white border-2 border-gray-300 rounded px-3 py-2 select-all cursor-text"
+                              onClick={(e) => (e.target as HTMLInputElement).select()}
+                            />
+                            <button
+                              onClick={() => handleCopyLink(parentLink, `parent-${trip.id}`)}
+                              className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm border-2 border-black transition-all ${
+                                copiedLink === `parent-${trip.id}`
+                                  ? 'bg-green-500 text-white'
+                                  : 'bg-white text-black hover:bg-gray-100 shadow-[2px_2px_0px_#0A0A0A] hover:shadow-[1px_1px_0px_#0A0A0A] hover:translate-x-[1px] hover:translate-y-[1px]'
+                              }`}
+                            >
+                              {copiedLink === `parent-${trip.id}` ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                              {copiedLink === `parent-${trip.id}` ? 'Copied!' : 'Copy'}
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-2">Send directly to parents if the teacher won't be using the portal.</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
         
         {/* Basic Information */}
         <Card>
@@ -312,79 +420,6 @@ export default function ExperienceDetailPage() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        )}
-        
-        {generatedTrips.length > 0 && (
-          <Card className="border-2 border-black shadow-offset">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Link2 className="h-5 w-5" />
-                Generated Consent Links
-              </CardTitle>
-              <CardDescription>
-                Links you've generated for this experience. Share these with teachers or directly with parents.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {generatedTrips.map((trip) => {
-                  const teacherLink = `/teacher/trip/${trip.direct_link_token}/review`;
-                  const parentLink = `/parent/trip/${trip.direct_link_token}`;
-                  const tripDateFormatted = new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  });
-                  return (
-                    <div key={trip.id} className="border-2 border-gray-200 rounded-lg p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="font-semibold text-[#0A0A0A]">{tripDateFormatted}</span>
-                          <Badge variant={trip.status === 'confirmed' ? 'success' : 'secondary'} className="text-xs">
-                            {trip.status}
-                          </Badge>
-                        </div>
-                        <span className="text-sm text-gray-500">{trip.student_count} students</span>
-                      </div>
-
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Teacher Review Link</span>
-                          <button
-                            onClick={() => handleCopyLink(teacherLink, `teacher-${trip.id}`)}
-                            className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 transition-colors"
-                          >
-                            {copiedLink === `teacher-${trip.id}` ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
-                            {copiedLink === `teacher-${trip.id}` ? 'Copied' : 'Copy'}
-                          </button>
-                        </div>
-                        <p className="text-sm font-mono break-all text-gray-700 select-all">
-                          {window.location.origin}{teacherLink}
-                        </p>
-                      </div>
-
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Direct Parent Link</span>
-                          <button
-                            onClick={() => handleCopyLink(parentLink, `parent-${trip.id}`)}
-                            className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded border border-gray-300 hover:bg-gray-100 transition-colors"
-                          >
-                            {copiedLink === `parent-${trip.id}` ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
-                            {copiedLink === `parent-${trip.id}` ? 'Copied' : 'Copy'}
-                          </button>
-                        </div>
-                        <p className="text-sm font-mono break-all text-gray-700 select-all">
-                          {window.location.origin}{parentLink}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </CardContent>
           </Card>
         )}

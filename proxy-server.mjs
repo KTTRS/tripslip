@@ -830,8 +830,8 @@ async function handleVenueSendTeacherLink(req, res) {
     const body = await parseBody(req);
     const { experience_id, teacher_email, trip_date, student_count } = body;
 
-    if (!experience_id || !teacher_email || !trip_date) {
-      return sendJSON(res, 400, { error: 'experience_id, teacher_email, and trip_date are required' });
+    if (!experience_id || !trip_date) {
+      return sendJSON(res, 400, { error: 'experience_id and trip_date are required' });
     }
 
     const token = (req.headers.authorization || '').replace('Bearer ', '');
@@ -865,12 +865,16 @@ async function handleVenueSendTeacherLink(req, res) {
       return sendJSON(res, 404, { error: 'Experience not found' });
     }
 
-    const { data: teacher } = await supabase
-      .from('teachers')
-      .select('id, first_name, last_name, email')
-      .eq('email', teacher_email)
-      .limit(1)
-      .single();
+    let teacher = null;
+    if (teacher_email) {
+      const { data: teacherData } = await supabase
+        .from('teachers')
+        .select('id, first_name, last_name, email')
+        .eq('email', teacher_email)
+        .limit(1)
+        .single();
+      teacher = teacherData;
+    }
 
     const nodeCrypto = await import('node:crypto');
     const directLinkToken = `smc-${nodeCrypto.randomUUID().substring(0, 12)}`;
