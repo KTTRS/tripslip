@@ -8,7 +8,8 @@ import { Switch } from '@tripslip/ui/components/switch';
 import { Label } from '@tripslip/ui/components/label';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
-import { ArrowLeft, Edit, Eye, Clock, Users, DollarSign } from 'lucide-react';
+import { ArrowLeft, Edit, Eye, Clock, Users, DollarSign, Send } from 'lucide-react';
+import { SendTeacherLinkModal } from '../components/SendTeacherLinkModal';
 
 interface Experience {
   id: string;
@@ -40,6 +41,8 @@ export default function ExperienceDetailPage() {
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [hasLinkedForms, setHasLinkedForms] = useState(false);
   
   useEffect(() => {
     if (id) {
@@ -73,6 +76,12 @@ export default function ExperienceDetailPage() {
       if (!pricingError && pricingData) {
         setPricingTiers(pricingData);
       }
+
+      const { data: linkedForms } = await supabase
+        .from('experience_forms')
+        .select('form_id')
+        .eq('experience_id', id);
+      setHasLinkedForms(!!(linkedForms && linkedForms.length > 0));
     } catch (error) {
       console.error('Error loading experience:', error);
       toast.error('Failed to load experience');
@@ -189,10 +198,21 @@ export default function ExperienceDetailPage() {
               </p>
             </div>
           </div>
-          <Button onClick={() => navigate(`/experiences/${id}/edit`)}>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
-          </Button>
+          <div className="flex gap-2">
+            {hasLinkedForms && (
+              <Button
+                onClick={() => setShowSendModal(true)}
+                className="bg-[#F5C518] hover:bg-[#F5C518]/90 text-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(10,10,10,1)] hover:shadow-[2px_2px_0px_0px_rgba(10,10,10,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Send Consent Link
+              </Button>
+            )}
+            <Button onClick={() => navigate(`/experiences/${id}/edit`)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </div>
         </div>
         
         {/* Publish/Unpublish Control */}
@@ -382,6 +402,15 @@ export default function ExperienceDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {experience && (
+        <SendTeacherLinkModal
+          open={showSendModal}
+          onOpenChange={setShowSendModal}
+          experienceId={experience.id}
+          experienceTitle={experience.title}
+        />
+      )}
     </Layout>
   );
 }

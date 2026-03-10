@@ -21,6 +21,7 @@ import {
 import type { VenueTrip } from '../hooks/useVenueTrips'
 import { CapacityDisplay } from './CapacityDisplay'
 import { useExperienceCapacity } from '../hooks/useExperienceCapacity'
+import { ConsentTracker } from './ConsentTracker'
 
 interface TripBookingListProps {
   trips: VenueTrip[]
@@ -155,6 +156,7 @@ export function TripBookingList({ trips, onConfirm, onDecline, onAddNote }: Trip
               <TableHead>Teacher</TableHead>
               <TableHead>Students</TableHead>
               <TableHead>Capacity</TableHead>
+              <TableHead>Consent</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -176,6 +178,9 @@ export function TripBookingList({ trips, onConfirm, onDecline, onAddNote }: Trip
                 </TableCell>
                 <TableCell>{trip.student_count}</TableCell>
                 <TripCapacityCell trip={trip} />
+                <TableCell>
+                  <ConsentTracker tripId={trip.id} studentCount={trip.student_count} />
+                </TableCell>
                 <TableCell>{getStatusBadge(trip.status)}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">

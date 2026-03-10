@@ -17,6 +17,7 @@ import PermissionSlipTrackingPage from './pages/PermissionSlipTrackingPage'
 import TripManifestPage from './pages/TripManifestPage'
 import VenueSearchPage from './pages/VenueSearchPage'
 import VenueDetailPage from './pages/VenueDetailPage'
+import TripConsentReviewPage from './pages/TripConsentReviewPage'
 
 export default function App() {
   return (
@@ -116,6 +117,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/trip/:token/review" element={<TripConsentReviewPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </TeacherAuthProvider>

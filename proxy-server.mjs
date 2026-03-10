@@ -825,6 +825,311 @@ async function handleSignupLinkVenueUser(req, res) {
   }
 }
 
+async function handleVenueSendTeacherLink(req, res) {
+  try {
+    const body = await parseBody(req);
+    const { experience_id, teacher_email, trip_date, student_count } = body;
+
+    if (!experience_id || !teacher_email || !trip_date) {
+      return sendJSON(res, 400, { error: 'experience_id, teacher_email, and trip_date are required' });
+    }
+
+    const token = (req.headers.authorization || '').replace('Bearer ', '');
+    const supabase = getSupabase();
+
+    const { data: { user: requester }, error: authErr } = await supabase.auth.getUser(token);
+    if (authErr || !requester) {
+      return sendJSON(res, 401, { error: 'Authentication required' });
+    }
+
+    const { data: venueUser } = await supabase
+      .from('venue_users')
+      .select('venue_id, role')
+      .eq('user_id', requester.id)
+      .is('deactivated_at', null)
+      .limit(1)
+      .single();
+
+    if (!venueUser) {
+      return sendJSON(res, 403, { error: 'Not a venue administrator' });
+    }
+
+    const { data: experience } = await supabase
+      .from('experiences')
+      .select('id, title, venue_id')
+      .eq('id', experience_id)
+      .eq('venue_id', venueUser.venue_id)
+      .single();
+
+    if (!experience) {
+      return sendJSON(res, 404, { error: 'Experience not found' });
+    }
+
+    const { data: teacher } = await supabase
+      .from('teachers')
+      .select('id, first_name, last_name, email')
+      .eq('email', teacher_email)
+      .limit(1)
+      .single();
+
+    const nodeCrypto = await import('node:crypto');
+    const directLinkToken = `smc-${nodeCrypto.randomUUID().substring(0, 12)}`;
+
+    const tripRecord = {
+      experience_id,
+      teacher_id: teacher?.id || null,
+      trip_date,
+      trip_time: '09:00:00',
+      student_count: student_count || 30,
+      status: 'pending',
+      is_free: false,
+      direct_link_token: directLinkToken,
+    };
+
+    const { data: trip, error: tripErr } = await supabase
+      .from('trips')
+      .insert(tripRecord)
+      .select('id')
+      .single();
+
+    if (tripErr) {
+      console.error('Trip creation error:', tripErr.message);
+      return sendJSON(res, 500, { error: 'Failed to create trip' });
+    }
+
+    const { data: expForms } = await supabase
+      .from('experience_forms')
+      .select('form_id, required, venue_form:venue_forms(id, name, category, file_url)')
+      .eq('experience_id', experience_id);
+
+    if (expForms && expForms.length > 0) {
+      for (const ef of expForms) {
+        const vf = ef.venue_form;
+        if (!vf) continue;
+        await supabase.from('trip_forms').insert({
+          trip_id: trip.id,
+          form_type: 'indemnification',
+          title: vf.name,
+          description: body.consent_text || `Required by ${experience.title}. Category: ${vf.category}.`,
+          file_url: vf.file_url || '',
+          required: ef.required,
+          source: 'venue',
+        });
+      }
+    }
+
+    const teacherLink = `/teacher/trip/${directLinkToken}/review`;
+    const parentLink = `/parent/trip/${directLinkToken}`;
+
+    sendJSON(res, 200, {
+      trip_id: trip.id,
+      direct_link_token: directLinkToken,
+      teacher_link: teacherLink,
+      parent_link: parentLink,
+      teacher_found: !!teacher,
+      teacher_name: teacher ? `${teacher.first_name} ${teacher.last_name}` : null,
+    });
+  } catch (err) {
+    console.error('Send teacher link error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleTripLookup(req, res) {
+  const supabase = getSupabase();
+  try {
+    const body = await parseBody(req);
+    const { token } = body;
+    if (!token) return sendJSON(res, 400, { error: 'Token is required' });
+
+    const { data: tripData, error: tripError } = await supabase
+      .from('trips')
+      .select(`
+        id,
+        trip_date,
+        trip_time,
+        status,
+        is_free,
+        funding_model,
+        transportation,
+        configured_addons,
+        special_requirements,
+        student_count,
+        direct_link_token,
+        experience:experiences (
+          title,
+          description,
+          duration_minutes,
+          venue:venues (
+            name,
+            address
+          ),
+          pricing_tiers (
+            price_cents
+          )
+        )
+      `)
+      .eq('direct_link_token', token)
+      .single();
+
+    if (tripError || !tripData) {
+      return sendJSON(res, 404, { error: 'Trip not found' });
+    }
+
+    const { data: forms } = await supabase
+      .from('trip_forms')
+      .select('id, title, form_type, description, file_url, required, source')
+      .eq('trip_id', tripData.id);
+
+    const { data: slips } = await supabase
+      .from('permission_slips')
+      .select('id, status, student_name, form_data, signed_at')
+      .eq('trip_id', tripData.id);
+
+    sendJSON(res, 200, {
+      trip: tripData,
+      forms: forms || [],
+      slips: slips || [],
+    });
+  } catch (err) {
+    console.error('Trip lookup error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleTripSubmitConsent(req, res) {
+  const supabase = getSupabase();
+  try {
+    const body = await parseBody(req);
+    const { token, student_name, form_data, parent_name, parent_email, parent_phone, signature } = body;
+    if (!token || !student_name) return sendJSON(res, 400, { error: 'Token and student name are required' });
+
+    const { data: tripData, error: tripError } = await supabase
+      .from('trips')
+      .select('id')
+      .eq('direct_link_token', token)
+      .single();
+
+    if (tripError || !tripData) {
+      return sendJSON(res, 404, { error: 'Trip not found' });
+    }
+
+    const { data: existing } = await supabase
+      .from('permission_slips')
+      .select('id')
+      .eq('trip_id', tripData.id)
+      .eq('student_name', student_name)
+      .single();
+
+    if (existing) {
+      const { data: updated, error: updateError } = await supabase
+        .from('permission_slips')
+        .update({
+          status: 'signed',
+          form_data: form_data || {},
+          parent_name: parent_name || null,
+          parent_email: parent_email || null,
+          parent_phone: parent_phone || null,
+          signature: signature || null,
+          signed_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      if (updateError) throw new Error(updateError.message);
+      return sendJSON(res, 200, { slip: updated });
+    }
+
+    const { data: slip, error: slipError } = await supabase
+      .from('permission_slips')
+      .insert({
+        trip_id: tripData.id,
+        student_name,
+        status: 'signed',
+        form_data: form_data || {},
+        parent_name: parent_name || null,
+        parent_email: parent_email || null,
+        parent_phone: parent_phone || null,
+        signature: signature || null,
+        signed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (slipError) throw new Error(slipError.message);
+    sendJSON(res, 200, { slip });
+  } catch (err) {
+    console.error('Trip submit consent error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleTripAddForm(req, res) {
+  const supabase = getSupabase();
+  try {
+    const body = await parseBody(req);
+    const { token, title, description } = body;
+    if (!token || !title) return sendJSON(res, 400, { error: 'Token and title required' });
+
+    const { data: tripData } = await supabase
+      .from('trips')
+      .select('id')
+      .eq('direct_link_token', token)
+      .single();
+
+    if (!tripData) return sendJSON(res, 404, { error: 'Trip not found' });
+
+    const { data, error: insertError } = await supabase
+      .from('trip_forms')
+      .insert({
+        trip_id: tripData.id,
+        form_type: 'teacher_requirement',
+        title: title.trim(),
+        description: (description || '').trim(),
+        file_url: '',
+        required: true,
+        source: 'teacher',
+      })
+      .select('id, title, form_type, description, file_url, required, source')
+      .single();
+
+    if (insertError) throw new Error(insertError.message);
+    sendJSON(res, 200, { form: data });
+  } catch (err) {
+    console.error('Add trip form error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
+async function handleTripRemoveForm(req, res) {
+  const supabase = getSupabase();
+  try {
+    const body = await parseBody(req);
+    const { token, form_id } = body;
+    if (!token || !form_id) return sendJSON(res, 400, { error: 'Token and form_id required' });
+
+    const { data: tripData } = await supabase
+      .from('trips')
+      .select('id')
+      .eq('direct_link_token', token)
+      .single();
+
+    if (!tripData) return sendJSON(res, 404, { error: 'Trip not found' });
+
+    await supabase
+      .from('trip_forms')
+      .delete()
+      .eq('id', form_id)
+      .eq('trip_id', tripData.id)
+      .eq('source', 'teacher');
+
+    sendJSON(res, 200, { success: true });
+  } catch (err) {
+    console.error('Remove trip form error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 const apiHandlers = {
   'POST /api/send-sms': handleSendSMS,
   'POST /api/send-email': handleSendEmail,
@@ -836,6 +1141,11 @@ const apiHandlers = {
   'POST /api/discovery/geocode': handleDiscoveryGeocode,
   'POST /api/discovery/search': handleDiscoverySearch,
   'POST /api/venue/lookup-user': handleVenueLookupUser,
+  'POST /api/venue/send-teacher-link': handleVenueSendTeacherLink,
+  'POST /api/trip/lookup': handleTripLookup,
+  'POST /api/trip/submit-consent': handleTripSubmitConsent,
+  'POST /api/trip/add-form': handleTripAddForm,
+  'POST /api/trip/remove-form': handleTripRemoveForm,
   'POST /api/signup/find-or-create-school': handleSignupFindOrCreateSchool,
   'POST /api/signup/find-or-create-district': handleSignupFindOrCreateDistrict,
   'POST /api/signup/find-or-create-venue': handleSignupFindOrCreateVenue,
@@ -862,7 +1172,7 @@ const server = http.createServer(async (req, res) => {
     const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
     const endpoint = req.url?.split('?')[0] || '';
 
-    if (endpoint.startsWith('/api/signup/')) {
+    if (endpoint.startsWith('/api/signup/') || endpoint.startsWith('/api/trip/')) {
       if (!checkRateLimit(clientIp, endpoint)) {
         return sendJSON(res, 429, { error: 'Too many requests. Please try again later.' });
       }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { supabase } from '../lib/supabase';
 import { LanguageSelector } from '../components/LanguageSelector';
 import { TripDetails } from '../components/permission-slip/TripDetails';
 import { SignatureCapture } from '../components/permission-slip/SignatureCapture';
@@ -39,8 +38,10 @@ interface TripForm {
   id: string;
   title: string;
   form_type: string;
+  description?: string;
   file_url: string;
   required: boolean;
+  source?: string;
 }
 
 interface FormState {
@@ -48,12 +49,16 @@ interface FormState {
   studentLastName: string;
   studentGrade: string;
   studentAllergies: string;
+  schoolOrganization: string;
+  studentAddress: string;
+  studentCityStateZip: string;
   parentFirstName: string;
   parentLastName: string;
   parentEmail: string;
   parentPhone: string;
   emergencyContactName: string;
   emergencyContactPhone: string;
+  emergencyContactRelationship: string;
   signature: string | null;
 }
 
@@ -70,7 +75,6 @@ export function TripLookupPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const [assistanceRequested, setAssistanceRequested] = useState(false);
   const [agreedForms, setAgreedForms] = useState<Set<string>>(new Set());
   const [formAgreementError, setFormAgreementError] = useState<string | null>(null);
 
@@ -79,12 +83,16 @@ export function TripLookupPage() {
     studentLastName: '',
     studentGrade: '',
     studentAllergies: '',
+    schoolOrganization: '',
+    studentAddress: '',
+    studentCityStateZip: '',
     parentFirstName: '',
     parentLastName: '',
     parentEmail: '',
     parentPhone: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
+    emergencyContactRelationship: '',
     signature: null,
   });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -112,10 +120,14 @@ export function TripLookupPage() {
           parentPhone: data.parentPhone || '',
           emergencyContactName: data.emergencyContactName || '',
           emergencyContactPhone: data.emergencyContactPhone || '',
+          emergencyContactRelationship: data.emergencyContactRelationship || '',
           studentFirstName: data.studentFirstName || '',
           studentLastName: data.studentLastName || '',
           studentGrade: data.studentGrade || '',
           studentAllergies: data.studentAllergies || '',
+          schoolOrganization: data.schoolOrganization || '',
+          studentAddress: data.studentAddress || '',
+          studentCityStateZip: data.studentCityStateZip || '',
         }));
       }
     } catch {}
@@ -123,52 +135,24 @@ export function TripLookupPage() {
 
   const loadTrip = async () => {
     try {
-      const { data: tripData, error: tripError } = await supabase
-        .from('trips')
-        .select(`
-          id,
-          trip_date,
-          trip_time,
-          status,
-          is_free,
-          funding_model,
-          transportation,
-          configured_addons,
-          special_requirements,
-          experience:experiences (
-            title,
-            description,
-            duration_minutes,
-            venue:venues (
-              name,
-              address
-            ),
-            pricing_tiers (
-              price_cents
-            )
-          )
-        `)
-        .eq('direct_link_token', token)
-        .single();
+      const resp = await fetch('/api/trip/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+      const result = await resp.json();
 
-      if (tripError || !tripData) {
+      if (!resp.ok || !result.trip) {
         setError('This link is invalid or has expired. Please contact your child\'s teacher for a new link.');
         setLoading(false);
         return;
       }
 
-      setTrip(tripData as unknown as TripInfo);
+      setTrip(result.trip as unknown as TripInfo);
 
-      try {
-        const { data: forms } = await (supabase as any)
-          .from('trip_forms')
-          .select('id, title, form_type, file_url, required')
-          .eq('trip_id', tripData.id);
-
-        if (forms && Array.isArray(forms) && forms.length > 0) {
-          setTripForms(forms as TripForm[]);
-        }
-      } catch {}
+      if (result.forms && Array.isArray(result.forms) && result.forms.length > 0) {
+        setTripForms(result.forms as TripForm[]);
+      }
     } catch (err) {
       console.error('Error loading trip:', err);
       setError('Something went wrong. Please try again.');
@@ -224,6 +208,7 @@ export function TripLookupPage() {
 
     if (!form.studentFirstName.trim()) errors.studentFirstName = 'Required';
     if (!form.studentLastName.trim()) errors.studentLastName = 'Required';
+    if (hasConsentForms && !form.schoolOrganization.trim()) errors.schoolOrganization = 'Required';
     if (!form.parentFirstName.trim()) errors.parentFirstName = 'Required';
     if (!form.parentLastName.trim()) errors.parentLastName = 'Required';
     if (!form.parentEmail.trim()) {
@@ -263,55 +248,52 @@ export function TripLookupPage() {
     setSubmitting(true);
 
     try {
-      const magicToken = crypto.randomUUID();
+      const formAgreements = tripForms
+        .filter(f => agreedForms.has(f.id))
+        .map(f => ({
+          form_id: f.id,
+          form_title: f.title,
+          agreed_at: new Date().toISOString(),
+        }));
 
-      const { data: slip, error: slipError } = await supabase
-        .from('permission_slips')
-        .insert({
-          trip_id: trip.id,
-          status: 'pending',
-          magic_link_token: magicToken,
-        })
-        .select('id')
-        .single();
+      const formDataPayload = {
+        studentFirstName: form.studentFirstName.trim(),
+        studentLastName: form.studentLastName.trim(),
+        studentGrade: form.studentGrade.trim(),
+        studentAllergies: form.studentAllergies.trim(),
+        schoolOrganization: form.schoolOrganization.trim(),
+        studentAddress: form.studentAddress.trim(),
+        studentCityStateZip: form.studentCityStateZip.trim(),
+        parentName: `${form.parentFirstName.trim()} ${form.parentLastName.trim()}`,
+        parentEmail: form.parentEmail.trim(),
+        parentPhone: form.parentPhone.trim(),
+        emergencyContactName: form.emergencyContactName.trim(),
+        emergencyContactPhone: form.emergencyContactPhone.trim(),
+        emergencyContactRelationship: form.emergencyContactRelationship.trim(),
+        formAgreements,
+      };
 
-      if (slipError || !slip) {
-        throw new Error(slipError?.message || 'Failed to create permission slip');
+      const resp = await fetch('/api/trip/submit-consent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token,
+          student_name: `${form.studentFirstName.trim()} ${form.studentLastName.trim()}`,
+          form_data: formDataPayload,
+          parent_name: `${form.parentFirstName.trim()} ${form.parentLastName.trim()}`,
+          parent_email: form.parentEmail.trim(),
+          parent_phone: form.parentPhone.trim(),
+          signature: form.signature,
+        }),
+      });
+      const result = await resp.json();
+
+      if (!resp.ok || !result.slip) {
+        throw new Error(result.error || 'Failed to submit consent');
       }
 
-      const costCents = trip.experience?.pricing_tiers?.[0]?.price_cents || 0;
-      const requiresPayment = !trip.is_free &&
-        trip.funding_model !== 'school_funded' &&
-        trip.funding_model !== 'sponsored' &&
-        costCents > 0 &&
-        !assistanceRequested;
-
-      const newStatus = requiresPayment ? 'signed_pending_payment' : 'signed';
-
-      const { error: updateError } = await supabase
-        .from('permission_slips')
-        .update({
-          status: newStatus,
-          signed_at: new Date().toISOString(),
-          signature_data: form.signature,
-          form_data: {
-            studentFirstName: form.studentFirstName.trim(),
-            studentLastName: form.studentLastName.trim(),
-            studentGrade: form.studentGrade.trim(),
-            studentAllergies: form.studentAllergies.trim(),
-            parentName: `${form.parentFirstName.trim()} ${form.parentLastName.trim()}`,
-            parentEmail: form.parentEmail.trim(),
-            parentPhone: form.parentPhone.trim(),
-            emergencyContactName: form.emergencyContactName.trim(),
-            emergencyContactPhone: form.emergencyContactPhone.trim(),
-            financialAssistanceRequested: assistanceRequested,
-          },
-        })
-        .eq('id', slip.id);
-
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
+      const slip = result.slip;
+      const magicToken = slip.magic_link_token || '';
 
       try {
         localStorage.setItem('tripslip_parent_info', JSON.stringify({
@@ -321,18 +303,18 @@ export function TripLookupPage() {
           parentPhone: form.parentPhone.trim(),
           emergencyContactName: form.emergencyContactName.trim(),
           emergencyContactPhone: form.emergencyContactPhone.trim(),
+          emergencyContactRelationship: form.emergencyContactRelationship.trim(),
           studentFirstName: form.studentFirstName.trim(),
           studentLastName: form.studentLastName.trim(),
           studentGrade: form.studentGrade.trim(),
           studentAllergies: form.studentAllergies.trim(),
+          schoolOrganization: form.schoolOrganization.trim(),
+          studentAddress: form.studentAddress.trim(),
+          studentCityStateZip: form.studentCityStateZip.trim(),
         }));
       } catch {}
 
-      if (requiresPayment) {
-        navigate(`/payment?slip=${slip.id}&token=${magicToken}`);
-      } else {
-        navigate(`/permission-slip/success?slip=${slip.id}&token=${magicToken}`);
-      }
+      navigate(`/permission-slip/success?slip=${slip.id}&token=${magicToken}`);
     } catch (err) {
       setSubmissionError(
         err instanceof Error ? err.message : 'Something went wrong. Please try again.'
@@ -384,7 +366,7 @@ export function TripLookupPage() {
     trip.funding_model !== 'school_funded' &&
     trip.funding_model !== 'sponsored' &&
     costCents > 0;
-  const requiresPayment = tripHasCost && !assistanceRequested;
+  const hasConsentForms = tripForms.length > 0;
 
   const rawTransport = trip.transportation as Record<string, unknown> | null;
   const transportation = rawTransport ? {
@@ -569,9 +551,64 @@ export function TripLookupPage() {
                   <option value="12">12th Grade</option>
                 </select>
               </div>
+              {hasConsentForms && (
+                <div className="sm:col-span-2">
+                  <label htmlFor="schoolOrganization" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
+                    School / Organization <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="schoolOrganization"
+                      type="text"
+                      value={form.schoolOrganization}
+                      onChange={(e) => updateField('schoolOrganization', e.target.value)}
+                      className={inputClass('schoolOrganization', !!fieldErrors.schoolOrganization)}
+                      disabled={submitting}
+                      placeholder="e.g. Cass Technical High School"
+                      autoComplete="organization"
+                    />
+                    <FieldCheck field="schoolOrganization" />
+                  </div>
+                  {fieldErrors.schoolOrganization && <p className="text-red-500 text-xs mt-1">{fieldErrors.schoolOrganization}</p>}
+                </div>
+              )}
+              {hasConsentForms && (
+                <>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="studentAddress" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
+                      Student Address
+                    </label>
+                    <input
+                      id="studentAddress"
+                      type="text"
+                      value={form.studentAddress}
+                      onChange={(e) => updateField('studentAddress', e.target.value)}
+                      className={inputClass(null, false)}
+                      disabled={submitting}
+                      placeholder="Street address"
+                      autoComplete="street-address"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="studentCityStateZip" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
+                      City / State / Zip
+                    </label>
+                    <input
+                      id="studentCityStateZip"
+                      type="text"
+                      value={form.studentCityStateZip}
+                      onChange={(e) => updateField('studentCityStateZip', e.target.value)}
+                      className={inputClass(null, false)}
+                      disabled={submitting}
+                      placeholder="e.g. Detroit, MI 48201"
+                      autoComplete="address-level2"
+                    />
+                  </div>
+                </>
+              )}
               <div className="sm:col-span-2">
                 <label htmlFor="studentAllergies" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
-                  Allergies or Medical Conditions
+                  {hasConsentForms ? 'Food Allergies / Restrictions / Medical Conditions' : 'Allergies or Medical Conditions'}
                 </label>
                 <textarea
                   id="studentAllergies"
@@ -580,7 +617,7 @@ export function TripLookupPage() {
                   className={inputClass(null, false)}
                   disabled={submitting}
                   rows={2}
-                  placeholder="e.g. peanut allergy, asthma inhaler needed"
+                  placeholder={hasConsentForms ? 'Please list any food allergies, dietary restrictions, or medical conditions' : 'e.g. peanut allergy, asthma inhaler needed'}
                 />
               </div>
             </div>
@@ -588,68 +625,68 @@ export function TripLookupPage() {
 
           {tripForms.length > 0 && (
             <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 space-y-4">
-              <h2 className="text-xl font-bold text-[#0A0A0A]">Required Forms</h2>
-              <div className="space-y-3">
+              <h2 className="text-xl font-bold text-[#0A0A0A]">Required Consent & Forms</h2>
+              <p className="text-sm text-gray-600">Please review each item below and check the box to confirm your agreement.</p>
+              <div className="space-y-4">
                 {tripForms.map((f) => (
-                  <div key={f.id} className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 bg-gray-50">
-                    <input
-                      type="checkbox"
-                      id={`form-${f.id}`}
-                      checked={agreedForms.has(f.id)}
-                      onChange={() => handleFormAgreement(f.id)}
-                      className="mt-1 h-4 w-4 rounded border-gray-300 text-[#F5C518] focus:ring-[#F5C518]"
-                    />
-                    <div className="flex-1">
-                      <label htmlFor={`form-${f.id}`} className="block text-sm font-semibold text-[#0A0A0A] cursor-pointer">
-                        {f.title}
-                        {f.required && <span className="ml-1 text-red-500 text-xs">(required)</span>}
-                      </label>
-                      <p className="text-xs text-gray-500 capitalize">{f.form_type.replace(/_/g, ' ')}</p>
-                      {f.file_url && (
-                        <a href={f.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">
-                          Download & Review
-                        </a>
+                  <div key={f.id} className={`rounded-lg border-2 ${agreedForms.has(f.id) ? 'border-green-300 bg-green-50/30' : 'border-gray-200 bg-gray-50'} transition-colors`}>
+                    {f.description && (
+                      <div className="px-4 pt-4 pb-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          {f.source === 'venue' && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#F5C518] bg-[#F5C518]/10 px-2 py-0.5 rounded border border-[#F5C518]/30">Venue Required</span>
+                          )}
+                          {f.source === 'teacher' && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Teacher Required</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-700 leading-relaxed">{f.description}</p>
+                      </div>
+                    )}
+                    <div className="flex items-start gap-3 p-4 pt-2">
+                      <input
+                        type="checkbox"
+                        id={`form-${f.id}`}
+                        checked={agreedForms.has(f.id)}
+                        onChange={() => handleFormAgreement(f.id)}
+                        className="mt-1 h-5 w-5 rounded border-gray-300 text-[#F5C518] focus:ring-[#F5C518]"
+                      />
+                      <div className="flex-1">
+                        <label htmlFor={`form-${f.id}`} className="block text-sm font-semibold text-[#0A0A0A] cursor-pointer">
+                          I agree to: {f.title}
+                          {f.required && <span className="ml-1 text-red-500 text-xs">(required)</span>}
+                        </label>
+                        {!f.description && (
+                          <p className="text-xs text-gray-500 capitalize mt-0.5">{f.form_type.replace(/_/g, ' ')}</p>
+                        )}
+                        {f.file_url && (
+                          <a href={f.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 inline-block">
+                            View Full Document
+                          </a>
+                        )}
+                      </div>
+                      {agreedForms.has(f.id) && (
+                        <svg className="h-5 w-5 text-green-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
                       )}
                     </div>
                   </div>
                 ))}
               </div>
-              {formAgreementError && <p className="text-sm text-red-600">{formAgreementError}</p>}
+              {formAgreementError && <p className="text-sm text-red-600 font-semibold">{formAgreementError}</p>}
             </div>
           )}
 
           {tripHasCost && (
-            <div className="bg-white border-2 border-[#0A0A0A] rounded-xl shadow-[4px_4px_0px_#0A0A0A] p-6 space-y-4">
-              <h2 className="text-xl font-bold text-[#0A0A0A]">Trip Cost</h2>
-              <div className="flex items-center justify-between p-4 bg-[#F5C518]/10 rounded-lg border border-[#F5C518]/30">
-                <span className="font-medium text-[#0A0A0A]">Cost per Student</span>
-                <span className="text-2xl font-bold text-[#0A0A0A]">{formatCurrency(costCents)}</span>
+            <div className="bg-gray-100 border-2 border-gray-300 rounded-xl p-6 space-y-3 opacity-60">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-gray-400">Trip Cost</h2>
+                <span className="text-xs font-bold uppercase tracking-wider text-gray-400 bg-gray-200 rounded-full px-3 py-1">Coming Soon</span>
               </div>
-              {requiresPayment && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-800">
-                    You'll be directed to payment after signing.
-                  </p>
-                </div>
-              )}
-              <div className="border-t pt-4">
-                <div className="flex items-start gap-3 p-4 rounded-lg border-2 border-dashed border-[#F5C518] bg-[#F5C518]/5">
-                  <input
-                    type="checkbox"
-                    id="financial-assistance"
-                    checked={assistanceRequested}
-                    onChange={(e) => setAssistanceRequested(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-[#F5C518] focus:ring-[#F5C518]"
-                  />
-                  <label htmlFor="financial-assistance" className="cursor-pointer">
-                    <p className="font-semibold text-[#0A0A0A]">I need financial assistance</p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      No worries — we believe no child should miss out on a field trip due to cost. Check this box and we'll handle it.
-                    </p>
-                  </label>
-                </div>
-                <p className="text-xs text-gray-500 mt-2 text-center italic">No child left behind.</p>
+              <div className="flex items-center justify-between p-4 bg-gray-200/50 rounded-lg border border-gray-300">
+                <span className="font-medium text-gray-400">Cost per Student</span>
+                <span className="text-2xl font-bold text-gray-400">{formatCurrency(costCents)}</span>
               </div>
+              <p className="text-sm text-gray-400 text-center">Online payment collection is coming soon. Your school will coordinate payment separately.</p>
             </div>
           )}
 
@@ -753,6 +790,21 @@ export function TripLookupPage() {
                   {fieldErrors.emergencyContactName && <p className="text-red-500 text-xs mt-1">{fieldErrors.emergencyContactName}</p>}
                 </div>
                 <div>
+                  <label htmlFor="emergencyContactRelationship" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
+                    Relationship
+                  </label>
+                  <input
+                    id="emergencyContactRelationship"
+                    type="text"
+                    value={form.emergencyContactRelationship}
+                    onChange={(e) => updateField('emergencyContactRelationship', e.target.value)}
+                    className={inputClass(null, false)}
+                    disabled={submitting}
+                    placeholder="e.g. Mother, Father, Guardian"
+                    autoComplete="off"
+                  />
+                </div>
+                <div>
                   <label htmlFor="emergencyContactPhone" className="block text-sm font-semibold text-[#0A0A0A] mb-1">
                     Phone <span className="text-red-500">*</span>
                   </label>
@@ -817,10 +869,8 @@ export function TripLookupPage() {
                     <span className="h-5 w-5 border-2 border-[#0A0A0A] border-t-transparent rounded-full animate-spin" />
                     Submitting...
                   </span>
-                ) : requiresPayment ? (
-                  'Sign & Continue to Payment'
                 ) : (
-                  'Sign Permission Slip'
+                  'Sign & Submit'
                 )}
               </button>
             </div>

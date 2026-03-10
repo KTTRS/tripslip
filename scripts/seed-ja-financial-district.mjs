@@ -176,6 +176,86 @@ const EXPERIENCES = [
       noRefundAfterDays: 3,
     },
   },
+  {
+    id: 'aa100000-0000-0000-0000-000000000005',
+    venue_id: JA_VENUE_ID,
+    title: 'JA Stock Market Challenge',
+    description: 'Students form investment teams and compete in a real-time simulated stock market where they research companies, build diversified portfolios, and react to breaking financial news. Over a fast-paced 3-hour session, students learn how the stock market works, practice analyzing risk vs. reward, interpret stock charts and financial statements, and experience the thrill (and discipline) of trading. The challenge culminates in a closing bell ceremony where the top-performing teams present their investment strategy to a panel of local finance professionals. Aligned with Michigan financial literacy standards and Common Core math.',
+    duration_minutes: 180,
+    capacity: 80,
+    min_students: 15,
+    max_students: 80,
+    grade_levels: ['9th', '10th', '11th', '12th'],
+    subjects: ['Financial Literacy', 'Economics', 'Mathematics', 'Critical Thinking'],
+    educational_objectives: [
+      'Understand how the stock market works including exchanges, tickers, and order types',
+      'Build a diversified investment portfolio based on research and risk tolerance',
+      'Analyze company fundamentals using financial statements and key ratios',
+      'React to market news and economic events with informed trading decisions',
+      'Present and defend an investment thesis to a panel of finance professionals',
+    ],
+    published: true,
+    active: true,
+    recommended_age_min: 14,
+    recommended_age_max: 18,
+    special_requirements: 'Students should have basic math skills. Each team needs a laptop or tablet (JA can provide up to 20 devices). Pre-visit classroom lesson (1 session) provided to teachers. Parents/guardians must sign a participation indemnification and consent form before the event.',
+    cancellation_policy: {
+      fullRefundDays: 14,
+      partialRefundDays: 7,
+      partialRefundPercent: 50,
+      noRefundAfterDays: 3,
+    },
+  },
+];
+
+const JA_INDEMNIFICATION_FORM_ID = 'aa600000-0000-0000-0000-000000000001';
+
+const JA_CONSENT_TEXT = `Dear Parent, Legal Guardian and/or Conservator:
+
+Your student will be participating in an exciting Junior Achievement program called the JA Stock Market Challenge. Working in teams, participants will discover the benefits and challenges of investing in the stock market through trading activities, examine the risks and rewards of creating a diversified portfolio through making informed investment decisions, and learn how the market and a company's performance can be influenced by news events.
+
+For your student to participate, please review and sign the following:
+
+STUDENT MEDIA RELEASE AND PARENTAL/GUARDIAN CONSENT
+
+Junior Achievement USA and Junior Achievement of Southeastern Michigan (collectively "JA") engage with volunteers to deliver educational programs in-person and online. When the Student participates in JA Programs digitally, the Student's Likeness may be captured and reproduced.
+
+JA may use Student's name, voice, image, picture, silhouette, and other aspects of Student's likeness in any recording, video, still-image, photograph, webinar, online event, social media, or other form of media, in connection with JA Programs, or for any purpose related to JA, including promotional materials, advertising, and publicity. Student waives any right of inspection or approval of the use of Likeness.
+
+JA will not permit use of Student's Likeness by unaffiliated third parties, or for any third-party commercial use or use contrary to JA's educational mission of empowering young people.
+
+I grant JA a perpetual, irrevocable, sublicensable and royalty-free right to copy, distribute, publicly display, publicly perform, create derivative works, edit, enhance, publish and use any Student Work Product in any medium and in any manner throughout the world. JA is not obligated to use the Student Work Product in any way.
+
+ACCIDENT WAIVER AND RELEASE OF LIABILITY & ILLNESS FORM FOR STUDENTS
+
+I consent to participation of my student in the above-mentioned field trip, and in consideration of permitting my child to participate, hereby agree as follows:
+
+I ACKNOWLEDGE AND ASSUME ALL OF THE RISKS OF MY CHILD'S PARTICIPATION IN ANY/ALL ACTIVITIES ASSOCIATED WITH JUNIOR ACHIEVEMENT OF SOUTHEASTERN MICHIGAN, including any risks that may arise from negligence or carelessness on the part of Junior Achievement of Southeastern Michigan Inc. (JASEM) and/or their members, directors, officers, employees, representatives, agents, volunteers, successors and assigns.
+
+I certify that my child is physically fit and have not been advised not to participate in JASEM activities by any qualified medical professional. I certify that there are no health-related reasons or conditions that may impede my child's participation.
+
+I HEREBY WAIVE, RELEASE, AND DISCHARGE the Released Parties from any and all liability, including liability arising from negligence or fault, for death, disability, personal injury, illness, property damage, or damages of any kind which may occur during travel to and from all JASEM activities.
+
+I HEREBY AGREE TO INDEMNIFY, HOLD HARMLESS, AND REFRAIN from instituting or participating in any legal action against the Released Parties for any and all liabilities or claims that can or could be made as a result of participation in JA Activities.`;
+
+const JA_VENUE_FORMS = [
+  {
+    id: JA_INDEMNIFICATION_FORM_ID,
+    venue_id: JA_VENUE_ID,
+    name: 'JA Stock Market Challenge — Participation Indemnification & Consent',
+    category: 'waiver',
+    file_url: '',
+    required: true,
+    version: 1,
+  },
+];
+
+const JA_EXPERIENCE_FORMS = [
+  {
+    experience_id: 'aa100000-0000-0000-0000-000000000005',
+    form_id: JA_INDEMNIFICATION_FORM_ID,
+    required: true,
+  },
 ];
 
 const PRICING_TIERS = [
@@ -189,6 +269,9 @@ const PRICING_TIERS = [
   { experience_id: EXPERIENCES[2].id, min_students: 51, max_students: 100, price_cents: 1100, free_chaperones: 8 },
   { experience_id: EXPERIENCES[3].id, min_students: 15, max_students: 50, price_cents: 500, free_chaperones: 2 },
   { experience_id: EXPERIENCES[3].id, min_students: 51, max_students: 200, price_cents: 400, free_chaperones: 4 },
+  { experience_id: EXPERIENCES[4].id, min_students: 15, max_students: 30, price_cents: 2000, free_chaperones: 3 },
+  { experience_id: EXPERIENCES[4].id, min_students: 31, max_students: 60, price_cents: 1600, free_chaperones: 5 },
+  { experience_id: EXPERIENCES[4].id, min_students: 61, max_students: 80, price_cents: 1200, free_chaperones: 6 },
 ];
 
 const JA_ADMIN = {
@@ -336,6 +419,20 @@ async function seed() {
     const { error } = await supabase.from('experiences').upsert(exp, { onConflict: 'id' });
     if (error) console.error(`   ERROR ${exp.title}:`, error.message);
     else console.log(`   ✓ ${exp.title}`);
+  }
+
+  console.log('\n2b. Creating venue forms...');
+  for (const form of JA_VENUE_FORMS) {
+    const { error } = await supabase.from('venue_forms').upsert(form, { onConflict: 'id' });
+    if (error) console.error(`   ERROR form ${form.name}:`, error.message);
+    else console.log(`   ✓ ${form.name}`);
+  }
+
+  console.log('\n2c. Linking forms to experiences...');
+  for (const ef of JA_EXPERIENCE_FORMS) {
+    const { error } = await supabase.from('experience_forms').upsert(ef, { onConflict: 'experience_id,form_id' });
+    if (error) console.error(`   ERROR linking form:`, error.message);
+    else console.log(`   ✓ Linked form ${ef.form_id} → experience ${ef.experience_id}`);
   }
 
   console.log('\n3. Creating pricing tiers...');

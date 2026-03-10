@@ -20,6 +20,7 @@ import {
 } from '@tripslip/ui';
 import type { VenueBooking } from '@tripslip/database';
 import { Clock, Users, MapPin, Phone, Mail, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { ConsentTracker } from './ConsentTracker';
 
 interface BookingListProps {
   bookings: VenueBooking[];
@@ -143,6 +144,7 @@ export function BookingList({ bookings, onConfirm, onCancel, onUpdate }: Booking
               <TableHead className="font-['Plus_Jakarta_Sans'] font-bold">Confirmation #</TableHead>
               <TableHead className="font-['Plus_Jakarta_Sans'] font-bold">Capacity</TableHead>
               <TableHead className="font-['Plus_Jakarta_Sans'] font-bold">Amount</TableHead>
+              <TableHead className="font-['Plus_Jakarta_Sans'] font-bold">Consent</TableHead>
               <TableHead className="font-['Plus_Jakarta_Sans'] font-bold">Status</TableHead>
               <TableHead className="font-['Plus_Jakarta_Sans'] font-bold">Actions</TableHead>
             </TableRow>
@@ -178,6 +180,10 @@ export function BookingList({ bookings, onConfirm, onCancel, onUpdate }: Booking
                       Deposit: {formatCurrency(booking.deposit_cents)}
                     </div>
                   )}
+                </TableCell>
+
+                <TableCell>
+                  <ConsentTracker tripId={booking.trip_id} studentCount={booking.student_count} />
                 </TableCell>
                 
                 <TableCell>{getStatusBadge(booking.status)}</TableCell>
