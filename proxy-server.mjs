@@ -833,6 +833,50 @@ async function handleSignupLinkVenueUser(req, res) {
   }
 }
 
+async function handleSignupLinkTeacher(req, res) {
+  try {
+    const supabase = getSupabase();
+    const body = await parseBody(req);
+    const { userId, schoolId, firstName, lastName, email } = body;
+    if (!userId || !schoolId || !email) {
+      return sendJSON(res, 400, { error: 'userId, schoolId, and email are required' });
+    }
+
+    const { data: existing } = await supabase
+      .from('teachers')
+      .select('id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existing) {
+      return sendJSON(res, 200, { linked: true, existing: true, teacherId: existing.id });
+    }
+
+    const { data: created, error } = await supabase
+      .from('teachers')
+      .insert({
+        user_id: userId,
+        school_id: schoolId,
+        first_name: firstName || '',
+        last_name: lastName || '',
+        email: email,
+        is_active: true,
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      console.error('Create teacher error:', error.message);
+      return sendJSON(res, 500, { error: 'Failed to create teacher record' });
+    }
+
+    sendJSON(res, 200, { linked: true, existing: false, teacherId: created.id });
+  } catch (err) {
+    console.error('Link teacher error:', err.message);
+    sendJSON(res, 500, { error: err.message });
+  }
+}
+
 async function handleVenueUploadExperienceForm(req, res) {
   try {
     const chunks = [];
@@ -1647,6 +1691,7 @@ const apiHandlers = {
   'POST /api/signup/find-or-create-district': handleSignupFindOrCreateDistrict,
   'POST /api/signup/find-or-create-venue': handleSignupFindOrCreateVenue,
   'POST /api/signup/link-venue-user': handleSignupLinkVenueUser,
+  'POST /api/signup/link-teacher': handleSignupLinkTeacher,
 };
 
 const server = http.createServer(async (req, res) => {
@@ -1754,6 +1799,7 @@ server.listen(5000, '0.0.0.0', () => {
   console.log('  POST /api/signup/find-or-create-district');
   console.log('  POST /api/signup/find-or-create-venue');
   console.log('  POST /api/signup/link-venue-user');
+  console.log('  POST /api/signup/link-teacher');
   console.log('App Routes:');
   console.log('  /          -> landing  (port 3000)');
   console.log('  /venue/*   -> venue    (port 3001)');

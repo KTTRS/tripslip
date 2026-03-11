@@ -83,17 +83,19 @@ export default function SignupPage() {
         },
       });
 
-      const { error: teacherError } = await (supabase as any)
-        .rpc('create_teacher_on_signup', {
-          p_user_id: result.user.id,
-          p_school_id: orgData.id,
-          p_first_name: formData.firstName,
-          p_last_name: formData.lastName,
-          p_email: formData.email,
-        });
-
-      if (teacherError) {
-        console.error('Failed to create teacher record:', teacherError);
+      const linkRes = await fetch('/api/signup/link-teacher', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: result.user.id,
+          schoolId: orgData.id,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+        }),
+      });
+      if (!linkRes.ok) {
+        console.error('Failed to create teacher record:', await linkRes.text());
       }
 
       navigate('/verify-email', {
