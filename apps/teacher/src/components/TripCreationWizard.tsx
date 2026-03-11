@@ -60,12 +60,9 @@ export function TripCreationWizard() {
         if (teacher) {
           setTeacherId(teacher.id);
           await loadDraft(teacher.id);
-        } else {
-          setTeacherId(user.id);
         }
       } catch (error) {
         console.error('Error loading teacher data:', error);
-        setTeacherId(user.id);
       }
     };
     

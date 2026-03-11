@@ -4,6 +4,7 @@ import { Card, CardContent, Button, Input } from '@tripslip/ui';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
+import { NoTeacherProfile } from '../components/NoTeacherProfile';
 import { toast } from 'sonner';
 import {
   Plus,
@@ -72,7 +73,10 @@ export default function StudentsPage() {
   const [selectedStudents, setSelectedStudents] = useState<Set<string>>(new Set());
 
   const fetchStudents = useCallback(async () => {
-    if (!teacher) return;
+    if (!teacher) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -261,6 +265,14 @@ export default function StudentsPage() {
             <p className="mt-4 text-gray-600">Loading students...</p>
           </div>
         </div>
+      </Layout>
+    );
+  }
+
+  if (!teacher) {
+    return (
+      <Layout>
+        <NoTeacherProfile />
       </Layout>
     );
   }

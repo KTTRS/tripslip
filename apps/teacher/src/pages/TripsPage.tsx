@@ -4,6 +4,7 @@ import { Card, CardContent, Button } from '@tripslip/ui';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
+import { NoTeacherProfile } from '../components/NoTeacherProfile';
 import { toast } from 'sonner';
 import {
   Plus,
@@ -56,10 +57,15 @@ export default function TripsPage() {
   const [filter, setFilter] = useState<string>('all');
 
   useEffect(() => {
-    if (teacher) fetchTrips();
+    if (teacher) {
+      fetchTrips();
+    } else {
+      setLoading(false);
+    }
   }, [teacher]);
 
   const fetchTrips = async () => {
+    if (!teacher) return;
     try {
       setLoading(true);
 
@@ -123,6 +129,14 @@ export default function TripsPage() {
             <p className="mt-4 text-gray-600">Loading trips...</p>
           </div>
         </div>
+      </Layout>
+    );
+  }
+
+  if (!teacher) {
+    return (
+      <Layout>
+        <NoTeacherProfile />
       </Layout>
     );
   }

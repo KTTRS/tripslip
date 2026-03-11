@@ -141,81 +141,74 @@ export function ReviewAndSubmitStep() {
         return;
       }
 
-      let tripCreated = false;
+      const { data: teacher } = await supabase
+        .from('teachers')
+        .select('id, school_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      try {
-        const { data: teacher } = await supabase
-          .from('teachers')
-          .select('id, school_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (teacher) {
-          const { data: trip, error: tripError } = await supabase
-            .from('trips')
-            .insert({
-              teacher_id: teacher.id,
-              experience_id: selectedExperience.id,
-              trip_date: tripDetails.date,
-              trip_time: tripDetails.time || null,
-              student_count: selectedStudents.length,
-              status: 'pending',
-              direct_link_token: crypto.randomUUID(),
-              special_requirements: tripDetails.specialRequirements || null,
-              transportation: tripDetails.transportation || null,
-              is_free: tripDetails.isFree || false,
-              funding_model: tripDetails.isFree ? 'school_funded' : (tripDetails.fundingModel || 'parents_pay'),
-              configured_addons: configuredAddons.length > 0 ? configuredAddons : [],
-            })
-            .select()
-            .single();
-
-          if (!tripError && trip) {
-            tripCreated = true;
-            logger.info('Trip created in database', { tripId: trip.id });
-
-            if (pendingForms.length > 0) {
-              let uploadedCount = 0;
-              for (const form of pendingForms) {
-                try {
-                  const formData = new FormData();
-                  formData.append('file', form.file);
-                  formData.append('trip_id', trip.id);
-                  formData.append('title', form.title);
-                  formData.append('form_type', form.formType);
-                  formData.append('required', String(form.required));
-
-                  const resp = await authFetch('/api/upload-form', {
-                    method: 'POST',
-                    body: formData,
-                  });
-
-                  if (resp.ok) {
-                    uploadedCount++;
-                  } else {
-                    logger.warn('Form upload failed', { title: form.title });
-                  }
-                } catch (uploadErr) {
-                  logger.warn('Form upload error', { title: form.title, error: uploadErr });
-                }
-              }
-              if (uploadedCount > 0) {
-                logger.info(`${uploadedCount} form(s) uploaded for trip`, { tripId: trip.id });
-              }
-            }
-          }
-        }
-      } catch (dbError) {
-        logger.warn('Could not create trip in database, using demo mode', { error: dbError });
+      if (!teacher) {
+        toast.error('Your account is not linked to a teacher profile. Please contact your administrator.');
+        setSubmitting(false);
+        return;
       }
 
-      if (!tripCreated) {
-        logger.info('Trip created in demo mode', {
-          tripName: tripDetails.name,
-          date: tripDetails.date,
-          experience: selectedExperience.title,
-          studentCount: selectedStudents.length,
-        });
+      const { data: trip, error: tripError } = await supabase
+        .from('trips')
+        .insert({
+          teacher_id: teacher.id,
+          experience_id: selectedExperience.id,
+          trip_date: tripDetails.date,
+          trip_time: tripDetails.time || null,
+          student_count: selectedStudents.length,
+          status: 'pending',
+          direct_link_token: crypto.randomUUID(),
+          special_requirements: tripDetails.specialRequirements || null,
+          transportation: tripDetails.transportation || null,
+          is_free: tripDetails.isFree || false,
+          funding_model: tripDetails.isFree ? 'school_funded' : (tripDetails.fundingModel || 'parents_pay'),
+          configured_addons: configuredAddons.length > 0 ? configuredAddons : [],
+        })
+        .select()
+        .single();
+
+      if (tripError || !trip) {
+        logger.error('Failed to create trip', { error: tripError });
+        toast.error('Failed to create trip. Please try again.');
+        setSubmitting(false);
+        return;
+      }
+
+      logger.info('Trip created in database', { tripId: trip.id });
+
+      if (pendingForms.length > 0) {
+        let uploadedCount = 0;
+        for (const form of pendingForms) {
+          try {
+            const formData = new FormData();
+            formData.append('file', form.file);
+            formData.append('trip_id', trip.id);
+            formData.append('title', form.title);
+            formData.append('form_type', form.formType);
+            formData.append('required', String(form.required));
+
+            const resp = await authFetch('/api/upload-form', {
+              method: 'POST',
+              body: formData,
+            });
+
+            if (resp.ok) {
+              uploadedCount++;
+            } else {
+              logger.warn('Form upload failed', { title: form.title });
+            }
+          } catch (uploadErr) {
+            logger.warn('Form upload error', { title: form.title, error: uploadErr });
+          }
+        }
+        if (uploadedCount > 0) {
+          logger.info(`${uploadedCount} form(s) uploaded for trip`, { tripId: trip.id });
+        }
       }
 
       toast.success(

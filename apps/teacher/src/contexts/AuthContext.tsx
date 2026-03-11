@@ -17,10 +17,13 @@ interface Teacher {
   last_name: string;
   email: string;
   is_active: boolean;
+  phone?: string;
+  department?: string;
 }
 
 interface AuthContextType extends RBACAuthContextType {
   teacher: Teacher | null;
+  teacherLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,34 +31,38 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const rbacAuth = useRBACAuth();
   const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const [teacherLoading, setTeacherLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Track login timestamps for teachers
   useLoginTracker(rbacAuth.user, supabase);
 
   useEffect(() => {
+    if (rbacAuth.loading) return;
+
     if (rbacAuth.user) {
       loadTeacherData(rbacAuth.user.id);
     } else {
       setTeacher(null);
+      setTeacherLoading(false);
     }
-  }, [rbacAuth.user]);
+  }, [rbacAuth.user, rbacAuth.loading]);
 
   const loadTeacherData = async (userId: string) => {
+    setTeacherLoading(true);
     try {
       const { data, error } = await (supabase as any)
         .from('teachers')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-
-      if (data) {
-        setTeacher(data);
-      }
+      setTeacher(data || null);
     } catch (error) {
       console.error('Error loading teacher data:', error);
+      setTeacher(null);
+    } finally {
+      setTeacherLoading(false);
     }
   };
 
@@ -68,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     ...rbacAuth,
     teacher,
+    teacherLoading,
     signOut: handleSignOut,
   };
 
@@ -78,7 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Wrapper component to provide both RBAC and teacher-specific context
 export function TeacherAuthProvider({ children }: { children: ReactNode }) {
   return (
     <RBACAuthProvider supabase={supabase}>

@@ -95,7 +95,8 @@ export default function SignupPage() {
         }),
       });
       if (!linkRes.ok) {
-        console.error('Failed to create teacher record:', await linkRes.text());
+        const linkErr = await linkRes.text();
+        console.error('Failed to create teacher record:', linkErr);
       }
 
       navigate('/verify-email', {

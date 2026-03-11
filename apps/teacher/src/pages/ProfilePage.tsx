@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Input } from '@tripsl
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
+import { NoTeacherProfile } from '../components/NoTeacherProfile';
 import { toast } from 'sonner';
 import { User, Mail, Phone, School, Save, Key } from 'lucide-react';
 
@@ -91,6 +92,14 @@ export default function ProfilePage() {
       setChangingPassword(false);
     }
   };
+
+  if (!teacher) {
+    return (
+      <Layout>
+        <NoTeacherProfile />
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
