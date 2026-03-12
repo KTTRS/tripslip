@@ -52,7 +52,7 @@ Since the tables already existed, I enhanced the logging infrastructure with com
 - `supabase/functions/cleanup-logs/index.ts` - Edge Function implementation
 - `supabase/functions/cleanup-logs/README.md` - Comprehensive documentation
 
-### 3. Automated Scheduling (`.github/workflows/cleanup-logs.yml`)
+### 3. Automated Scheduling (CI workflow in `.github/workflows/cleanup-logs.yml`)
 
 **GitHub Actions Workflow:**
 - Runs daily at 2 AM UTC
@@ -64,8 +64,8 @@ Since the tables already existed, I enhanced the logging infrastructure with com
 ### 4. Comprehensive Documentation
 
 **Files Created:**
-- `supabase/migrations/validate_20240305000004.md` - Migration validation guide
-- `supabase/migrations/test_20240305000004.sql` - Automated test script
+- `supabase/migrations/_archive/validate_20240305000004.md` - Migration validation guide
+- `supabase/migrations/_archive/test_20240305000004.sql` - Automated test script
 - `docs/logging-infrastructure.md` - Complete logging infrastructure documentation
 - `TASK_22_SUMMARY.md` - This summary document
 
@@ -77,8 +77,8 @@ Since the tables already existed, I enhanced the logging infrastructure with com
    - `supabase/migrations/20240305000004_create_logging_tables.sql`
 
 2. **Validation & Testing:**
-   - `supabase/migrations/validate_20240305000004.md`
-   - `supabase/migrations/test_20240305000004.sql`
+   - `supabase/migrations/_archive/validate_20240305000004.md`
+   - `supabase/migrations/_archive/test_20240305000004.sql`
 
 3. **Edge Function:**
    - `supabase/functions/cleanup-logs/index.ts`
@@ -185,7 +185,7 @@ SELECT * FROM get_logging_statistics();
 Run the test script to verify everything works:
 
 ```bash
-psql -f supabase/migrations/test_20240305000004.sql
+psql -f supabase/migrations/_archive/test_20240305000004.sql
 ```
 
 **Tests Include:**
@@ -344,6 +344,6 @@ The logging infrastructure is now production-ready with automated maintenance an
 ## References
 
 - [Logging Infrastructure Documentation](docs/logging-infrastructure.md)
-- [Migration Validation Guide](supabase/migrations/validate_20240305000004.md)
+- [Migration Validation Guide](supabase/migrations/_archive/validate_20240305000004.md)
 - [Cleanup Edge Function README](supabase/functions/cleanup-logs/README.md)
 - [GitHub Actions Workflow](.github/workflows/cleanup-logs.yml)

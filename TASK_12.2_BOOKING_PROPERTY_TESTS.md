@@ -140,4 +140,4 @@ These property-based tests complement the unit tests in `venue-booking-service.t
 - Service: `packages/database/src/venue-booking-service.ts`
 - Unit Tests: `packages/database/src/__tests__/venue-booking-service.test.ts`
 - Migration: `supabase/migrations/20240101000030_create_venue_bookings.sql`
-- Validation: `supabase/migrations/validate_20240101000030.md`
+- Validation: `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000030.md`

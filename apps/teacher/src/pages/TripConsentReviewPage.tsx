@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router';
+import { buildParentTripUrl } from '@tripslip/utils';
 
 interface TripInfo {
   id: string;
@@ -274,7 +275,7 @@ export default function TripConsentReviewPage() {
 
   const getParentLink = () => {
     const linkToken = clonedToken || trip?.direct_link_token;
-    return `${window.location.origin}/parent/trip/${linkToken}`;
+    return buildParentTripUrl(linkToken);
   };
 
   const copyToClipboard = async (text: string, setter: (v: boolean) => void) => {

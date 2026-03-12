@@ -408,7 +408,7 @@ The migration `20240101000025_extend_experiences_table.sql` adds:
 - Indexes for performance
 - Constraints for data integrity
 
-See `validate_20240101000025.md` for validation queries and rollback procedures.
+See `supabase/migrations/_archive/validate_20240101000025.md` for validation queries and rollback procedures.
 
 ## Future Enhancements
 
@@ -424,6 +424,6 @@ Potential future improvements:
 ## Support
 
 For issues or questions:
-1. Check the validation document: `validate_20240101000025.md`
+1. Check the validation document: `supabase/migrations/_archive/validate_20240101000025.md`
 2. Review test cases: `__tests__/experience-service.test.ts`
 3. Consult the design document: `.kiro/specs/venue-experience-database-system/design.md`

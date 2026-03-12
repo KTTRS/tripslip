@@ -27,7 +27,7 @@ Successfully completed 6 quick win tasks from Phase 2 High Priority items. These
 
 ### Files Created/Modified
 - ✅ `supabase/migrations/20240305000005_add_last_login.sql`
-- ✅ `supabase/migrations/validate_20240305000005.md`
+- ✅ `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240305000005.md`
 - ✅ `packages/auth/src/use-login-tracker.ts`
 - ✅ `packages/auth/src/__tests__/use-login-tracker.test.ts`
 - ✅ `packages/auth/src/index.ts`

@@ -262,7 +262,7 @@ The cleanup functions use partial indexes for optimal performance:
 ## Related Files
 
 - Migration: `supabase/migrations/20240305000004_create_logging_tables.sql`
-- Validation: `supabase/migrations/validate_20240305000004.md`
+- Validation: `supabase/migrations/_archive/validate_20240305000004.md`
 - Database Functions: `cleanup_all_logs()`, `cleanup_old_rate_limits()`, etc.
 
 ## Maintenance

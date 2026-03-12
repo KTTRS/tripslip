@@ -1,0 +1,32 @@
+name: cleanup-logs
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup-logs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Supabase cleanup-logs edge function
+        env:
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_PROJECT_REF" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "Missing required secrets: SUPABASE_PROJECT_REF and/or SUPABASE_SERVICE_ROLE_KEY"
+            exit 1
+          fi
+
+          response=$(curl -sS -X POST \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Content-Type: application/json" \
+            "https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/cleanup-logs")
+
+          echo "Cleanup response: $response"
+
+          if ! echo "$response" | grep -q '"success"[[:space:]]*:[[:space:]]*true'; then
+            echo "cleanup-logs failed"
+            exit 1
+          fi

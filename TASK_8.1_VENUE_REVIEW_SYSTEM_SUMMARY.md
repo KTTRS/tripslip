@@ -150,7 +150,7 @@ Created comprehensive test suite with 29 test cases covering:
 - Order reviews by creation date
 
 ### 4. Validation Documentation
-**File**: `supabase/migrations/validate_20240101000029.md`
+**File**: `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000029.md`
 
 Created comprehensive validation guide including:
 - Schema verification queries
@@ -219,7 +219,7 @@ Once the migration is applied, all 29 tests should pass.
 1. `supabase/migrations/20240101000029_create_venue_reviews.sql` - Database migration
 2. `packages/database/src/venue-review-service.ts` - Service layer (615 lines)
 3. `packages/database/src/__tests__/venue-review-service.test.ts` - Unit tests (29 tests)
-4. `supabase/migrations/validate_20240101000029.md` - Validation documentation
+4. `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000029.md` - Validation documentation
 
 ## Next Steps
 

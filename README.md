@@ -69,7 +69,7 @@ tripslip-monorepo/
 
 ### Frontend
 - **Framework**: React 19 with TypeScript
-- **Build Tool**: Vite 7
+- **Build Tool**: Vite 6.4.x
 - **Routing**: React Router 7
 - **UI Components**: Radix UI primitives
 - **Styling**: Tailwind CSS 4

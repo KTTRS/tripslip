@@ -442,8 +442,8 @@ SELECT * FROM get_logging_statistics();
 ## Related Files
 
 - Migration: `supabase/migrations/20240305000004_create_logging_tables.sql`
-- Validation: `supabase/migrations/validate_20240305000004.md`
-- Test Script: `supabase/migrations/test_20240305000004.sql`
+- Validation: `supabase/migrations/_archive/validate_20240305000004.md`
+- Test Script: `supabase/migrations/_archive/test_20240305000004.sql`
 - Edge Function: `supabase/functions/cleanup-logs/`
 - Workflow: `.github/workflows/cleanup-logs.yml`
 - Email Function: `supabase/functions/send-email/index.ts`

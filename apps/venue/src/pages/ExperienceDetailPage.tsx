@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase';
 import { toast } from 'sonner';
 import { ArrowLeft, Edit, Eye, Clock, Users, Link2, Copy, Check, Plus, ChevronDown } from 'lucide-react';
 import { SendTeacherLinkModal } from '../components/SendTeacherLinkModal';
+import { buildParentTripUrl, buildTeacherTripReviewUrl } from '@tripslip/utils';
 
 interface Experience {
   id: string;
@@ -152,7 +153,7 @@ export default function ExperienceDetailPage() {
   };
   
   const handleCopyLink = async (link: string, id: string) => {
-    const fullUrl = `${window.location.origin}${link}`;
+    const fullUrl = link;
     try {
       await navigator.clipboard.writeText(fullUrl);
     } catch {
@@ -295,8 +296,8 @@ export default function ExperienceDetailPage() {
             <CardContent>
               <div className="space-y-6">
                 {generatedTrips.map((trip) => {
-                  const teacherLink = `/teacher/trip/${trip.direct_link_token}/review`;
-                  const parentLink = `/parent/trip/${trip.direct_link_token}`;
+                  const teacherLink = buildTeacherTripReviewUrl(trip.direct_link_token);
+                  const parentLink = buildParentTripUrl(trip.direct_link_token);
                   const tripDateFormatted = new Date(trip.trip_date + 'T00:00:00').toLocaleDateString('en-US', {
                     weekday: 'short',
                     month: 'short',
@@ -324,7 +325,7 @@ export default function ExperienceDetailPage() {
                             <input
                               type="text"
                               readOnly
-                              value={`${window.location.origin}${teacherLink}`}
+                              value={teacherLink}
                               className="flex-1 text-sm font-mono bg-white border-2 border-gray-300 rounded px-3 py-2 select-all cursor-text"
                               onClick={(e) => (e.target as HTMLInputElement).select()}
                             />
@@ -351,7 +352,7 @@ export default function ExperienceDetailPage() {
                             <input
                               type="text"
                               readOnly
-                              value={`${window.location.origin}${parentLink}`}
+                              value={parentLink}
                               className="flex-1 text-sm font-mono bg-white border-2 border-gray-300 rounded px-3 py-2 select-all cursor-text"
                               onClick={(e) => (e.target as HTMLInputElement).select()}
                             />

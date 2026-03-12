@@ -39,7 +39,7 @@ searchService.clearCachedQuery(query);
 
 **Files**:
 - `supabase/migrations/20240101000027_create_venue_analytics_view.sql`
-- `supabase/migrations/validate_20240101000027.md`
+- `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000027.md`
 - `packages/database/src/venue-analytics-service.ts`
 
 Created materialized view pre-computing venue analytics:
@@ -158,7 +158,7 @@ Implemented sophisticated relevance scoring that prioritizes quality venues:
 
 ### New Files
 1. `supabase/migrations/20240101000027_create_venue_analytics_view.sql` - Materialized view migration
-2. `supabase/migrations/validate_20240101000027.md` - Migration validation document
+2. `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000027.md` - Migration validation document
 3. `packages/database/src/venue-analytics-service.ts` - Analytics service implementation
 4. `packages/database/SEARCH_PERFORMANCE_OPTIMIZATIONS.md` - Comprehensive documentation
 

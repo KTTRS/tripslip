@@ -358,8 +358,8 @@ Potential improvements for future iterations:
 
 ## Related Documentation
 
-- [Venue Profile Service](./VENUE_PROFILE_SERVICE.md)
+- [Venue Profile Service](./src/venue-profile-service.ts)
 - [Experience Management](./EXPERIENCE_MANAGEMENT.md)
-- [Database Schema](./DATABASE_SCHEMA.md)
+- [Database Schema](../../supabase/schema.sql)
 - [Requirements Document](../../.kiro/specs/venue-experience-database-system/requirements.md)
 - [Design Document](../../.kiro/specs/venue-experience-database-system/design.md)

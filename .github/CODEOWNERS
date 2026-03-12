@@ -1,0 +1,13 @@
+# Global fallback
+* @tripslip/platform
+
+# Database and Supabase
+/supabase/ @tripslip/backend
+/packages/database/ @tripslip/backend
+
+# Frontend apps
+/apps/ @tripslip/frontend
+
+# CI and docs governance
+/.github/workflows/ @tripslip/devops
+/docs/ @tripslip/docs

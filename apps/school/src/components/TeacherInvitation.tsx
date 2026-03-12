@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Database } from '@tripslip/database';
+import { buildTeacherSignupUrl } from '@tripslip/utils';
 
 type Teacher = Database['public']['Tables']['teachers']['Row'];
 
@@ -79,7 +80,7 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
 
       if (error) throw error;
 
-      const signupLink = `${window.location.origin}/teacher/signup?email=${encodeURIComponent(email)}`;
+      const signupLink = buildTeacherSignupUrl(email);
 
       try {
         await navigator.clipboard.writeText(signupLink);
@@ -111,7 +112,7 @@ export const TeacherInvitation: React.FC<TeacherInvitationProps> = ({
   };
 
   const getSignupLink = (teacherEmail: string) => {
-    return `${window.location.origin}/teacher/signup?email=${encodeURIComponent(teacherEmail)}`;
+    return buildTeacherSignupUrl(teacherEmail);
   };
 
   const handleCopyLink = async (teacherId: string, teacherEmail: string) => {
