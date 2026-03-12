@@ -256,7 +256,7 @@ Public read, restricted write:
 1. `supabase/migrations/20240101000028_create_venue_categories_and_tags.sql` (450 lines)
 2. `packages/database/src/venue-category-service.ts` (650 lines)
 3. `packages/database/src/__tests__/venue-category-service.test.ts` (450 lines)
-4. `supabase/migrations/validate_20240101000028.md` (validation documentation)
+4. `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000028.md` (validation documentation)
 5. `TASK_7.1_VENUE_CATEGORIZATION_SUMMARY.md` (this file)
 
 **Total:** ~1,550 lines of code + documentation
@@ -269,7 +269,7 @@ Created comprehensive validation document:
 - Rollback procedure
 - Performance and security notes
 
-**File:** `supabase/migrations/validate_20240101000028.md`
+**File:** `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000028.md`
 
 ## Known Limitations
 

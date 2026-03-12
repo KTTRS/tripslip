@@ -207,3 +207,14 @@ export type {
   LinkAccessibilityResult,
   TouchTargetResult,
 } from './accessibility-testing';
+
+
+// Cross-portal URL routing
+export {
+  getPortalBaseUrl,
+  buildPortalUrl,
+  buildParentTripUrl,
+  buildTeacherTripReviewUrl,
+  buildTeacherSignupUrl,
+} from './url-routing';
+export type { Portal } from './url-routing';

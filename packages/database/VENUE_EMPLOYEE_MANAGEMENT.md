@@ -418,7 +418,7 @@ The database migration is located at:
 - `supabase/migrations/20240101000024_extend_venue_users_for_employees.sql`
 
 Validation documentation:
-- `supabase/migrations/validate_20240101000024.md`
+- `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000024.md`
 
 ## Related Files
 
@@ -427,7 +427,7 @@ Validation documentation:
 - Tests: `packages/database/src/__tests__/venue-employee-service.test.ts`
 - Tests: `packages/database/src/__tests__/venue-permissions.test.ts`
 - Migration: `supabase/migrations/20240101000024_extend_venue_users_for_employees.sql`
-- Validation: `supabase/migrations/validate_20240101000024.md`
+- Validation: `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000024.md`
 
 ## Next Steps
 

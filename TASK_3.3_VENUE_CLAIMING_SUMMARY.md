@@ -141,7 +141,7 @@ Updated `packages/database/src/index.ts` to export:
 1. `supabase/migrations/20240101000023_create_venue_claim_requests.sql` - Database migration
 2. `packages/database/src/venue-claim-service.ts` - Service implementation
 3. `packages/database/src/__tests__/venue-claim-service.test.ts` - Unit tests
-4. `supabase/migrations/validate_20240101000023.md` - Migration validation guide
+4. `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000023.md` - Migration validation guide
 5. `TASK_3.3_VENUE_CLAIMING_SUMMARY.md` - This summary
 
 ### Modified Files:
@@ -184,7 +184,7 @@ npm test -- venue-claim-service.test.ts --run
 
 To test with real database:
 1. Apply migration: Run the SQL file against your database
-2. Verify with validation steps in validate_20240101000023.md
+2. Verify with validation steps in supabase/migrations/_archive/validate_20240101000023.md
 3. Test the workflow end-to-end with real users
 
 ## Notes

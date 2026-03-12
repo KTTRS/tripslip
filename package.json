@@ -23,7 +23,10 @@
     "clean": "turbo run clean && rm -rf node_modules",
     "verify:stripe": "tsx scripts/verify-stripe-setup.ts",
     "verify:database": "tsx scripts/verify-production-database.ts",
-    "create-test-users": "tsx scripts/create-test-users.ts"
+    "create-test-users": "tsx scripts/create-test-users.ts",
+    "setup": "npm ci && node scripts/preflight.mjs",
+    "check:docs-links": "node scripts/check-doc-links.mjs",
+    "check:versions": "node scripts/check-workspace-versions.mjs"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "1.6.1",

@@ -110,7 +110,7 @@ Key methods:
 
 ### 4. Validation Documentation
 
-**Validation File** (`supabase/migrations/validate_20240101000030.md`)
+**Validation File** (`supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000030.md`)
 - Complete validation steps for all database objects
 - SQL queries to verify table creation, indexes, functions, triggers
 - Test data insertion examples
@@ -177,7 +177,7 @@ experiences
 
 ### Created:
 - `supabase/migrations/20240101000030_create_venue_bookings.sql` - Database migration
-- `supabase/migrations/validate_20240101000030.md` - Validation documentation
+- `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000030.md` - Validation documentation
 - `packages/database/src/venue-booking-service.ts` - Service layer (450 lines)
 - `packages/database/src/__tests__/venue-booking-service.test.ts` - Unit tests (600+ lines)
 - `TASK_12.1_VENUE_BOOKING_SUMMARY.md` - This summary

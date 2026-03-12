@@ -5,8 +5,19 @@
  */
 
 import { SupabaseClient } from '@supabase/supabase-js';
-import * as crypto from 'crypto';
 import { logger } from '@tripslip/utils';
+
+
+function generateVerificationToken(byteLength = 32): string {
+  if (!globalThis.crypto || typeof globalThis.crypto.getRandomValues !== 'function') {
+    throw new Error('Secure random generation is not available in this environment');
+  }
+
+  const bytes = new Uint8Array(byteLength);
+  globalThis.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 
 export interface VenueClaimRequest {
   id: string;
@@ -88,7 +99,7 @@ export class VenueClaimService {
     }
 
     // Generate email verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationToken = generateVerificationToken();
 
     // Create claim request
     const { data: claimRequest, error: createError } = await this.supabase
@@ -284,7 +295,7 @@ export class VenueClaimService {
     }
 
     // Generate new verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationToken = generateVerificationToken();
 
     await this.supabase
       .from('venue_claim_requests')

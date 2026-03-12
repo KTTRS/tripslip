@@ -78,7 +78,7 @@ Expected results:
 ## Related Files
 
 - **Migration**: `supabase/migrations/20240101000028_create_venue_categories_and_tags.sql`
-- **Validation**: `supabase/migrations/validate_20240101000028.md`
+- **Validation**: `supabase/migrations/_archive/supabase/migrations/_archive/validate_20240101000028.md`
 - **Service**: `packages/database/src/venue-category-service.ts`
 - **Unit Tests**: `packages/database/src/__tests__/venue-category-service.test.ts`
 - **Property Tests**: `packages/database/src/__tests__/property/venue-category.property.test.ts`

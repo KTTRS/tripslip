@@ -89,7 +89,7 @@ Comprehensive test suite covering:
 ### 5. Documentation
 
 #### Migration Validation Document
-**File**: `supabase/migrations/validate_20240101000025.md`
+**File**: `supabase/migrations/_archive/validate_20240101000025.md`
 
 Comprehensive validation guide including:
 - Schema change documentation
@@ -254,7 +254,7 @@ According to the implementation plan, the next tasks are:
 
 ### Created
 1. `supabase/migrations/20240101000025_extend_experiences_table.sql` - Database migration
-2. `supabase/migrations/validate_20240101000025.md` - Validation document
+2. `supabase/migrations/_archive/validate_20240101000025.md` - Validation document
 3. `packages/database/src/experience-service.ts` - Service implementation
 4. `packages/database/src/__tests__/experience-service.test.ts` - Unit tests
 5. `packages/database/EXPERIENCE_MANAGEMENT.md` - Feature documentation

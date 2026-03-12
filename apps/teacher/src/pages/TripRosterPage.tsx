@@ -4,6 +4,7 @@ import { Card, CardContent, Button, Input } from '@tripslip/ui';
 import { supabase } from '../lib/supabase';
 import type { Tables } from '@tripslip/database';
 import { toast } from 'sonner';
+import { buildParentTripUrl } from '@tripslip/utils';
 import { 
   ArrowLeft, 
   Plus, 
@@ -169,7 +170,7 @@ export default function TripRosterPage() {
 
   const getPermissionSlipLink = () => {
     if (!trip?.direct_link_token) return null;
-    return `${window.location.origin}/parent/trip/${trip.direct_link_token}`;
+    return buildParentTripUrl(trip.direct_link_token);
   };
 
   const ensureLinkToken = async () => {
@@ -200,7 +201,7 @@ export default function TripRosterPage() {
     const token = await ensureLinkToken();
     if (!token) return;
     
-    const link = `${window.location.origin}/parent/trip/${token}`;
+    const link = buildParentTripUrl(token);
     try {
       await navigator.clipboard.writeText(link);
       setLinkCopied(true);
@@ -215,7 +216,7 @@ export default function TripRosterPage() {
     const token = await ensureLinkToken();
     if (!token) return;
     
-    const link = `${window.location.origin}/parent/trip/${token}`;
+    const link = buildParentTripUrl(token);
     const tripName = trip?.experience?.title || 'the field trip';
     const venueName = trip?.experience?.venue?.name || '';
     const tripDate = trip?.trip_date 
